@@ -23,22 +23,13 @@ test('init with pass elements', () => {
   expect(autokana.isActive).toBe(true);
 });
 
-test('halfWidthKatakana option converts hiragana to half-width katakana', () => {
-  document.body.innerHTML = `
-<input name="name" id="name">
-<input name="furigana" id="furigana">
-`;
-  const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
-  // toKatakana は private だが内部的に正しく変換されるか確認する
-  expect(autokana.option.halfWidthKatakana).toBe(true);
-});
-
 test('halfWidthKatakana option converts basic hiragana', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
 <input name="furigana" id="furigana">
 `;
   const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
+  expect(autokana.option.halfWidthKatakana).toBe(true);
   // toKatakana の変換結果を確認
   expect(autokana.toKatakana('あいうえお')).toBe('ｱｲｳｴｵ');
   expect(autokana.toKatakana('かきくけこ')).toBe('ｶｷｸｹｺ');
