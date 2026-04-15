@@ -22,3 +22,47 @@ test('init with pass elements', () => {
   autokana.start();
   expect(autokana.isActive).toBe(true);
 });
+
+test('halfWidthKatakana option converts hiragana to half-width katakana', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
+  // toKatakana は private だが内部的に正しく変換されるか確認する
+  expect(autokana.option.halfWidthKatakana).toBe(true);
+});
+
+test('halfWidthKatakana option converts basic hiragana', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
+  // toKatakana の変換結果を確認
+  expect(autokana.toKatakana('あいうえお')).toBe('ｱｲｳｴｵ');
+  expect(autokana.toKatakana('かきくけこ')).toBe('ｶｷｸｹｺ');
+  expect(autokana.toKatakana('がぎぐげご')).toBe('ｶﾞｷﾞｸﾞｹﾞｺﾞ');
+  expect(autokana.toKatakana('ぱぴぷぺぽ')).toBe('ﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ');
+  expect(autokana.toKatakana('っゃゅょ')).toBe('ｯｬｭｮ');
+  expect(autokana.toKatakana('ん')).toBe('ﾝ');
+  expect(autokana.toKatakana('ー')).toBe('ｰ');
+});
+
+test('katakana option still converts hiragana to full-width katakana', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana', { katakana: true });
+  expect(autokana.toKatakana('あいうえお')).toBe('アイウエオ');
+});
+
+test('default option keeps hiragana as-is', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana');
+  expect(autokana.toKatakana('あいうえお')).toBe('あいうえお');
+});

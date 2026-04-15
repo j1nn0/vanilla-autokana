@@ -38,6 +38,19 @@ function ensureElement(idOrElement) {
 const kanaExtractionPattern = /[^ 　ぁあ-んー]/g;
 const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
+const fullToHalfKatakanaMap = {
+  ァ: 'ｧ', ア: 'ｱ', ィ: 'ｨ', イ: 'ｲ', ゥ: 'ｩ', ウ: 'ｳ', ェ: 'ｪ', エ: 'ｴ', ォ: 'ｫ', オ: 'ｵ',
+  カ: 'ｶ', ガ: 'ｶﾞ', キ: 'ｷ', ギ: 'ｷﾞ', ク: 'ｸ', グ: 'ｸﾞ', ケ: 'ｹ', ゲ: 'ｹﾞ', コ: 'ｺ', ゴ: 'ｺﾞ',
+  サ: 'ｻ', ザ: 'ｻﾞ', シ: 'ｼ', ジ: 'ｼﾞ', ス: 'ｽ', ズ: 'ｽﾞ', セ: 'ｾ', ゼ: 'ｾﾞ', ソ: 'ｿ', ゾ: 'ｿﾞ',
+  タ: 'ﾀ', ダ: 'ﾀﾞ', チ: 'ﾁ', ヂ: 'ﾁﾞ', ッ: 'ｯ', ツ: 'ﾂ', ヅ: 'ﾂﾞ', テ: 'ﾃ', デ: 'ﾃﾞ', ト: 'ﾄ', ド: 'ﾄﾞ',
+  ナ: 'ﾅ', ニ: 'ﾆ', ヌ: 'ﾇ', ネ: 'ﾈ', ノ: 'ﾉ',
+  ハ: 'ﾊ', バ: 'ﾊﾞ', パ: 'ﾊﾟ', ヒ: 'ﾋ', ビ: 'ﾋﾞ', ピ: 'ﾋﾟ', フ: 'ﾌ', ブ: 'ﾌﾞ', プ: 'ﾌﾟ', ヘ: 'ﾍ', ベ: 'ﾍﾞ', ペ: 'ﾍﾟ', ホ: 'ﾎ', ボ: 'ﾎﾞ', ポ: 'ﾎﾟ',
+  マ: 'ﾏ', ミ: 'ﾐ', ム: 'ﾑ', メ: 'ﾒ', モ: 'ﾓ',
+  ャ: 'ｬ', ヤ: 'ﾔ', ュ: 'ｭ', ユ: 'ﾕ', ョ: 'ｮ', ヨ: 'ﾖ',
+  ラ: 'ﾗ', リ: 'ﾘ', ル: 'ﾙ', レ: 'ﾚ', ロ: 'ﾛ',
+  ワ: 'ﾜ', ヲ: 'ｦ', ン: 'ﾝ', ヴ: 'ｳﾞ', ー: 'ｰ',
+};
+
 export default class AutoKana {
   /**
    * @param {string} name
@@ -52,6 +65,7 @@ export default class AutoKana {
     this.option = Object.assign(
       {
         katakana: false,
+        halfWidthKatakana: false,
         debug: false,
         checkInterval: 30, // milli seconds
       },
@@ -159,7 +173,7 @@ export default class AutoKana {
    * @returns {*}
    */
   toKatakana(src) {
-    if (this.option.katakana) {
+    if (this.option.halfWidthKatakana || this.option.katakana) {
       let c;
       let str = '';
       for (let i = 0; i < src.length; i += 1) {
@@ -169,6 +183,9 @@ export default class AutoKana {
         } else {
           str += src.charAt(i);
         }
+      }
+      if (this.option.halfWidthKatakana) {
+        return str.replace(/[ァ-ヴー]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
       }
       return str;
     }
