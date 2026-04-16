@@ -1,5 +1,5 @@
 declare module 'vanilla-autokana' {
-  type Bindable = string | Element
+  type Bindable = string | Element;
   export interface Option {
     katakana: false | 'full' | 'half';
     debug: boolean;
@@ -15,6 +15,6 @@ declare module 'vanilla-autokana' {
     public getFurigana(): string;
     public start(): void;
     public stop(): void;
-    public toggle(event: Event): void;
+    public toggle(event?: Event): void;
   }
 }
