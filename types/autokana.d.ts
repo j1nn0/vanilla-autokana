@@ -1,6 +1,6 @@
 declare module 'vanilla-autokana' {
   type Bindable = string | Element;
-  export interface Option {
+  export interface AutoKanaOption {
     katakana: false | 'full' | 'half';
     debug: boolean;
     checkInterval: number;
@@ -8,13 +8,14 @@ declare module 'vanilla-autokana' {
   export function bind(
     name: Bindable,
     furigana?: Bindable,
-    option?: Partial<Option>,
+    option?: Partial<AutoKanaOption>,
   ): AutoKana;
   class AutoKana {
-    constructor(name: Bindable, furigana?: Bindable, option?: Partial<Option>);
+    constructor(name: Bindable, furigana?: Bindable, option?: Partial<AutoKanaOption>);
     public getFurigana(): string;
     public start(): void;
     public stop(): void;
     public toggle(event?: Event): void;
+    public destroy(): void;
   }
 }

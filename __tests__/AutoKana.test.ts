@@ -1,6 +1,9 @@
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
 
+function setup(html = '<input name="name" id="name"><input name="furigana" id="furigana">') {
+  document.body.innerHTML = html;
+}
 test('init', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
@@ -95,3 +98,109 @@ test('full-width spaces are converted to half-width spaces when katakana is "hal
   autokana.setFurigana();
   expect(autokana.getFurigana()).toBe('ﾔﾏﾀﾞ ﾀﾛｳ');
 });
+
+test('toggle() without event flips isActive', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  expect(autokana.isActive).toBe(true);
+  autokana.toggle();
+  expect(autokana.isActive).toBe(false);
+  autokana.toggle();
+  expect(autokana.isActive).toBe(true);
+});
+
+test('toggle(event) sets isActive from checkbox checked state', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  const fakeEventOn = { target: { checked: false } } as unknown as Event;
+  autokana.toggle(fakeEventOn);
+  expect(autokana.isActive).toBe(false);
+  const fakeEventOff = { target: { checked: true } } as unknown as Event;
+  autokana.toggle(fakeEventOff);
+  expect(autokana.isActive).toBe(true);
+});
+
+test('stop() then start() cycle preserves setFurigana behavior', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.baseKana = 'たろう';
+  autokana.values = [];
+  autokana.stop();
+  autokana.setFurigana();
+  expect(autokana.getFurigana()).toBe(''); // inactive: furigana unchanged
+  autokana.start();
+  autokana.setFurigana();
+  expect(autokana.getFurigana()).toBe('たろう');
+});
+
+test('bind with missing element throws Error', () => {
+  setup();
+  expect(() => new AutoKana('nonexistent')).toThrow('Element not found: nonexistent');
+});
+
+test('bind with # prefix resolves element by id', () => {
+  setup();
+  const autokana = new AutoKana('#name', '#furigana');
+  expect(autokana.isActive).toBe(true);
+});
+
+test('clearInterval resets timer to null', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.setInterval();
+  expect(autokana.timer).not.toBeNull();
+  autokana.clearInterval();
+  expect(autokana.timer).toBeNull();
+  // calling clearInterval again should not throw
+  autokana.clearInterval();
+  expect(autokana.timer).toBeNull();
+});
+
+test('setInterval clears existing timer before creating a new one', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.setInterval();
+  const firstTimer = autokana.timer;
+  autokana.setInterval();
+  const secondTimer = autokana.timer;
+  expect(secondTimer).not.toBeNull();
+  expect(secondTimer).not.toBe(firstTimer);
+  autokana.clearInterval();
+});
+
+test('destroy() clears the timer', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.setInterval();
+  expect(autokana.timer).not.toBeNull();
+  autokana.destroy();
+  expect(autokana.timer).toBeNull();
+});
+
+test('checkConvert() triggers onConvert when values differ significantly', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.isConverting = false;
+  autokana.values = ['あ', 'い', 'う'];
+  // newValues is very different in length (> 1 difference after compacting)
+  autokana.checkConvert(['a', 'b', 'c', 'd', 'e', 'f']);
+  expect(autokana.isConverting).toBe(true);
+});
+
+test('removeString() removes ignoreString prefix from input', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.ignoreString = 'やまだ';
+  expect(autokana.removeString('やまだたろう')).toBe('たろう');
+});
+
+test('removeString() handles partial character mismatch', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.ignoreString = 'やXう';
+  // 'やXう' not found as substring in 'やまだ', falls back to char-by-char
+  const result = autokana.removeString('やまだ');
+  // First char 'や' matches ignoreString[0]='や', so removed; others kept
+  expect(result).toBe('まだ');
+});
+

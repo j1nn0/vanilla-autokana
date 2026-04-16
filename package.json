@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write src",
     "test": "vitest",
-    "publish": "pnpm run lint && pnpm run test && pnpm run build && pnpm publish"
+    "publish": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm publish"
   },
   "devDependencies": {
     "jsdom": "^29.0.2",
