@@ -33,9 +33,12 @@ npm i vanilla-autokana # or yarn add vanilla-autokana
 <script src="autokana.js" defer></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
+    // ひらがなで出力（デフォルト）
     AutoKana.bind("#name", "#furigana");
-    // ↓ふりがなをカタカナで入力したい場合
-    // AutoKana.bind("#name", "#furigana", { katakana: true });
+    // 全角カタカナで出力したい場合
+    // AutoKana.bind("#name", "#furigana", { katakana: 'full' });
+    // 半角カタカナで出力したい場合
+    // AutoKana.bind("#name", "#furigana", { katakana: 'half' });
   });
 </script>
 ```

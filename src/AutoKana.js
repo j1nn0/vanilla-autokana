@@ -38,6 +38,20 @@ function ensureElement(idOrElement) {
 const kanaExtractionPattern = /[^ 　ぁあ-んー]/g;
 const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
+const fullToHalfKatakanaMap = {
+  ァ: 'ｧ', ア: 'ｱ', ィ: 'ｨ', イ: 'ｲ', ゥ: 'ｩ', ウ: 'ｳ', ェ: 'ｪ', エ: 'ｴ', ォ: 'ｫ', オ: 'ｵ',
+  カ: 'ｶ', ガ: 'ｶﾞ', キ: 'ｷ', ギ: 'ｷﾞ', ク: 'ｸ', グ: 'ｸﾞ', ケ: 'ｹ', ゲ: 'ｹﾞ', コ: 'ｺ', ゴ: 'ｺﾞ',
+  サ: 'ｻ', ザ: 'ｻﾞ', シ: 'ｼ', ジ: 'ｼﾞ', ス: 'ｽ', ズ: 'ｽﾞ', セ: 'ｾ', ゼ: 'ｾﾞ', ソ: 'ｿ', ゾ: 'ｿﾞ',
+  タ: 'ﾀ', ダ: 'ﾀﾞ', チ: 'ﾁ', ヂ: 'ﾁﾞ', ッ: 'ｯ', ツ: 'ﾂ', ヅ: 'ﾂﾞ', テ: 'ﾃ', デ: 'ﾃﾞ', ト: 'ﾄ', ド: 'ﾄﾞ',
+  ナ: 'ﾅ', ニ: 'ﾆ', ヌ: 'ﾇ', ネ: 'ﾈ', ノ: 'ﾉ',
+  ハ: 'ﾊ', バ: 'ﾊﾞ', パ: 'ﾊﾟ', ヒ: 'ﾋ', ビ: 'ﾋﾞ', ピ: 'ﾋﾟ', フ: 'ﾌ', ブ: 'ﾌﾞ', プ: 'ﾌﾟ', ヘ: 'ﾍ', ベ: 'ﾍﾞ', ペ: 'ﾍﾟ', ホ: 'ﾎ', ボ: 'ﾎﾞ', ポ: 'ﾎﾟ',
+  マ: 'ﾏ', ミ: 'ﾐ', ム: 'ﾑ', メ: 'ﾒ', モ: 'ﾓ',
+  ャ: 'ｬ', ヤ: 'ﾔ', ュ: 'ｭ', ユ: 'ﾕ', ョ: 'ｮ', ヨ: 'ﾖ',
+  ラ: 'ﾗ', リ: 'ﾘ', ル: 'ﾙ', レ: 'ﾚ', ロ: 'ﾛ',
+  ワ: 'ﾜ', ヰ: 'ｲ', ヱ: 'ｴ', ヲ: 'ｦ', ヺ: 'ｦﾞ', ン: 'ﾝ', ヴ: 'ｳﾞ', ー: 'ｰ',
+  '。': '｡', '、': '､',
+};
+
 export default class AutoKana {
   /**
    * @param {string} name
@@ -159,20 +173,26 @@ export default class AutoKana {
    * @returns {*}
    */
   toKatakana(src) {
-    if (this.option.katakana) {
-      let c;
-      let str = '';
-      for (let i = 0; i < src.length; i += 1) {
-        c = src.charCodeAt(i);
-        if (isHiragana(c)) {
-          str += String.fromCharCode(c + 96);
-        } else {
-          str += src.charAt(i);
-        }
-      }
-      return str;
+    if (this.option.katakana === false || !this.option.katakana) {
+      return src;
     }
-    return src;
+
+    let c;
+    let str = '';
+    for (let i = 0; i < src.length; i += 1) {
+      c = src.charCodeAt(i);
+      if (isHiragana(c)) {
+        str += String.fromCharCode(c + 96);
+      } else {
+        str += src.charAt(i);
+      }
+    }
+
+    if (this.option.katakana === 'half') {
+      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
+    }
+
+    return str;
   }
 
   /**
@@ -186,7 +206,8 @@ export default class AutoKana {
       this.values = newValues;
     }
     if (this.isActive) {
-      this.furigana = this.toKatakana(this.baseKana + this.values.join(''));
+      const kana = this.toKatakana(this.baseKana + this.values.join(''));
+      this.furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
       if (this.elFurigana) {
         this.elFurigana.value = this.furigana;
       }
