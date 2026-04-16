@@ -177,6 +177,34 @@ test('destroy() clears the timer', () => {
   expect(autokana.timer).toBeNull();
 });
 
+test('focus starts interval and blur clears interval', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  const nameInput = document.getElementById('name') as HTMLInputElement;
+
+  expect(autokana.timer).toBeNull();
+  nameInput.dispatchEvent(new Event('focus'));
+  expect(autokana.timer).not.toBeNull();
+
+  nameInput.dispatchEvent(new Event('blur'));
+  expect(autokana.timer).toBeNull();
+});
+
+test('keydown while converting triggers onInput state reset', () => {
+  setup();
+  const autokana = new AutoKana('name', 'furigana');
+  const nameInput = document.getElementById('name') as HTMLInputElement;
+
+  nameInput.value = 'やまだ';
+  autokana.isConverting = true;
+  autokana.ignoreString = '';
+
+  nameInput.dispatchEvent(new Event('keydown'));
+
+  expect(autokana.isConverting).toBe(false);
+  expect(autokana.ignoreString).toBe('やまだ');
+});
+
 test('checkConvert() triggers onConvert when values differ significantly', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
@@ -203,4 +231,3 @@ test('removeString() handles partial character mismatch', () => {
   // First char 'や' matches ignoreString[0]='や', so removed; others kept
   expect(result).toBe('まだ');
 });
-

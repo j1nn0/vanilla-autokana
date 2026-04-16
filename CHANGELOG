@@ -6,3 +6,9 @@
 - Renamed package identifier to `@j1nn0/vanilla-autokana` in package metadata and usage examples.
 - Updated package metadata for publication readiness (`contributors`, `description`, `repository`, `bugs`, `homepage`).
 - Added modification copyright notice for `j1nn0` while preserving the original MIT copyright.
+- Synchronized type definition module declaration with the published package name.
+- Added `destroy()` to public type definitions to match runtime API.
+- Expanded README option docs (`katakana`, `checkInterval`) and aligned script-tag examples with `dist/autokana.umd.js`.
+- Expanded `README_en.md` with options and Vue/React integration guidance.
+- Added integration tests for focus/blur timer lifecycle and keydown conversion reset.
+- Added coverage configuration in Vitest and `test:coverage` / `ci` scripts for quality gates.

@@ -38,9 +38,12 @@
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write src",
     "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "ci": "pnpm run lint && pnpm run typecheck && pnpm run test:coverage && pnpm run build",
     "publish": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm publish"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "4.1.4",
     "jsdom": "^29.0.2",
     "oxfmt": "^0.45.0",
     "oxlint": "^1.59.0",

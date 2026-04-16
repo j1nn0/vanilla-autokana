@@ -1,4 +1,4 @@
-declare module 'vanilla-autokana' {
+declare module '@j1nn0/vanilla-autokana' {
   type Bindable = string | Element;
   export interface AutoKanaOption {
     katakana: false | 'full' | 'half';

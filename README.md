@@ -21,7 +21,7 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 
 ### npmを使わない方法
 
-このリポジトリの `dist/autokana.js` をダウンロードし、scriptタグで読み込んでください。
+このリポジトリの `dist/autokana.umd.js` をダウンロードし、scriptタグで読み込んでください。
 
 ## 使用方法
 
@@ -32,7 +32,7 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 ```
 <input name="name" id="name">
 <input name="furigana" id="furigana">
-<script src="autokana.js" defer></script>
+<script src="autokana.umd.js" defer></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     // ひらがなで出力（デフォルト）
@@ -53,6 +53,26 @@ ESModulesとしてimportすることができます。
 import * as AutoKana from '@j1nn0/vanilla-autokana';
 
 AutoKana.bind('#name', '#furigana');
+```
+
+### オプション
+
+`AutoKana.bind(name, furigana, option)` の第3引数には以下を指定できます。
+
+- `katakana`: `false | 'full' | 'half'`
+- `debug`: `boolean`
+- `checkInterval`: `number`（既定値 `30`、単位 ms）
+
+`katakana` の値ごとの挙動:
+
+- `false`: ひらがなで出力（デフォルト）
+- `'full'`: 全角カタカナで出力
+- `'half'`: 半角カタカナで出力（全角空白は半角空白に正規化）
+
+`checkInterval` は入力変化を監視するポーリング間隔です。値を大きくすると監視頻度は下がり、値を小さくすると追従性が上がります。
+
+```js
+AutoKana.bind('#name', '#furigana', { checkInterval: 50 });
 ```
 
 ### Vue.jsと組み合わせる
