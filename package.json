@@ -18,30 +18,21 @@
   },
   "homepage": "https://github.com/j1nn0/vanilla-autokana#readme",
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack --watch",
+    "build": "vite build",
+    "watch": "vite build --watch",
     "lint": "eslint src",
-    "test": "jest --env=jsdom",
-    "publish": "npm run lint && npm run test && npm run build && npm publish"
+    "test": "vitest",
+    "publish": "pnpm run lint && pnpm run test && pnpm run build && pnpm publish"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
-    "@babel/runtime": "^7.5.5",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^23.4.2",
-    "babel-loader": "^8.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.0",
-    "jest": "^24.8.0",
+    "jsdom": "^29.0.2",
     "prettier": "^1.18.2",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }
