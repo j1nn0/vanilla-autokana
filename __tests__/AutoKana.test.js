@@ -63,6 +63,16 @@ test('default option keeps hiragana as-is', () => {
   expect(autokana.toKatakana('あいうえお')).toBe('あいうえお');
 });
 
+test('halfWidthKatakana takes priority when both katakana and halfWidthKatakana are true', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana', { katakana: true, halfWidthKatakana: true });
+  expect(autokana.toKatakana('あいうえお')).toBe('ｱｲｳｴｵ');
+});
+
+
 test('full-width spaces are kept as-is in furigana by default', () => {
   document.body.innerHTML = `
 <input name="name" id="name">

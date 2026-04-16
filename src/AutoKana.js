@@ -174,23 +174,30 @@ export default class AutoKana {
    * @returns {*}
    */
   toKatakana(src) {
-    if (this.option.halfWidthKatakana || this.option.katakana) {
-      let c;
-      let str = '';
-      for (let i = 0; i < src.length; i += 1) {
-        c = src.charCodeAt(i);
-        if (isHiragana(c)) {
-          str += String.fromCharCode(c + 96);
-        } else {
-          str += src.charAt(i);
-        }
-      }
-      if (this.option.halfWidthKatakana) {
-        return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
-      }
-      return str;
+    // Pattern 1: return hiragana as-is
+    if (!this.option.halfWidthKatakana && !this.option.katakana) {
+      return src;
     }
-    return src;
+
+    // Pattern 2 & 3: convert hiragana to full-width katakana first
+    let c;
+    let str = '';
+    for (let i = 0; i < src.length; i += 1) {
+      c = src.charCodeAt(i);
+      if (isHiragana(c)) {
+        str += String.fromCharCode(c + 96);
+      } else {
+        str += src.charAt(i);
+      }
+    }
+
+    // Pattern 3: halfWidthKatakana takes priority over katakana
+    if (this.option.halfWidthKatakana) {
+      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
+    }
+
+    // Pattern 2: return full-width katakana
+    return str;
   }
 
   /**
