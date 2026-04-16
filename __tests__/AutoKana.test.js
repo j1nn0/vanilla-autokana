@@ -57,3 +57,15 @@ test('default option keeps hiragana as-is', () => {
   const autokana = new AutoKana('name', 'furigana');
   expect(autokana.toKatakana('あいうえお')).toBe('あいうえお');
 });
+
+test('full-width spaces are converted to half-width spaces in furigana', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana');
+  autokana.baseKana = 'やまだ　たろう';
+  autokana.values = [];
+  autokana.setFurigana();
+  expect(autokana.getFurigana()).toBe('やまだ たろう');
+});
