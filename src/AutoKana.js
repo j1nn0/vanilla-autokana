@@ -66,7 +66,6 @@ export default class AutoKana {
     this.option = Object.assign(
       {
         katakana: false,
-        halfWidthKatakana: false,
         debug: false,
         checkInterval: 30, // milli seconds
       },
@@ -174,12 +173,10 @@ export default class AutoKana {
    * @returns {*}
    */
   toKatakana(src) {
-    // Pattern 1: return hiragana as-is
-    if (!this.option.halfWidthKatakana && !this.option.katakana) {
+    if (this.option.katakana === false || !this.option.katakana) {
       return src;
     }
 
-    // Pattern 2 & 3: convert hiragana to full-width katakana first
     let c;
     let str = '';
     for (let i = 0; i < src.length; i += 1) {
@@ -191,12 +188,10 @@ export default class AutoKana {
       }
     }
 
-    // Pattern 3: halfWidthKatakana takes priority over katakana
-    if (this.option.halfWidthKatakana) {
+    if (this.option.katakana === 'half') {
       return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
     }
 
-    // Pattern 2: return full-width katakana
     return str;
   }
 
@@ -212,7 +207,7 @@ export default class AutoKana {
     }
     if (this.isActive) {
       const kana = this.toKatakana(this.baseKana + this.values.join(''));
-      this.furigana = this.option.halfWidthKatakana ? kana.replace(/　/g, ' ') : kana;
+      this.furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
       if (this.elFurigana) {
         this.elFurigana.value = this.furigana;
       }

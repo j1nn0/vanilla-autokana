@@ -23,13 +23,13 @@ test('init with pass elements', () => {
   expect(autokana.isActive).toBe(true);
 });
 
-test('halfWidthKatakana option converts basic hiragana', () => {
+test('katakana: "half" converts basic hiragana to half-width katakana', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
 <input name="furigana" id="furigana">
 `;
-  const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
-  expect(autokana.option.halfWidthKatakana).toBe(true);
+  const autokana = new AutoKana('name', 'furigana', { katakana: 'half' });
+  expect(autokana.option.katakana).toBe('half');
   // toKatakana の変換結果を確認
   expect(autokana.toKatakana('あいうえお')).toBe('ｱｲｳｴｵ');
   expect(autokana.toKatakana('かきくけこ')).toBe('ｶｷｸｹｺ');
@@ -45,16 +45,25 @@ test('halfWidthKatakana option converts basic hiragana', () => {
   expect(autokana.toKatakana('、')).toBe('､');
 });
 
-test('katakana option still converts hiragana to full-width katakana', () => {
+test('katakana: "full" converts hiragana to full-width katakana', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
 <input name="furigana" id="furigana">
 `;
-  const autokana = new AutoKana('name', 'furigana', { katakana: true });
+  const autokana = new AutoKana('name', 'furigana', { katakana: 'full' });
   expect(autokana.toKatakana('あいうえお')).toBe('アイウエオ');
 });
 
-test('default option keeps hiragana as-is', () => {
+test('katakana: false keeps hiragana as-is', () => {
+  document.body.innerHTML = `
+<input name="name" id="name">
+<input name="furigana" id="furigana">
+`;
+  const autokana = new AutoKana('name', 'furigana', { katakana: false });
+  expect(autokana.toKatakana('あいうえお')).toBe('あいうえお');
+});
+
+test('no option keeps hiragana as-is', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
 <input name="furigana" id="furigana">
@@ -62,16 +71,6 @@ test('default option keeps hiragana as-is', () => {
   const autokana = new AutoKana('name', 'furigana');
   expect(autokana.toKatakana('あいうえお')).toBe('あいうえお');
 });
-
-test('halfWidthKatakana takes priority when both katakana and halfWidthKatakana are true', () => {
-  document.body.innerHTML = `
-<input name="name" id="name">
-<input name="furigana" id="furigana">
-`;
-  const autokana = new AutoKana('name', 'furigana', { katakana: true, halfWidthKatakana: true });
-  expect(autokana.toKatakana('あいうえお')).toBe('ｱｲｳｴｵ');
-});
-
 
 test('full-width spaces are kept as-is in furigana by default', () => {
   document.body.innerHTML = `
@@ -85,12 +84,12 @@ test('full-width spaces are kept as-is in furigana by default', () => {
   expect(autokana.getFurigana()).toBe('やまだ　たろう');
 });
 
-test('full-width spaces are converted to half-width spaces when halfWidthKatakana is true', () => {
+test('full-width spaces are converted to half-width spaces when katakana is "half"', () => {
   document.body.innerHTML = `
 <input name="name" id="name">
 <input name="furigana" id="furigana">
 `;
-  const autokana = new AutoKana('name', 'furigana', { halfWidthKatakana: true });
+  const autokana = new AutoKana('name', 'furigana', { katakana: 'half' });
   autokana.baseKana = 'やまだ　たろう';
   autokana.values = [];
   autokana.setFurigana();
