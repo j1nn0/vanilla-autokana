@@ -317,7 +317,10 @@ export default class AutoKana {
   }
 
   setInterval(): void {
-    this.timer = setInterval(this.checkValue.bind(this), this.option.checkInterval) as unknown as number;
+    this.timer = setInterval(
+      this.checkValue.bind(this),
+      this.option.checkInterval,
+    ) as unknown as number;
   }
 
   onInput(): void {
