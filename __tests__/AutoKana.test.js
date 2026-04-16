@@ -41,6 +41,8 @@ test('halfWidthKatakana option converts basic hiragana', () => {
   expect(autokana.toKatakana('ヰ')).toBe('ｲ');
   expect(autokana.toKatakana('ヱ')).toBe('ｴ');
   expect(autokana.toKatakana('ヺ')).toBe('ｦﾞ');
+  expect(autokana.toKatakana('。')).toBe('｡');
+  expect(autokana.toKatakana('、')).toBe('､');
 });
 
 test('katakana option still converts hiragana to full-width katakana', () => {
