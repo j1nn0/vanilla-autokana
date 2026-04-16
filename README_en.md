@@ -11,6 +11,8 @@ This library is inspired by [jquery-autokana](https://github.com/harisenbon/auto
 
 ## Installation
 
+> **Note:** This project requires [pnpm](https://pnpm.io/) ≥ 10 for development. End-users can install the package with any package manager.
+
 ### npm
 
 ```
@@ -19,14 +21,14 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 
 ### Without npm
 
-Download `dist/autokana.js` from this repository and load it with a script tag.
+Download `dist/autokana.umd.js` from this repository and load it with a script tag.
 
 ## Usage
 
 ```html
 <input name="name" id="name">
 <input name="furigana" id="furigana">
-<script src="autokana.js" defer></script>
+<script src="autokana.umd.js" defer></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     // Output in hiragana (default)

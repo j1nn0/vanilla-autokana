@@ -8,19 +8,22 @@ interface AutoKanaOption {
   checkInterval: number;
 }
 
-function ltrim(str: string, chars?: string): string {
-  const escaped = !chars ? ' \\s\u00A0' : chars.replace(/([[\]().?/*{}+$^:])/g, '$1');
-  const re = new RegExp(`^[${escaped}]+`, 'g');
-  return str.replace(re, '');
-}
+const HIRAGANA_START = 12353; // ぁ
+const HIRAGANA_END = 12435; // ん
+const HIRAGANA_ITERATION_MARK = 12445; // ゝ
+const HIRAGANA_VOICED_ITERATION_MARK = 12446; // ゞ
 
 function isHiragana(charCode: number): boolean {
-  return (charCode >= 12353 && charCode <= 12435) || charCode === 12445 || charCode === 12446;
+  return (
+    (charCode >= HIRAGANA_START && charCode <= HIRAGANA_END) ||
+    charCode === HIRAGANA_ITERATION_MARK ||
+    charCode === HIRAGANA_VOICED_ITERATION_MARK
+  );
 }
 
 function ensureElement(idOrElement: Bindable): HTMLElement | null {
   if (typeof idOrElement === 'string') {
-    return document.getElementById(ltrim(idOrElement, '#'));
+    return document.getElementById(idOrElement.replace(/^#/, ''));
   }
   if (idOrElement instanceof HTMLElement) {
     return idOrElement;
@@ -137,6 +140,24 @@ export default class AutoKana {
   input: string;
   values: string[];
 
+  private blurHandler = (): void => {
+    this.debug('blur');
+    this.clearInterval();
+  };
+
+  private focusHandler = (): void => {
+    this.debug('focus');
+    this.onInput();
+    this.setInterval();
+  };
+
+  private keydownHandler = (): void => {
+    this.debug('keydown');
+    if (this.isConverting) {
+      this.onInput();
+    }
+  };
+
   constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
     this.timer = null;
@@ -202,31 +223,20 @@ export default class AutoKana {
   }
 
   registerEvents(elName: HTMLInputElement): void {
-    elName.addEventListener('blur', () => {
-      this.debug('blur');
-      this.clearInterval();
-    });
-    elName.addEventListener('focus', () => {
-      this.debug('focus');
-      this.onInput();
-      this.setInterval();
-    });
-    elName.addEventListener('keydown', () => {
-      this.debug('keydown');
-      if (this.isConverting) {
-        this.onInput();
-      }
-    });
+    elName.addEventListener('blur', this.blurHandler);
+    elName.addEventListener('focus', this.focusHandler);
+    elName.addEventListener('keydown', this.keydownHandler);
   }
 
   clearInterval(): void {
     if (this.timer) {
       clearInterval(this.timer);
+      this.timer = null;
     }
   }
 
   toKatakana(src: string): string {
-    if (this.option.katakana === false || !this.option.katakana) {
+    if (!this.option.katakana) {
       return src;
     }
 
@@ -293,8 +303,7 @@ export default class AutoKana {
   }
 
   checkValue(): void {
-    let newInput: string;
-    newInput = this.elName.value;
+    let newInput = this.elName.value;
 
     if (newInput === '') {
       this.initializeValues();
@@ -317,6 +326,7 @@ export default class AutoKana {
   }
 
   setInterval(): void {
+    this.clearInterval();
     this.timer = setInterval(
       this.checkValue.bind(this),
       this.option.checkInterval,
@@ -335,6 +345,13 @@ export default class AutoKana {
     this.baseKana = this.baseKana + this.values.join('');
     this.isConverting = true;
     this.values = [];
+  }
+
+  destroy(): void {
+    this.clearInterval();
+    this.elName.removeEventListener('blur', this.blurHandler);
+    this.elName.removeEventListener('focus', this.focusHandler);
+    this.elName.removeEventListener('keydown', this.keydownHandler);
   }
 
   debug(...args: unknown[]): void {
