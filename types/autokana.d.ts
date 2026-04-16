@@ -1,8 +1,7 @@
 declare module 'vanilla-autokana' {
   type Bindable = string | Element
   export interface Option {
-    katakana: boolean;
-    halfWidthKatakana: boolean;
+    katakana: false | 'full' | 'half';
     debug: boolean;
     checkInterval: number;
   }
