@@ -2,13 +2,41 @@
 
 ## Unreleased
 
-- Added clear fork attribution to the README files.
-- Renamed package identifier to `@j1nn0/vanilla-autokana` in package metadata and usage examples.
-- Updated package metadata for publication readiness (`contributors`, `description`, `repository`, `bugs`, `homepage`).
-- Added modification copyright notice for `j1nn0` while preserving the original MIT copyright.
-- Synchronized type definition module declaration with the published package name.
-- Added `destroy()` to public type definitions to match runtime API.
-- Expanded README option docs (`katakana`, `checkInterval`) and aligned script-tag examples with `dist/autokana.umd.js`.
-- Expanded `README_en.md` with options and Vue/React integration guidance.
+### Added
+
+- Added half-width katakana conversion mappings for `ヰ -> ｲ`, `ヱ -> ｴ`, `ヺ -> ｦﾞ`, and punctuation `。 -> ｡`, `、 -> ､`.
+- Added public `destroy()` to the runtime API and synchronized the type declaration.
+- Added coverage support in Vitest and quality-gate scripts (`test:coverage`, `ci`).
+- Added contributor guidance file (`AGENTS.md`).
+
+### Changed
+
+- Migrated the codebase to TypeScript.
+- Changed katakana option design to `katakana: false | 'full' | 'half'` and removed the old `halfWidthKatakana` option.
+- Clarified `toKatakana` conversion priority and simplified `setInterval` implementation/readability.
+- Updated package metadata for publication readiness (scope, description, repository, bugs, homepage, contributors).
+- Aligned type declaration module name with the published package name `@j1nn0/vanilla-autokana`.
+
+### Fixed
+
+- Fixed full-width space normalization so it applies only in half-width katakana mode.
+- Applied timer/event lifecycle improvements to avoid stale interval state issues.
+
+### Docs
+
+- Updated README examples to reflect the new katakana API.
+- Expanded README and README_en option documentation (`katakana`, `checkInterval`) and framework integration guidance.
+- Aligned script-tag examples with `dist/autokana.umd.js`.
+- Added clear fork attribution and copyright notes.
+
+### Tests
+
+- Added tests for full-width-space behavior in half-width mode.
 - Added integration tests for focus/blur timer lifecycle and keydown conversion reset.
-- Added coverage configuration in Vitest and `test:coverage` / `ci` scripts for quality gates.
+- Improved test readability by fixing misleading variable names in toggle tests.
+
+### Build/Tooling
+
+- Added Vite/Vitest project configuration.
+- Updated lint/format tooling configuration (`.oxlintrc.json`, `.oxfmtrc.json`).
+- Removed legacy demo files (`autokana.js`, `index.html`).
