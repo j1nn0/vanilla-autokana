@@ -203,7 +203,8 @@ export default class AutoKana {
       this.values = newValues;
     }
     if (this.isActive) {
-      this.furigana = this.toKatakana(this.baseKana + this.values.join('')).replace(/　/g, ' ');
+      const kana = this.toKatakana(this.baseKana + this.values.join(''));
+      this.furigana = this.option.halfWidthKatakana ? kana.replace(/　/g, ' ') : kana;
       if (this.elFurigana) {
         this.elFurigana.value = this.furigana;
       }
