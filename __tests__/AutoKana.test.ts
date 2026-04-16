@@ -112,11 +112,11 @@ test('toggle() without event flips isActive', () => {
 test('toggle(event) sets isActive from checkbox checked state', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
-  const fakeEventOn = { target: { checked: false } } as unknown as Event;
-  autokana.toggle(fakeEventOn);
+  const fakeUncheckedEvent = { target: { checked: false } } as unknown as Event;
+  autokana.toggle(fakeUncheckedEvent);
   expect(autokana.isActive).toBe(false);
-  const fakeEventOff = { target: { checked: true } } as unknown as Event;
-  autokana.toggle(fakeEventOff);
+  const fakeCheckedEvent = { target: { checked: true } } as unknown as Event;
+  autokana.toggle(fakeCheckedEvent);
   expect(autokana.isActive).toBe(true);
 });
 
