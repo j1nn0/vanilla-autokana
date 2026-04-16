@@ -39,17 +39,93 @@ const kanaExtractionPattern = /[^ 　ぁあ-んー]/g;
 const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
 const fullToHalfKatakanaMap = {
-  ァ: 'ｧ', ア: 'ｱ', ィ: 'ｨ', イ: 'ｲ', ゥ: 'ｩ', ウ: 'ｳ', ェ: 'ｪ', エ: 'ｴ', ォ: 'ｫ', オ: 'ｵ',
-  カ: 'ｶ', ガ: 'ｶﾞ', キ: 'ｷ', ギ: 'ｷﾞ', ク: 'ｸ', グ: 'ｸﾞ', ケ: 'ｹ', ゲ: 'ｹﾞ', コ: 'ｺ', ゴ: 'ｺﾞ',
-  サ: 'ｻ', ザ: 'ｻﾞ', シ: 'ｼ', ジ: 'ｼﾞ', ス: 'ｽ', ズ: 'ｽﾞ', セ: 'ｾ', ゼ: 'ｾﾞ', ソ: 'ｿ', ゾ: 'ｿﾞ',
-  タ: 'ﾀ', ダ: 'ﾀﾞ', チ: 'ﾁ', ヂ: 'ﾁﾞ', ッ: 'ｯ', ツ: 'ﾂ', ヅ: 'ﾂﾞ', テ: 'ﾃ', デ: 'ﾃﾞ', ト: 'ﾄ', ド: 'ﾄﾞ',
-  ナ: 'ﾅ', ニ: 'ﾆ', ヌ: 'ﾇ', ネ: 'ﾈ', ノ: 'ﾉ',
-  ハ: 'ﾊ', バ: 'ﾊﾞ', パ: 'ﾊﾟ', ヒ: 'ﾋ', ビ: 'ﾋﾞ', ピ: 'ﾋﾟ', フ: 'ﾌ', ブ: 'ﾌﾞ', プ: 'ﾌﾟ', ヘ: 'ﾍ', ベ: 'ﾍﾞ', ペ: 'ﾍﾟ', ホ: 'ﾎ', ボ: 'ﾎﾞ', ポ: 'ﾎﾟ',
-  マ: 'ﾏ', ミ: 'ﾐ', ム: 'ﾑ', メ: 'ﾒ', モ: 'ﾓ',
-  ャ: 'ｬ', ヤ: 'ﾔ', ュ: 'ｭ', ユ: 'ﾕ', ョ: 'ｮ', ヨ: 'ﾖ',
-  ラ: 'ﾗ', リ: 'ﾘ', ル: 'ﾙ', レ: 'ﾚ', ロ: 'ﾛ',
-  ワ: 'ﾜ', ヰ: 'ｲ', ヱ: 'ｴ', ヲ: 'ｦ', ヺ: 'ｦﾞ', ン: 'ﾝ', ヴ: 'ｳﾞ', ー: 'ｰ',
-  '。': '｡', '、': '､',
+  ァ: 'ｧ',
+  ア: 'ｱ',
+  ィ: 'ｨ',
+  イ: 'ｲ',
+  ゥ: 'ｩ',
+  ウ: 'ｳ',
+  ェ: 'ｪ',
+  エ: 'ｴ',
+  ォ: 'ｫ',
+  オ: 'ｵ',
+  カ: 'ｶ',
+  ガ: 'ｶﾞ',
+  キ: 'ｷ',
+  ギ: 'ｷﾞ',
+  ク: 'ｸ',
+  グ: 'ｸﾞ',
+  ケ: 'ｹ',
+  ゲ: 'ｹﾞ',
+  コ: 'ｺ',
+  ゴ: 'ｺﾞ',
+  サ: 'ｻ',
+  ザ: 'ｻﾞ',
+  シ: 'ｼ',
+  ジ: 'ｼﾞ',
+  ス: 'ｽ',
+  ズ: 'ｽﾞ',
+  セ: 'ｾ',
+  ゼ: 'ｾﾞ',
+  ソ: 'ｿ',
+  ゾ: 'ｿﾞ',
+  タ: 'ﾀ',
+  ダ: 'ﾀﾞ',
+  チ: 'ﾁ',
+  ヂ: 'ﾁﾞ',
+  ッ: 'ｯ',
+  ツ: 'ﾂ',
+  ヅ: 'ﾂﾞ',
+  テ: 'ﾃ',
+  デ: 'ﾃﾞ',
+  ト: 'ﾄ',
+  ド: 'ﾄﾞ',
+  ナ: 'ﾅ',
+  ニ: 'ﾆ',
+  ヌ: 'ﾇ',
+  ネ: 'ﾈ',
+  ノ: 'ﾉ',
+  ハ: 'ﾊ',
+  バ: 'ﾊﾞ',
+  パ: 'ﾊﾟ',
+  ヒ: 'ﾋ',
+  ビ: 'ﾋﾞ',
+  ピ: 'ﾋﾟ',
+  フ: 'ﾌ',
+  ブ: 'ﾌﾞ',
+  プ: 'ﾌﾟ',
+  ヘ: 'ﾍ',
+  ベ: 'ﾍﾞ',
+  ペ: 'ﾍﾟ',
+  ホ: 'ﾎ',
+  ボ: 'ﾎﾞ',
+  ポ: 'ﾎﾟ',
+  マ: 'ﾏ',
+  ミ: 'ﾐ',
+  ム: 'ﾑ',
+  メ: 'ﾒ',
+  モ: 'ﾓ',
+  ャ: 'ｬ',
+  ヤ: 'ﾔ',
+  ュ: 'ｭ',
+  ユ: 'ﾕ',
+  ョ: 'ｮ',
+  ヨ: 'ﾖ',
+  ラ: 'ﾗ',
+  リ: 'ﾘ',
+  ル: 'ﾙ',
+  レ: 'ﾚ',
+  ロ: 'ﾛ',
+  ワ: 'ﾜ',
+  ヰ: 'ｲ',
+  ヱ: 'ｴ',
+  ヲ: 'ｦ',
+  ヺ: 'ｦﾞ',
+  ン: 'ﾝ',
+  ヴ: 'ｳﾞ',
+  ー: 'ｰ',
+  '。': '｡',
+  '、': '､',
 };
 
 export default class AutoKana {
@@ -241,17 +317,11 @@ export default class AutoKana {
     if (this.isConverting) return;
 
     if (Math.abs(this.values.length - newValues.length) > 1) {
-      const tmpValues = newValues
-        .join('')
-        .replace(kanaCompactingPattern, '')
-        .split('');
+      const tmpValues = newValues.join('').replace(kanaCompactingPattern, '').split('');
       if (Math.abs(this.values.length - tmpValues.length) > 1) {
         this.onConvert();
       }
-    } else if (
-      this.values.length === this.input.length &&
-      this.values.join('') !== this.input
-    ) {
+    } else if (this.values.length === this.input.length && this.values.join('') !== this.input) {
       if (this.input.match(kanaExtractionPattern)) {
         this.onConvert();
       }
@@ -290,10 +360,7 @@ export default class AutoKana {
    * @private
    */
   setInterval() {
-    this.timer = setInterval(
-      this.checkValue.bind(this),
-      this.option.checkInterval,
-    );
+    this.timer = setInterval(this.checkValue.bind(this), this.option.checkInterval);
   }
 
   /**

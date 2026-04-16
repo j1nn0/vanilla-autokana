@@ -20,18 +20,15 @@
   "scripts": {
     "build": "vite build",
     "watch": "vite build --watch",
-    "lint": "eslint src",
+    "lint": "oxlint src",
+    "format": "oxfmt --write src",
     "test": "vitest",
     "publish": "pnpm run lint && pnpm run test && pnpm run build && pnpm publish"
   },
   "devDependencies": {
-    "eslint": "^6.1.0",
-    "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-config-prettier": "^6.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-prettier": "^3.1.0",
     "jsdom": "^29.0.2",
-    "prettier": "^1.18.2",
+    "oxfmt": "latest",
+    "oxlint": "latest",
     "vite": "^5.0.0",
     "vitest": "^1.0.0"
   }
