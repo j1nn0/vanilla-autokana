@@ -1,34 +1,28 @@
-/**
- * @param {string} str
- * @param {string} chars
- * @returns {string}
- */
-function ltrim(str, chars) {
-  // eslint-disable-next-line no-param-reassign
-  chars = !chars ? ' \\s\u00A0' : chars.replace(/([[\]().?/*{}+$^:])/g, '$1');
+type Bindable = string | Element;
 
-  const re = new RegExp(`^[${chars}]+`, 'g');
+type KatakanaOption = false | 'full' | 'half';
+
+interface AutoKanaOption {
+  katakana: KatakanaOption;
+  debug: boolean;
+  checkInterval: number;
+}
+
+function ltrim(str: string, chars?: string): string {
+  const escaped = !chars ? ' \\s\u00A0' : chars.replace(/([[\]().?/*{}+$^:])/g, '$1');
+  const re = new RegExp(`^[${escaped}]+`, 'g');
   return str.replace(re, '');
 }
 
-/**
- * @param {Number} char
- * @returns {boolean}
- */
-function isHiragana(char) {
-  const c = Number(char);
-  return (c >= 12353 && c <= 12435) || c === 12445 || c === 12446;
+function isHiragana(charCode: number): boolean {
+  return (charCode >= 12353 && charCode <= 12435) || charCode === 12445 || charCode === 12446;
 }
 
-function isString(val) {
-  return typeof val === 'string' || val instanceof String;
-}
-
-function ensureElement(idOrElement) {
-  if (isString(idOrElement)) {
+function ensureElement(idOrElement: Bindable): HTMLElement | null {
+  if (typeof idOrElement === 'string') {
     return document.getElementById(ltrim(idOrElement, '#'));
   }
-  if (idOrElement instanceof Element) {
+  if (idOrElement instanceof HTMLElement) {
     return idOrElement;
   }
   return null;
@@ -38,7 +32,7 @@ function ensureElement(idOrElement) {
 const kanaExtractionPattern = /[^ 　ぁあ-んー]/g;
 const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
-const fullToHalfKatakanaMap = {
+const fullToHalfKatakanaMap: Record<string, string> = {
   ァ: 'ｧ',
   ア: 'ｱ',
   ィ: 'ｨ',
@@ -128,69 +122,68 @@ const fullToHalfKatakanaMap = {
   '、': '､',
 };
 
+export type { AutoKanaOption };
+
 export default class AutoKana {
-  /**
-   * @param {string} name
-   * @param {string} furigana
-   * @param {object} option
-   */
-  constructor(name, furigana = '', option = {}) {
+  isActive: boolean;
+  timer: number | null;
+  option: AutoKanaOption;
+  elName!: HTMLInputElement;
+  elFurigana?: HTMLInputElement;
+  baseKana: string;
+  furigana: string;
+  isConverting: boolean;
+  ignoreString: string;
+  input: string;
+  values: string[];
+
+  constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
     this.timer = null;
-    this.initializeValues();
+    this.baseKana = '';
+    this.furigana = '';
+    this.isConverting = false;
+    this.ignoreString = '';
+    this.input = '';
+    this.values = [];
 
     this.option = Object.assign(
       {
-        katakana: false,
+        katakana: false as KatakanaOption,
         debug: false,
-        checkInterval: 30, // milli seconds
+        checkInterval: 30,
       },
       option,
     );
 
     const elName = ensureElement(name);
-    const elFurigana = ensureElement(furigana);
+    const elFurigana = furigana ? ensureElement(furigana) : null;
 
     if (!elName) throw new Error(`Element not found: ${name}`);
 
-    this.elName = elName;
+    this.elName = elName as HTMLInputElement;
     this.registerEvents(this.elName);
 
-    // furigana is optional
     if (elFurigana) {
-      this.elFurigana = elFurigana;
+      this.elFurigana = elFurigana as HTMLInputElement;
     }
   }
 
-  /**
-   * Get kana.
-   * @returns {string|*}
-   */
-  getFurigana() {
+  getFurigana(): string {
     return this.furigana;
   }
 
-  /**
-   * Start watching.
-   */
-  start() {
+  start(): void {
     this.isActive = true;
   }
 
-  /**
-   * Stop watching.
-   */
-  stop() {
+  stop(): void {
     this.isActive = false;
   }
 
-  /**
-   * Toggle watch status.
-   * @param event
-   */
-  toggle(event) {
+  toggle(event?: Event): void {
     if (event) {
-      const el = Event.element(event);
+      const el = event.target as HTMLInputElement;
       if (el) {
         this.isActive = el.checked;
       }
@@ -199,10 +192,7 @@ export default class AutoKana {
     }
   }
 
-  /**
-   * @private
-   */
-  initializeValues() {
+  initializeValues(): void {
     this.baseKana = '';
     this.furigana = '';
     this.isConverting = false;
@@ -211,12 +201,7 @@ export default class AutoKana {
     this.values = [];
   }
 
-  /**
-   * Register events to element of name.
-   * @param {HTMLElement} elName
-   * @private
-   */
-  registerEvents(elName) {
+  registerEvents(elName: HTMLInputElement): void {
     elName.addEventListener('blur', () => {
       this.debug('blur');
       this.clearInterval();
@@ -234,26 +219,18 @@ export default class AutoKana {
     });
   }
 
-  /**
-   * @private
-   */
-  clearInterval() {
+  clearInterval(): void {
     if (this.timer) {
       clearInterval(this.timer);
     }
   }
 
-  /**
-   * @private
-   * @param src
-   * @returns {*}
-   */
-  toKatakana(src) {
+  toKatakana(src: string): string {
     if (this.option.katakana === false || !this.option.katakana) {
       return src;
     }
 
-    let c;
+    let c: number;
     let str = '';
     for (let i = 0; i < src.length; i += 1) {
       c = src.charCodeAt(i);
@@ -265,17 +242,13 @@ export default class AutoKana {
     }
 
     if (this.option.katakana === 'half') {
-      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
+      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] ?? ch);
     }
 
     return str;
   }
 
-  /**
-   * @private
-   * @param newValues
-   */
-  setFurigana(newValues) {
+  setFurigana(newValues?: string[]): void {
     if (this.isConverting) return;
 
     if (newValues) {
@@ -290,12 +263,7 @@ export default class AutoKana {
     }
   }
 
-  /**
-   * @private
-   * @param newInput
-   * @returns {*}
-   */
-  removeString(newInput) {
+  removeString(newInput: string): string {
     if (newInput.indexOf(this.ignoreString) !== -1) {
       return String(newInput).replace(this.ignoreString, '');
     }
@@ -309,11 +277,7 @@ export default class AutoKana {
     return inputArray.join('');
   }
 
-  /**
-   * @private
-   * @param newValues
-   */
-  checkConvert(newValues) {
+  checkConvert(newValues: string[]): void {
     if (this.isConverting) return;
 
     if (Math.abs(this.values.length - newValues.length) > 1) {
@@ -328,12 +292,8 @@ export default class AutoKana {
     }
   }
 
-  /**
-   * Checks form value and set furigana.
-   * @private
-   */
-  checkValue() {
-    let newInput;
+  checkValue(): void {
+    let newInput: string;
     newInput = this.elName.value;
 
     if (newInput === '') {
@@ -342,7 +302,7 @@ export default class AutoKana {
     } else {
       newInput = this.removeString(newInput);
 
-      if (this.input === newInput) return; // no changes
+      if (this.input === newInput) return;
 
       this.input = newInput;
 
@@ -356,17 +316,11 @@ export default class AutoKana {
     this.debug(this.input);
   }
 
-  /**
-   * @private
-   */
-  setInterval() {
-    this.timer = setInterval(this.checkValue.bind(this), this.option.checkInterval);
+  setInterval(): void {
+    this.timer = setInterval(this.checkValue.bind(this), this.option.checkInterval) as unknown as number;
   }
 
-  /**
-   * @private
-   */
-  onInput() {
+  onInput(): void {
     if (this.elFurigana) {
       this.baseKana = this.elFurigana.value;
     }
@@ -374,20 +328,13 @@ export default class AutoKana {
     this.ignoreString = this.elName.value;
   }
 
-  /**
-   * @private
-   */
-  onConvert() {
+  onConvert(): void {
     this.baseKana = this.baseKana + this.values.join('');
     this.isConverting = true;
     this.values = [];
   }
 
-  /**
-   * @private
-   * @param args
-   */
-  debug(...args) {
+  debug(...args: unknown[]): void {
     if (this.option.debug) {
       // eslint-disable-next-line no-console
       console.log(...args);

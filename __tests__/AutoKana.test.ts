@@ -16,8 +16,8 @@ test('init with pass elements', () => {
 <input name="name">
 <input name="furigana">
 `;
-  const name = document.querySelector('[name=name]')
-  const furigana = document.querySelector('[name=furigana]')
+  const name = document.querySelector('[name=name]') as Element;
+  const furigana = document.querySelector('[name=furigana]') as Element;
   const autokana = new AutoKana(name, furigana);
   autokana.start();
   expect(autokana.isActive).toBe(true);
