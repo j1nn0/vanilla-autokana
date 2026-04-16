@@ -48,7 +48,7 @@ const fullToHalfKatakanaMap = {
   マ: 'ﾏ', ミ: 'ﾐ', ム: 'ﾑ', メ: 'ﾒ', モ: 'ﾓ',
   ャ: 'ｬ', ヤ: 'ﾔ', ュ: 'ｭ', ユ: 'ﾕ', ョ: 'ｮ', ヨ: 'ﾖ',
   ラ: 'ﾗ', リ: 'ﾘ', ル: 'ﾙ', レ: 'ﾚ', ロ: 'ﾛ',
-  ワ: 'ﾜ', ヰ: 'ｲ', ヱ: 'ｴ', ヲ: 'ｦ', ン: 'ﾝ', ヴ: 'ｳﾞ', ー: 'ｰ',
+  ワ: 'ﾜ', ヰ: 'ｲ', ヱ: 'ｴ', ヲ: 'ｦ', ヺ: 'ｦﾞ', ン: 'ﾝ', ヴ: 'ｳﾞ', ー: 'ｰ',
 };
 
 export default class AutoKana {
@@ -185,7 +185,7 @@ export default class AutoKana {
         }
       }
       if (this.option.halfWidthKatakana) {
-        return str.replace(/[ァ-ヴー]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
+        return str.replace(/[ァ-ヴヺー]/g, (ch) => fullToHalfKatakanaMap[ch] || ch);
       }
       return str;
     }
