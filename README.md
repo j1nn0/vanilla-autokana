@@ -1,6 +1,8 @@
 # vanilla-autokana
 
-[English README is here](https://github.com/ryo-utsunomiya/vanilla-autokana/blob/master/README_en.md)
+[English README is here](./README_en.md)
+
+このプロジェクトは [ryo-utsunomiya/vanilla-autokana](https://github.com/ryo-utsunomiya/vanilla-autokana) からフォークした実装です。
 
 フォームのフィールドに文字を入力すると、別のフィールドにかなを自動入力するライブラリです。
 
@@ -14,7 +16,7 @@
 ### npm
 
 ```
-npm i vanilla-autokana # or yarn add vanilla-autokana
+npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 ```
 
 ### npmを使わない方法
@@ -48,7 +50,7 @@ npm i vanilla-autokana # or yarn add vanilla-autokana
 ESModulesとしてimportすることができます。
 
 ```
-import * as AutoKana from 'vanilla-autokana';
+import * as AutoKana from '@j1nn0/vanilla-autokana';
 
 AutoKana.bind('#name', '#furigana');
 ```
@@ -76,7 +78,7 @@ AutoKana.bind('#name', '#furigana');
 </template>
 
 <script>
-  import * as AutoKana from 'vanilla-autokana';
+  import * as AutoKana from '@j1nn0/vanilla-autokana';
 
   let autokana;
 
@@ -106,7 +108,7 @@ Vue.jsと同様の対応が必要です。
 
 ```
 import React, { Component } from 'react';
-import * as AutoKana from 'vanilla-autokana';
+import * as AutoKana from '@j1nn0/vanilla-autokana';
 
 let autokana;
 
@@ -155,5 +157,7 @@ export default App;
 MIT
 
 ## 謝辞
+
+このプロジェクトは [ryo-utsunomiya/vanilla-autokana](https://github.com/ryo-utsunomiya/vanilla-autokana) をベースにしています。
 
 このライブラリの設計・実装は jquery-autokana(https://github.com/harisenbon/autokana) に大きく影響を受けています。

@@ -1,11 +1,22 @@
 {
-  "name": "vanilla-autokana",
+  "name": "@j1nn0/vanilla-autokana",
   "version": "1.3.0",
-  "description": "A JavaScript library to complete furigana automatically.",
+  "description": "A JavaScript library to complete furigana automatically (forked from ryo-utsunomiya/vanilla-autokana).",
   "main": "dist/autokana.js",
   "types": "types/autokana.d.ts",
-  "author": "Ryo Utsunomiya <millionsnowliving@gmail.com>",
+  "author": "j1nn0",
+  "contributors": [
+    "Ryo Utsunomiya <millionsnowliving@gmail.com>"
+  ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/j1nn0/vanilla-autokana.git"
+  },
+  "bugs": {
+    "url": "https://github.com/j1nn0/vanilla-autokana/issues"
+  },
+  "homepage": "https://github.com/j1nn0/vanilla-autokana#readme",
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",

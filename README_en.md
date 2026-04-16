@@ -2,6 +2,8 @@
 
 A JavaScript library to complete Furigana automatically when typing in a form field.
 
+This project is a fork of [ryo-utsunomiya/vanilla-autokana](https://github.com/ryo-utsunomiya/vanilla-autokana).
+
 - Not dependent on jQuery
 - Supports both script tag loading and ESModules import
 
@@ -12,7 +14,7 @@ This library is inspired by [jquery-autokana](https://github.com/harisenbon/auto
 ### npm
 
 ```
-npm i vanilla-autokana # or yarn add vanilla-autokana
+npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 ```
 
 ### Without npm
@@ -40,7 +42,7 @@ Download `dist/autokana.js` from this repository and load it with a script tag.
 ### Import as a module
 
 ```js
-import * as AutoKana from 'vanilla-autokana';
+import * as AutoKana from '@j1nn0/vanilla-autokana';
 
 AutoKana.bind('#name', '#furigana');
 ```
@@ -48,3 +50,9 @@ AutoKana.bind('#name', '#furigana');
 ## License
 
 MIT
+
+## Acknowledgments
+
+This project is based on [ryo-utsunomiya/vanilla-autokana](https://github.com/ryo-utsunomiya/vanilla-autokana).
+
+The design and implementation are strongly inspired by [jquery-autokana](https://github.com/harisenbon/autokana).

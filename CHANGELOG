@@ -1,1 +1,8 @@
-n/a
+# Changelog
+
+## Unreleased
+
+- Added clear fork attribution to the README files.
+- Renamed package identifier to `@j1nn0/vanilla-autokana` in package metadata and usage examples.
+- Updated package metadata for publication readiness (`contributors`, `description`, `repository`, `bugs`, `homepage`).
+- Added modification copyright notice for `j1nn0` while preserving the original MIT copyright.
