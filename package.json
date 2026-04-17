@@ -2,8 +2,9 @@
   "name": "@j1nn0/vanilla-autokana",
   "version": "1.3.0",
   "description": "A JavaScript library to complete furigana automatically (forked from ryo-utsunomiya/vanilla-autokana).",
-  "author": "j1nn0",
+  "author": "j1nn0 <j1nn0.github@gmail.com>",
   "contributors": [
+    "j1nn0 <j1nn0.github@gmail.com>",
     "Ryo Utsunomiya <millionsnowliving@gmail.com>"
   ],
   "license": "MIT",
