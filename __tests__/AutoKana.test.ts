@@ -1,3 +1,5 @@
+import { expect, test } from 'vitest';
+
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
 
