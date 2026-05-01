@@ -8,5 +8,5 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["src", "__tests__", "stories", ".storybook"]
+  "include": ["src", "__tests__", "stories", ".storybook", "vite.config.ts", "vitest.config.ts"]
 }
