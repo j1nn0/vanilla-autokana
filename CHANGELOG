@@ -45,6 +45,7 @@
 - Full-width space normalization now applies only in half-width katakana mode.
 - Timer/event lifecycle improvements to avoid stale interval state issues.
 - Linux Chrome + ibus/fcitx IME: furigana no longer freezes after kanji conversion. Subsequent hiragana input after IME conversion is now correctly reflected in the furigana field.
+- Removed `isComposing` guard from `setFurigana()` so that furigana updates in real time during IME composition (previously blocked until `compositionend`, causing sluggish feedback).
 
 ### Tests
 
@@ -56,6 +57,7 @@
 - Coverage: Statements 92%, Branches 75%, Functions 100%, Lines 93%.
 - Replaced 8 polling-specific tests (`clearInterval`, `setInterval`, `checkValue`, `checkConvert`, `removeString`) with 20 composition event tests.
 - Updated 12 existing tests for the new event-driven model (`isConverting` → `isComposing`, `onInput` → `processValue`).
+- Fixed composition tests to expect real-time furigana updates during IME composition (removed incorrect assertions that `isComposing` should block updates).
 - Added edge case tests: paste input, consecutive IME conversions, empty input after composition, blur-during-composition reset.
 
 ### Docs

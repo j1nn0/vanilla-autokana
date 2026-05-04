@@ -273,7 +273,6 @@ export default class AutoKana {
     if (newValues) {
       this.values = newValues;
     }
-    if (this.isComposing) return;
     if (this.isActive) {
       const kana = this.toKatakana(this.baseKana + this.values.join(''));
       this.furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;

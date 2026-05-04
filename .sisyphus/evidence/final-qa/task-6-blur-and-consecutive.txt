@@ -1,0 +1,15 @@
+=== SCENARIO: Blur during composition resets state ===
+Tool: Bash
+Command: pnpm exec vitest run __tests__/AutoKana.test.ts -t "blur handler resets isComposing"
+Result: 1 passed | 46 skipped (47)
+Test: "blur handler resets isComposing if stuck at true" — PASS
+Verifies: isComposing=false after blur, furigana preserved
+RESULT: PASS
+
+=== SCENARIO: Consecutive IME conversions work ===
+Tool: Bash
+Command: pnpm exec vitest run __tests__/AutoKana.test.ts -t "consecutive"
+Result: 1 passed | 46 skipped (47)
+Test: "consecutive IME conversions accumulate furigana correctly" — PASS
+Verifies: "やまだ" → convert → "たなか" → convert → furigana = "やまたなか"
+RESULT: PASS

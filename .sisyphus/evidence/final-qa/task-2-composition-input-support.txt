@@ -1,0 +1,21 @@
+=== SCENARIO: CompositionEvent support verification ===
+Tool: Bash
+Steps:
+  1. Created temp test file with CompositionEvent dispatch tests
+  2. Ran: pnpm exec vitest run __tests__/composition-verify.test.ts
+  3. Results: 5/5 tests pass
+  4. Verified: compositionstart/compositionend dispatch + data property
+  5. Temp file deleted
+
+=== SCENARIO: InputEvent isComposing support verification ===
+Tool: Bash
+Steps:
+  1. Verified via same temp test file
+  2. InputEvent('input', { isComposing: true }) → isComposing=true ✓
+  3. InputEvent('input', { isComposing: false }) → isComposing=false ✓
+  4. Full IME flow (compositionstart → input(true) → compositionend → input(false)) works ✓
+  5. Temp file deleted
+
+All 5 verification tests passed in vitest 4.1.5 + jsdom.
+CompositionEvent and InputEvent.isComposing are fully supported in the test environment.
+RESULT: PASS

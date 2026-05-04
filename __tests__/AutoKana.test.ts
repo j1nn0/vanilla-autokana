@@ -152,7 +152,7 @@ test('focus captures baseKana and blur resets isComposing', () => {
   expect(autokana.isComposing).toBe(false);
 });
 
-test('input during composition does not update furigana', () => {
+test('input during composition updates furigana', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
@@ -162,7 +162,7 @@ test('input during composition does not update furigana', () => {
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
   nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
   expect(autokana.isComposing).toBe(true);
-  expect(furiganaInput.value).toBe('');
+  expect(furiganaInput.value).toBe('やまだたろう');
 });
 
 test('initializeValues() resets all internal state', () => {
@@ -306,7 +306,7 @@ test('empty input after composition resets state', () => {
   expect(autokana.isComposing).toBe(false);
 });
 
-test('processValue() does not update furigana when isComposing is true', () => {
+test('processValue() updates furigana even when isComposing is true', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
@@ -315,7 +315,7 @@ test('processValue() does not update furigana when isComposing is true', () => {
   nameInput.value = 'やまだ';
   autokana.isComposing = true;
   autokana.processValue();
-  expect(furiganaInput.value).toBe('');
+  expect(furiganaInput.value).toBe('やまだ');
 });
 
 test('processValue() with empty input resets state', () => {
@@ -413,7 +413,7 @@ describe('IME composition events', () => {
     expect(furiganaInput.value).toBe('やまだ');
   });
 
-  test('input event with isComposing=true is skipped during composition', () => {
+  test('input event with isComposing=true updates furigana during composition', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
@@ -423,7 +423,7 @@ describe('IME composition events', () => {
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
     nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
     expect(autokana.isComposing).toBe(true);
-    expect(furiganaInput.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだたろう');
   });
 
   test('compositionend triggers processing even without subsequent input event (Chrome quirk)', () => {
@@ -463,10 +463,15 @@ describe('IME composition events', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    furiganaInput.value = 'やまだ';
     nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new Event('focus'));
+
+    nameInput.value = '山田';
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
     nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
-    nameInput.value = '山田';
     nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: '山田' }));
     expect(autokana.getFurigana()).toBe('やまだ');
   });

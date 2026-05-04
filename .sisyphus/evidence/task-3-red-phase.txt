@@ -1,0 +1,229 @@
+
+ RUN  v4.1.5 /home/j1nn0/repos/j1nn0.github/vanilla-autokana
+
+ ❯ __tests__/AutoKana.test.ts (47 tests | 11 failed) 77ms
+     × compositionstart sets isComposing to true 6ms
+     × compositionend sets isComposing to false and processes final value 2ms
+     × input event with isComposing=false processes kana extraction and updates furigana 2ms
+     × input event with isComposing=true is skipped during composition 1ms
+     × compositionend triggers processing even without subsequent input event (Chrome quirk) 1ms
+     × focus handler captures current state when refocusing 1ms
+     × blur handler resets isComposing if stuck at true 2ms
+     × getFurigana returns correct value after full composition sequence 1ms
+     × bug: typing after conversion appends to furigana correctly 1ms
+     × isConverting property no longer exists (renamed to isComposing) 2ms
+     × checkInterval option is removed from AutoKanaOption 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > compositionstart sets isComposing to true
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ __tests__/AutoKana.test.ts:368:43
+    366|     const autokana = new AutoKana('name', 'furigana');
+    367|     const nameInput = document.getElementById('name') as HTMLInputElem…
+    368|     expect((autokana as any).isComposing).toBe(false);
+       |                                           ^
+    369|     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    370|     expect((autokana as any).isComposing).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > compositionend sets isComposing to false and processes final value
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ __tests__/AutoKana.test.ts:381:43
+    379|     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    380|     nameInput.dispatchEvent(new CompositionEvent('compositionend', { d…
+    381|     expect((autokana as any).isComposing).toBe(false);
+       |                                           ^
+    382|     expect(furiganaInput.value).toBe('やまだ');
+    383|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > input event with isComposing=false processes kana extraction and updates furigana
+AssertionError: expected '' to be 'やまだ' // Object.is equality
+
+- Expected
++ Received
+
+- やまだ
+
+ ❯ __tests__/AutoKana.test.ts:392:33
+    390|     nameInput.value = 'やまだ';
+    391|     nameInput.dispatchEvent(new InputEvent('input', { isComposing: fal…
+    392|     expect(furiganaInput.value).toBe('やまだ');
+       |                                 ^
+    393|   });
+    394|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > input event with isComposing=true is skipped during composition
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ __tests__/AutoKana.test.ts:404:43
+    402|     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    403|     nameInput.dispatchEvent(new InputEvent('input', { isComposing: tru…
+    404|     expect((autokana as any).isComposing).toBe(true);
+       |                                           ^
+    405|     expect(furiganaInput.value).toBe('やまだ');
+    406|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > compositionend triggers processing even without subsequent input event (Chrome quirk)
+AssertionError: expected '' to be 'やまだ' // Object.is equality
+
+- Expected
++ Received
+
+- やまだ
+
+ ❯ __tests__/AutoKana.test.ts:417:33
+    415|     nameInput.dispatchEvent(new CompositionEvent('compositionend', { d…
+    416|     // In Chrome, compositionend may fire without a following input(is…
+    417|     expect(furiganaInput.value).toBe('やまだ');
+       |                                 ^
+    418|   });
+    419|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > focus handler captures current state when refocusing
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ __tests__/AutoKana.test.ts:429:43
+    427|     nameInput.dispatchEvent(new Event('focus'));
+    428|     expect(autokana.baseKana).toBe('やまだ');
+    429|     expect((autokana as any).isComposing).toBe(false);
+       |                                           ^
+    430|     expect(autokana.timer).toBeNull();
+    431|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > blur handler resets isComposing if stuck at true
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ __tests__/AutoKana.test.ts:439:43
+    437|     (autokana as any).isComposing = true;
+    438|     nameInput.dispatchEvent(new Event('blur'));
+    439|     expect((autokana as any).isComposing).toBe(false);
+       |                                           ^
+    440|   });
+    441|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > getFurigana returns correct value after full composition sequence
+AssertionError: expected '' to be 'やまだ' // Object.is equality
+
+- Expected
++ Received
+
+- やまだ
+
+ ❯ __tests__/AutoKana.test.ts:451:36
+    449|     nameInput.value = '山田';
+    450|     nameInput.dispatchEvent(new CompositionEvent('compositionend', { d…
+    451|     expect(autokana.getFurigana()).toBe('やまだ');
+       |                                    ^
+    452|   });
+    453|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > bug: typing after conversion appends to furigana correctly
+AssertionError: expected '' to be 'やまだたろう' // Object.is equality
+
+- Expected
++ Received
+
+- やまだたろう
+
+ ❯ __tests__/AutoKana.test.ts:465:36
+    463|     nameInput.value = '山田たろう';
+    464|     nameInput.dispatchEvent(new InputEvent('input', { isComposing: fal…
+    465|     expect(autokana.getFurigana()).toBe('やまだたろう');
+       |                                    ^
+    466|   });
+    467|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > isConverting property no longer exists (renamed to isComposing)
+AssertionError: expected AutoKana{ …(14) } to not have property "isConverting"
+
+- Expected:
+undefined
+
++ Received:
+false
+
+ ❯ __tests__/AutoKana.test.ts:471:26
+    469|     setup();
+    470|     const autokana = new AutoKana('name', 'furigana');
+    471|     expect(autokana).not.toHaveProperty('isConverting');
+       |                          ^
+    472|     expect(autokana).toHaveProperty('isComposing');
+    473|     expect((autokana as any).isComposing).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  __tests__/AutoKana.test.ts > IME composition events > checkInterval option is removed from AutoKanaOption
+AssertionError: expected { katakana: false, debug: false, …(1) } to not have property "checkInterval"
+
+- Expected:
+undefined
+
++ Received:
+30
+
+ ❯ __tests__/AutoKana.test.ts:479:33
+    477|     setup();
+    478|     const autokana = new AutoKana('name', 'furigana');
+    479|     expect(autokana.option).not.toHaveProperty('checkInterval');
+       |                                 ^
+    480|   });
+    481| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 36 passed (47)
+   Start at  04:46:10
+   Duration  994ms (transform 51ms, setup 0ms, import 70ms, tests 77ms, environment 652ms)
+
