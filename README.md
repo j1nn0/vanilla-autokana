@@ -25,7 +25,8 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 
 ## 使用方法
 
-- `AutoKana.bind()` メソッドの第1引数にふりがな入力元のinput要素、第2引数にふりがな出力先のinput要素のidを指定します
+- `AutoKana.bind()` メソッドの第1引数にふりがな入力元のinput要素、第2引数にふりがな出力先のinput要素を指定します
+- 要素の指定にはCSSセレクタ（`#id`、`.class`、`[name="foo"]`など）またはDOM Elementを渡せます。IDのみを渡した場合も従来どおり動作します
 - input要素が見つけられない場合は正常に動作できないため、DOMContentLoadedイベント内での実行を推奨します
 - ライブラリ本体はDOMのライフサイクルイベントに依存しないため、ライブラリの読み込みには`defer`属性の追加を推奨します
 

@@ -1,3 +1,4 @@
+/** A CSS selector string or a DOM Element. */
 type Bindable = string | Element;
 
 type KatakanaOption = false | 'full' | 'half';
@@ -21,14 +22,23 @@ function isHiragana(charCode: number): boolean {
   );
 }
 
-function ensureElement(idOrElement: Bindable): HTMLElement | null {
-  if (typeof idOrElement === 'string') {
-    return document.getElementById(idOrElement.replace(/^#/, ''));
+function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
+  if (typeof selectorOrElement === 'string') {
+    // CSS selectors (starting with #, ., [, or :) are passed directly to querySelector.
+    // Bare strings are treated as IDs for backward compatibility.
+    const selector = /^[[.#:]/.test(selectorOrElement) ? selectorOrElement : `#${selectorOrElement}`;
+    return document.querySelector(selector);
   }
-  if (idOrElement instanceof HTMLElement) {
-    return idOrElement;
+  if (selectorOrElement instanceof HTMLElement) {
+    return selectorOrElement;
   }
   return null;
+}
+
+function requireElement(selectorOrElement: Bindable): HTMLElement {
+  const el = ensureElement(selectorOrElement);
+  if (!el) throw new Error(`Element not found: ${selectorOrElement}`);
+  return el;
 }
 
 // eslint-disable-next-line no-irregular-whitespace
@@ -129,9 +139,9 @@ export type { AutoKanaOption };
 
 export default class AutoKana {
   isActive: boolean;
-  timer: number | null;
+  timer: ReturnType<typeof setInterval> | null;
   option: AutoKanaOption;
-  elName!: HTMLInputElement;
+  elName: HTMLInputElement;
   elFurigana?: HTMLInputElement;
   baseKana: string;
   furigana: string;
@@ -177,14 +187,10 @@ export default class AutoKana {
       option,
     );
 
-    const elName = ensureElement(name);
-    const elFurigana = furigana ? ensureElement(furigana) : null;
-
-    if (!elName) throw new Error(`Element not found: ${name}`);
-
-    this.elName = elName as HTMLInputElement;
+    this.elName = requireElement(name) as HTMLInputElement;
     this.registerEvents(this.elName);
 
+    const elFurigana = furigana ? ensureElement(furigana) : null;
     if (elFurigana) {
       this.elFurigana = elFurigana as HTMLInputElement;
     }
@@ -252,6 +258,7 @@ export default class AutoKana {
     }
 
     if (this.option.katakana === 'half') {
+      // Characters not in fullToHalfKatakanaMap are left unchanged (fallback to the original character).
       return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] ?? ch);
     }
 
@@ -275,7 +282,7 @@ export default class AutoKana {
 
   removeString(newInput: string): string {
     if (newInput.indexOf(this.ignoreString) !== -1) {
-      return String(newInput).replace(this.ignoreString, '');
+      return newInput.replace(this.ignoreString, '');
     }
     const ignoreArray = this.ignoreString.split('');
     const inputArray = newInput.split('');
@@ -330,9 +337,10 @@ export default class AutoKana {
     this.timer = setInterval(
       this.checkValue.bind(this),
       this.option.checkInterval,
-    ) as unknown as number;
+    );
   }
 
+  /** Reset conversion state and capture current input as the ignore prefix. Called on focus and keydown (while converting). */
   onInput(): void {
     if (this.elFurigana) {
       this.baseKana = this.elFurigana.value;
@@ -341,6 +349,7 @@ export default class AutoKana {
     this.ignoreString = this.elName.value;
   }
 
+  /** Commit accumulated kana values to baseKana and enter converting state. Called when a significant input change is detected. */
   onConvert(): void {
     this.baseKana = this.baseKana + this.values.join('');
     this.isConverting = true;

@@ -4,36 +4,53 @@
 
 ### Added
 
-- Added half-width katakana conversion mappings for `ヰ -> ｲ`, `ヱ -> ｴ`, `ヺ -> ｦﾞ`, and punctuation `。 -> ｡`, `、 -> ､`.
-- Added public `destroy()` to the runtime API and synchronized the type declaration.
-- Added coverage support in Vitest and quality-gate scripts (`test:coverage`, `ci`).
-- Added contributor guidance file (`AGENTS.md`).
+- Half-width katakana output option (`katakana: 'half'`) with full conversion map including `ヰ`, `ヱ`, `ヺ`, `。`, `、`.
+- Full-width katakana output option (`katakana: 'full'`).
+- Public `destroy()` method to remove event listeners and clear the polling interval.
+- `getFurigana()` method for Vue/React controlled-input integration.
+- CSS selector support for `bind()` / `new AutoKana()`: class selectors (`.class`), attribute selectors (`[name="foo"]`), and other `querySelector`-compatible selectors now work alongside bare IDs and `#id` selectors.
+- Coverage support in Vitest and quality-gate scripts (`test:coverage`, `ci`).
+- Storybook demo with `@storybook/html-vite`.
+- Contributor guidance file (`AGENTS.md`).
+- Dependabot configuration for npm.
+- Security policy (`SECURITY.md`).
 
 ### Changed
 
-- Migrated the codebase to TypeScript.
-- Changed katakana option design to `katakana: false | 'full' | 'half'` and removed the old `halfWidthKatakana` option.
-- Clarified `toKatakana` conversion priority and simplified `setInterval` implementation/readability.
-- Updated package metadata for publication readiness (scope, description, repository, bugs, homepage, contributors).
+- **Breaking:** Replaced `halfWidthKatakana: boolean` with `katakana: false | 'full' | 'half'`.
+- Migrated the entire codebase from JavaScript to TypeScript.
+- Switched build system from Webpack to Vite (UMD + ES modules + d.ts).
+- Improved type safety: `timer` field now uses `ReturnType<typeof setInterval>` instead of `number | null` with unsafe cast.
+- Removed the definite assignment assertion (`!`) on `elName` by introducing a `requireElement()` helper.
+- Removed redundant `String()` wrapper in `removeString()`.
+- Clarified `toKatakana` conversion priority and simplified `setInterval` implementation.
+- Documented the fallback behavior of half-width katakana conversion (unmapped characters are left unchanged).
+- Added JSDoc to `onInput()` and `onConvert()` to clarify their roles in the conversion state machine.
+- Updated package metadata for publication readiness (scope `@j1nn0`, description, repository, bugs, homepage, contributors).
 - Aligned type declaration module name with the published package name `@j1nn0/vanilla-autokana`.
+- Updated Node.js engine requirement to `>=24` and pinned `pnpm@10.33.2`.
+- Added `.editorconfig`, `.oxlintrc.json`, `.oxfmtrc.json`, `.npmrc`, `pnpm-workspace.yaml`, `mise.toml`, VSCode settings.
 
 ### Fixed
 
-- Fixed full-width space normalization so it applies only in half-width katakana mode.
-- Applied timer/event lifecycle improvements to avoid stale interval state issues.
-
-### Docs
-
-- Updated README examples to reflect the new katakana API.
-- Expanded README and README_en option documentation (`katakana`, `checkInterval`) and framework integration guidance.
-- Aligned script-tag examples with `dist/autokana.umd.js`.
-- Added clear fork attribution and copyright notes.
+- Full-width space normalization now applies only in half-width katakana mode.
+- Timer/event lifecycle improvements to avoid stale interval state issues.
 
 ### Tests
 
+- Unified test setup with `setup()` helper across all test cases.
 - Added tests for full-width-space behavior in half-width mode.
 - Added integration tests for focus/blur timer lifecycle and keydown conversion reset.
+- Added tests for `initializeValues()`, `debug()`, `onInput()`, `onConvert()`, `checkValue()`, and `destroy()` event listener removal.
 - Improved test readability by fixing misleading variable names in toggle tests.
+- Coverage: Statements 92%, Branches 75%, Functions 100%, Lines 93%.
+
+### Docs
+
+- Updated README (ja/en) examples to reflect the new `katakana` API.
+- Expanded option documentation (`katakana`, `checkInterval`) and framework integration guidance (Vue, React).
+- Aligned script-tag examples with `dist/autokana.umd.js`.
+- Added clear fork attribution and copyright notes.
 
 ### Build/Tooling
 

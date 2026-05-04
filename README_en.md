@@ -51,7 +51,7 @@ AutoKana.bind('#name', '#furigana');
 
 ### Options
 
-You can pass the third argument to `AutoKana.bind(name, furigana, option)`:
+You can pass the first two arguments as CSS selectors (e.g. `#id`, `.class`, `[name="foo"]`) or DOM Element instances. A bare ID string also works for backward compatibility.
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
