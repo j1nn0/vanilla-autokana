@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
@@ -358,4 +358,124 @@ test('bind with # prefix ID selector resolves element (backward compat)', () => 
 test('bind with invalid selector throws Error', () => {
   setup();
   expect(() => new AutoKana('.nonexistent')).toThrow('Element not found: .nonexistent');
+});
+
+describe('IME composition events', () => {
+  test('compositionstart sets isComposing to true', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    expect((autokana as any).isComposing).toBe(false);
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    expect((autokana as any).isComposing).toBe(true);
+  });
+
+  test('compositionend sets isComposing to false and processes final value', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: 'やまだ' }));
+    expect((autokana as any).isComposing).toBe(false);
+    expect(furiganaInput.value).toBe('やまだ');
+  });
+
+  test('input event with isComposing=false processes kana extraction and updates furigana', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
+    expect(furiganaInput.value).toBe('やまだ');
+  });
+
+  test('input event with isComposing=true is skipped during composition', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    autokana.baseKana = 'やまだ';
+    nameInput.value = 'やまだたろう';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    expect((autokana as any).isComposing).toBe(true);
+    expect(furiganaInput.value).toBe('やまだ');
+  });
+
+  test('compositionend triggers processing even without subsequent input event (Chrome quirk)', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: 'やまだ' }));
+    // In Chrome, compositionend may fire without a following input(isComposing=false)
+    expect(furiganaInput.value).toBe('やまだ');
+  });
+
+  test('focus handler captures current state when refocusing', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    furiganaInput.value = 'やまだ';
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new Event('focus'));
+    expect(autokana.baseKana).toBe('やまだ');
+    expect((autokana as any).isComposing).toBe(false);
+    expect(autokana.timer).toBeNull();
+  });
+
+  test('blur handler resets isComposing if stuck at true', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    (autokana as any).isComposing = true;
+    nameInput.dispatchEvent(new Event('blur'));
+    expect((autokana as any).isComposing).toBe(false);
+  });
+
+  test('getFurigana returns correct value after full composition sequence', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: '山田' }));
+    expect(autokana.getFurigana()).toBe('やまだ');
+  });
+
+  test('bug: typing after conversion appends to furigana correctly', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: '山田' }));
+    nameInput.value = '山田たろう';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
+    expect(autokana.getFurigana()).toBe('やまだたろう');
+  });
+
+  test('isConverting property no longer exists (renamed to isComposing)', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    expect(autokana).not.toHaveProperty('isConverting');
+    expect(autokana).toHaveProperty('isComposing');
+    expect((autokana as any).isComposing).toBe(false);
+  });
+
+  test('checkInterval option is removed from AutoKanaOption', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    expect(autokana.option).not.toHaveProperty('checkInterval');
+  });
 });
