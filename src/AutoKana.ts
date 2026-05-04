@@ -6,7 +6,6 @@ type KatakanaOption = false | 'full' | 'half';
 interface AutoKanaOption {
   katakana: KatakanaOption;
   debug: boolean;
-  checkInterval: number;
 }
 
 const HIRAGANA_START = 12353; // ぁ
@@ -139,41 +138,52 @@ export type { AutoKanaOption };
 
 export default class AutoKana {
   isActive: boolean;
-  timer: ReturnType<typeof setInterval> | null;
   option: AutoKanaOption;
   elName: HTMLInputElement;
   elFurigana?: HTMLInputElement;
   baseKana: string;
   furigana: string;
-  isConverting: boolean;
+  isComposing: boolean;
   ignoreString: string;
   input: string;
   values: string[];
 
   private blurHandler = (): void => {
     this.debug('blur');
-    this.clearInterval();
+    this.isComposing = false;
   };
 
   private focusHandler = (): void => {
     this.debug('focus');
-    this.onInput();
-    this.setInterval();
+    if (this.elFurigana) {
+      this.baseKana = this.elFurigana.value;
+    }
+    this.isComposing = false;
+    this.ignoreString = this.elName.value;
+    this.processValue();
   };
 
-  private keydownHandler = (): void => {
-    this.debug('keydown');
-    if (this.isConverting) {
-      this.onInput();
-    }
+  private compositionStartHandler = (): void => {
+    this.debug('compositionstart');
+    this.isComposing = true;
+  };
+
+  private compositionEndHandler = (): void => {
+    this.debug('compositionend');
+    this.isComposing = false;
+    this.processValue();
+  };
+
+  private inputHandler = (event: InputEvent): void => {
+    this.debug('input', event.isComposing);
+    this.processValue();
   };
 
   constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
-    this.timer = null;
     this.baseKana = '';
     this.furigana = '';
-    this.isConverting = false;
+    this.isComposing = false;
     this.ignoreString = '';
     this.input = '';
     this.values = [];
@@ -182,7 +192,6 @@ export default class AutoKana {
       {
         katakana: false as KatakanaOption,
         debug: false,
-        checkInterval: 30,
       },
       option,
     );
@@ -222,7 +231,7 @@ export default class AutoKana {
   initializeValues(): void {
     this.baseKana = '';
     this.furigana = '';
-    this.isConverting = false;
+    this.isComposing = false;
     this.ignoreString = '';
     this.input = '';
     this.values = [];
@@ -231,14 +240,9 @@ export default class AutoKana {
   registerEvents(elName: HTMLInputElement): void {
     elName.addEventListener('blur', this.blurHandler);
     elName.addEventListener('focus', this.focusHandler);
-    elName.addEventListener('keydown', this.keydownHandler);
-  }
-
-  clearInterval(): void {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+    elName.addEventListener('compositionstart', this.compositionStartHandler);
+    elName.addEventListener('compositionend', this.compositionEndHandler);
+    elName.addEventListener('input', this.inputHandler as EventListener);
   }
 
   toKatakana(src: string): string {
@@ -266,11 +270,10 @@ export default class AutoKana {
   }
 
   setFurigana(newValues?: string[]): void {
-    if (this.isConverting) return;
-
     if (newValues) {
       this.values = newValues;
     }
+    if (this.isComposing) return;
     if (this.isActive) {
       const kana = this.toKatakana(this.baseKana + this.values.join(''));
       this.furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
@@ -295,8 +298,6 @@ export default class AutoKana {
   }
 
   checkConvert(newValues: string[]): void {
-    if (this.isConverting) return;
-
     if (Math.abs(this.values.length - newValues.length) > 1) {
       const tmpValues = newValues.join('').replace(kanaCompactingPattern, '').split('');
       if (Math.abs(this.values.length - tmpValues.length) > 1) {
@@ -309,58 +310,38 @@ export default class AutoKana {
     }
   }
 
-  checkValue(): void {
+  processValue(): void {
     let newInput = this.elName.value;
 
     if (newInput === '') {
       this.initializeValues();
       this.setFurigana();
-    } else {
-      newInput = this.removeString(newInput);
-
-      if (this.input === newInput) return;
-
-      this.input = newInput;
-
-      if (this.isConverting) return;
-
-      const newValues = newInput.replace(kanaExtractionPattern, '').split('');
-      this.checkConvert(newValues);
-      this.setFurigana(newValues);
+      return;
     }
 
-    this.debug(this.input);
+    newInput = this.removeString(newInput);
+
+    if (this.input === newInput) return;
+
+    this.input = newInput;
+
+    const newValues = newInput.replace(kanaExtractionPattern, '').split('');
+    this.checkConvert(newValues);
+    this.setFurigana(newValues);
+
   }
 
-  setInterval(): void {
-    this.clearInterval();
-    this.timer = setInterval(
-      this.checkValue.bind(this),
-      this.option.checkInterval,
-    );
-  }
-
-  /** Reset conversion state and capture current input as the ignore prefix. Called on focus and keydown (while converting). */
-  onInput(): void {
-    if (this.elFurigana) {
-      this.baseKana = this.elFurigana.value;
-    }
-    this.isConverting = false;
-    this.ignoreString = this.elName.value;
-  }
-
-  /** Commit accumulated kana values to baseKana and enter converting state. Called when a significant input change is detected. */
   onConvert(): void {
     this.baseKana = this.baseKana + this.values.join('');
-    this.isConverting = true;
     this.values = [];
   }
 
   destroy(): void {
-    this.clearInterval();
     this.elName.removeEventListener('blur', this.blurHandler);
     this.elName.removeEventListener('focus', this.focusHandler);
-    this.elName.removeEventListener('keydown', this.keydownHandler);
+    this.elName.removeEventListener('compositionstart', this.compositionStartHandler);
+    this.elName.removeEventListener('compositionend', this.compositionEndHandler);
+    this.elName.removeEventListener('input', this.inputHandler as EventListener);
   }
 
   debug(...args: unknown[]): void {
