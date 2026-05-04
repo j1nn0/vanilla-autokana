@@ -55,19 +55,12 @@ You can pass the first two arguments as CSS selectors (e.g. `#id`, `.class`, `[n
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
-- `checkInterval`: `number` (default: `30`, in milliseconds)
 
 `katakana` modes:
 
 - `false`: Output in hiragana (default)
 - `'full'`: Output in full-width katakana
 - `'half'`: Output in half-width katakana (full-width spaces are normalized to half-width spaces)
-
-`checkInterval` controls polling frequency for detecting conversion state changes.
-
-```js
-AutoKana.bind('#name', '#furigana', { checkInterval: 50 });
-```
 
 ### Using with Vue.js
 

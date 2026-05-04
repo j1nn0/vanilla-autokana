@@ -62,19 +62,12 @@ AutoKana.bind('#name', '#furigana');
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
-- `checkInterval`: `number`（既定値 `30`、単位 ms）
 
 `katakana` の値ごとの挙動:
 
 - `false`: ひらがなで出力（デフォルト）
 - `'full'`: 全角カタカナで出力
 - `'half'`: 半角カタカナで出力（全角空白は半角空白に正規化）
-
-`checkInterval` は入力変化を監視するポーリング間隔です。値を大きくすると監視頻度は下がり、値を小さくすると追従性が上がります。
-
-```js
-AutoKana.bind('#name', '#furigana', { checkInterval: 50 });
-```
 
 ### Vue.jsと組み合わせる
 

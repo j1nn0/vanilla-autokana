@@ -35,7 +35,7 @@
 - Throws `Error` when the `name` element cannot be found.
 - `furigana` argument is optional. Do not assume an output element always exists.
 - `katakana` supports only `false | 'full' | 'half'`. In `'half'` mode, full-width spaces → half-width spaces.
-- Conversion detection is polling-based via `checkInterval` (default `30` ms). Changes here are likely to cause behavioral drift.
+- Conversion detection is event-driven via composition events (compositionstart/compositionend/input).
 - For Vue/React controlled inputs, use `getFurigana()` — do not rely on mutating the output input's `value` directly.
 
 ## Config Notes
