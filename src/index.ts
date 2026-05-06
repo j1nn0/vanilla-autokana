@@ -1,5 +1,5 @@
 import AutoKana from './AutoKana';
-import type { AutoKanaOption } from './AutoKana';
+import type { AutoKanaOption, Bindable } from './AutoKana';
 
 /**
  * Bind elements to AutoKana.
@@ -10,12 +10,12 @@ import type { AutoKanaOption } from './AutoKana';
  * @returns An AutoKana instance.
  */
 export function bind(
-  name: string | Element,
-  furigana?: string | Element,
+  name: Bindable,
+  furigana?: Bindable,
   option: Partial<AutoKanaOption> = {},
 ): AutoKana {
   return new AutoKana(name, furigana, option);
 }
 
 export { AutoKana };
-export type { AutoKanaOption };
+export type { AutoKanaOption, Bindable };

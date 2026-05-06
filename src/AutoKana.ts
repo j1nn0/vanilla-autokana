@@ -1,5 +1,5 @@
 /** A CSS selector string or a DOM Element. */
-type Bindable = string | Element;
+type Bindable = string | HTMLElement;
 
 type KatakanaOption = false | 'full' | 'half';
 
@@ -46,19 +46,19 @@ const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
 import { fullToHalfKatakanaMap } from './katakanaMap';
 
-export type { AutoKanaOption };
+export type { AutoKanaOption, Bindable };
 
 export default class AutoKana {
   isActive: boolean;
   option: AutoKanaOption;
-  elName: HTMLInputElement;
-  elFurigana?: HTMLInputElement;
-  baseKana: string;
-  furigana: string;
-  isComposing: boolean;
-  ignoreString: string;
-  input: string;
-  values: string[];
+  private elName: HTMLInputElement;
+  private elFurigana?: HTMLInputElement;
+  private baseKana: string;
+  private furigana: string;
+  private isComposing: boolean;
+  private ignoreString: string;
+  private input: string;
+  private values: string[];
 
   private blurHandler = (): void => {
     this.debug('blur');
@@ -129,12 +129,9 @@ export default class AutoKana {
     this.isActive = false;
   }
 
-  toggle(event?: Event): void {
+  toggle(event?: { target: { checked: boolean } }): void {
     if (event) {
-      const el = event.target as HTMLInputElement;
-      if (el) {
-        this.isActive = el.checked;
-      }
+      this.isActive = event.target.checked;
     } else {
       this.isActive = !this.isActive;
     }
@@ -149,7 +146,7 @@ export default class AutoKana {
     this.values = [];
   }
 
-  registerEvents(elName: HTMLInputElement): void {
+  private registerEvents(elName: HTMLInputElement): void {
     elName.addEventListener('blur', this.blurHandler);
     elName.addEventListener('focus', this.focusHandler);
     elName.addEventListener('compositionstart', this.compositionStartHandler);
