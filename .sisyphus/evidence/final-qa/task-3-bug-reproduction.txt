@@ -1,7 +1,0 @@
-=== SCENARIO: Bug reproduction test captures the exact issue ===
-Tool: Bash
-Command: pnpm exec vitest run __tests__/AutoKana.test.ts -t "typing after conversion"
-Result: 1 passed | 46 skipped (47)
-Test: "bug: typing after conversion appends to furigana correctly" — PASS
-This verifies: やまだ → convert to 山田 → type たろう → furigana = やまだたろう
-RESULT: PASS
