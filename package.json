@@ -15,6 +15,14 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/autokana.es.js",
+      "require": "./dist/autokana.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "sideEffects": false,
   "engines": {
     "node": ">=24",
     "pnpm": ">=10"
@@ -29,7 +37,8 @@
   },
   "homepage": "https://github.com/j1nn0/vanilla-autokana#readme",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "vite build",
