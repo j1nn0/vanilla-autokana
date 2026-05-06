@@ -1,66 +1,23 @@
 {
-  "active_plan": "/home/j1nn0/repos/j1nn0.github/vanilla-autokana/.sisyphus/plans/ime-composition-refactor.md",
-  "started_at": "2026-05-04T19:32:45.926Z",
+  "active_plan": "/home/j1nn0/repos/j1nn0.github/vanilla-autokana/.sisyphus/plans/comprehensive-improvements.md",
+  "started_at": "2026-05-06T13:54:06.162Z",
   "session_ids": [
-    "ses_20b930c49ffejGdw1HLho6qXBp"
+    "ses_2027cd20bffe31Za7BtN8tm2Kk"
   ],
   "session_origins": {
-    "ses_20b930c49ffejGdw1HLho6qXBp": "direct"
+    "ses_2027cd20bffe31Za7BtN8tm2Kk": "direct"
   },
-  "plan_name": "ime-composition-refactor",
+  "plan_name": "comprehensive-improvements",
   "agent": "atlas",
   "task_sessions": {
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "Verify existing test baseline",
-      "session_id": "ses_20b8446f9ffeZXJuk0zU00lBeB",
+      "task_title": "GitHub Actions CI ワークフロー追加",
+      "session_id": "ses_2026dad82ffesjUSwcmb204Cp0",
       "agent": "Sisyphus-Junior",
       "category": "quick",
-      "updated_at": "2026-05-04T19:34:35.736Z"
-    },
-    "todo:3": {
-      "task_key": "todo:3",
-      "task_label": "3",
-      "task_title": "Write composition event test suite (RED phase)",
-      "session_id": "ses_20b80cae0ffeSynofwQa1MTD1I",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-05-04T19:47:50.363Z"
-    },
-    "todo:4": {
-      "task_key": "todo:4",
-      "task_label": "4",
-      "task_title": "Implement composition event handlers + rename state",
-      "session_id": "ses_20b75fe04ffemLCBIYtFVSmDsO",
-      "agent": "Sisyphus-Junior",
-      "updated_at": "2026-05-04T20:41:54.854Z"
-    },
-    "todo:5": {
-      "task_key": "todo:5",
-      "task_label": "5",
-      "task_title": "Remove polling mechanism + update AutoKanaOption",
-      "session_id": "ses_20b44e9a7ffeiLnP47yZME6UsS",
-      "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-05-04T20:45:34.098Z"
-    },
-    "todo:6": {
-      "task_key": "todo:6",
-      "task_label": "6",
-      "task_title": "Handle edge cases (blur during composition, paste, continuous conversion)",
-      "session_id": "ses_20b41defeffevnly76b2P7LQvy",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-05-04T20:58:04.745Z"
-    },
-    "final-wave:f1": {
-      "task_key": "final-wave:f1",
-      "task_label": "F1",
-      "task_title": "**Plan Compliance Audit** — `oracle`",
-      "session_id": "ses_20b36292effeJCYH75iG56TLO9",
-      "agent": "oracle",
-      "updated_at": "2026-05-04T21:02:35.089Z"
+      "updated_at": "2026-05-06T13:56:58.141Z"
     }
   }
 }
