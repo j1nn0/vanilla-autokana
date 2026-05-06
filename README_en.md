@@ -25,6 +25,11 @@ Download `dist/autokana.umd.js` from this repository and load it with a script t
 
 ## Usage
 
+- Pass the source input element (where the user types) as the first argument to `AutoKana.bind()`, and the destination input element (where furigana appears) as the second argument.
+- Elements can be specified via CSS selectors (`#id`, `.class`, `[name="foo"]`, etc.) or DOM Element instances. Passing a bare ID string also works for backward compatibility.
+- Run inside a `DOMContentLoaded` event to ensure input elements are available.
+- The library itself does not depend on DOM lifecycle events, so adding the `defer` attribute to the script tag is recommended.
+
 ```html
 <input name="name" id="name" />
 <input name="furigana" id="furigana" />
@@ -51,7 +56,9 @@ AutoKana.bind('#name', '#furigana');
 
 ### Options
 
-You can pass the first two arguments as CSS selectors (e.g. `#id`, `.class`, `[name="foo"]`) or DOM Element instances. A bare ID string also works for backward compatibility.
+You can pass the following as the third argument to `AutoKana.bind(name, furigana, option)`:
+
+The first two arguments accept CSS selectors (e.g. `#id`, `.class`, `[name="foo"]`) or DOM Element instances. A bare ID string also works for backward compatibility.
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
@@ -64,67 +71,99 @@ You can pass the first two arguments as CSS selectors (e.g. `#id`, `.class`, `[n
 
 ### Using with Vue.js
 
-When using `v-model`, directly setting `value` on the furigana input is usually overwritten by Vue.
-Use `getFurigana()` and copy it into a reactive property on input events.
+When using `v-model`, directly setting the `value` attribute on the furigana input will not work.
+Use the `getFurigana` method to retrieve the furigana and set it on a reactive property as shown below.
 
 ```vue
 <template>
-  <input id="name" v-model="name" @input="handleNameInput" />
-  <input id="furigana" v-model="furigana" />
+  <div id="app">
+    <div>
+      <label for="name">Name</label>
+      <input name="name" id="name" v-model="name" @input="handleNameInput">
+    </div>
+    <div>
+      <label for="furigana">Furigana</label>
+      <input name="furigana" id="furigana" v-model="furigana">
+    </div>
+    <h2>Confirm your input</h2>
+    <p>Name: {{ name }}</p>
+    <p>Furigana: {{ furigana }}</p>
+  </div>
 </template>
 
 <script>
-import * as AutoKana from '@j1nn0/vanilla-autokana';
+  import * as AutoKana from '@j1nn0/vanilla-autokana';
 
-export default {
-  data() {
-    return { name: '', furigana: '', autokana: null };
-  },
-  mounted() {
-    this.autokana = AutoKana.bind('#name', '#furigana');
-  },
-  beforeUnmount() {
-    this.autokana.destroy();
-  },
-  methods: {
-    handleNameInput() {
-      this.furigana = this.autokana.getFurigana();
+  let autokana;
+
+  export default {
+    name: 'App',
+    data() {
+      return {
+        name: '',
+        furigana: '',
+      }
     },
-  },
-};
+    mounted() {
+      autokana = AutoKana.bind('#name', '#furigana');
+    },
+    methods: {
+      handleNameInput() {
+        this.furigana = autokana.getFurigana();
+      }
+    }
+  }
 </script>
 ```
 
 ### Using with React.js
 
-The same applies in React controlled components. Read the converted value with `getFurigana()` and sync it to state.
+The same approach as Vue.js is needed.
 
 ```jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Component } from 'react';
 import * as AutoKana from '@j1nn0/vanilla-autokana';
 
-function App() {
-  const [name, setName] = useState('');
-  const [furigana, setFurigana] = useState('');
-  const autokanaRef = useRef(null);
+let autokana;
 
-  useEffect(() => {
-    autokanaRef.current = AutoKana.bind('#name', '#furigana');
-    return () => autokanaRef.current.destroy();
-  }, []);
-
-  const handleNameInput = (ev) => {
-    setName(ev.target.value);
-    setFurigana(autokanaRef.current.getFurigana());
-  };
-
-  return (
-    <>
-      <input id="name" value={name} onInput={handleNameInput} />
-      <input id="furigana" value={furigana} readOnly />
-    </>
-  );
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      name: '',
+      furigana: '',
+    };
+    this.handleNameInput = this.handleNameInput.bind(this);
+  }
+  componentDidMount() {
+    autokana = AutoKana.bind('#name', '#furigana');
+  }
+  handleNameInput(ev) {
+    this.setState({
+      name: ev.target.value,
+      furigana: autokana.getFurigana(),
+    });
+  }
+  render() {
+    return (
+      <div className="App">
+        <div>
+          <label htmlFor="name">Name</label>
+          <input name="name" id="name" value={this.state.name} onInput={this.handleNameInput} />
+        </div>
+        <div>
+          <label htmlFor="furigana">Furigana</label>
+          <input name="furigana" id="furigana" value={this.state.furigana} />
+        </div>
+        <h2>Confirm your input</h2>
+        <p>Name: { this.state.name }</p>
+        <p>Furigana: { this.state.furigana }</p>
+      </div>
+    );
+  }
 }
+
+export default App;
 ```
 
 ## License
