@@ -563,7 +563,7 @@ Max Concurrent: 5 (Wave 1)
 
 > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated results to user and get explicit "okay" before completing.
 
-- [ ] 6. AutoKana.ts 型安全性改善 + 内部プロパティprivate化 + テストリファクタリング
+- [x] 6. AutoKana.ts 型安全性改善 + 内部プロパティprivate化 + テストリファクタリング
 
   **What to do**:
   - **Bindable型の改善**: `Bindable` を `string | HTMLElement` に変更 (`Element` → `HTMLElement`)。`ensureElement` の戻り値も `HTMLElement | null` に
@@ -670,7 +670,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `src/AutoKana.ts`, `__tests__/AutoKana.test.ts`, `src/index.ts`
   - Pre-commit: `pnpm run typecheck && pnpm run test:coverage`
 
-- [ ] 7. README_en.md を README.md と同期
+- [x] 7. README_en.md を README.md と同期
 
   **What to do**:
   - `README.md` (日本語版) と `README_en.md` (英語版) の内容を比較
@@ -736,7 +736,7 @@ Max Concurrent: 5 (Wave 1)
   - Files: `README_en.md`
   - Pre-commit: none
 
-- [ ] 8. パブリックAPIへのJSDoc追加 + 型エクスポート改善
+- [x] 8. パブリックAPIへのJSDoc追加 + 型エクスポート改善
 
   **What to do**:
   - `src/AutoKana.ts` のパブリックメソッドに JSDoc コメントを追加:
@@ -830,18 +830,21 @@ Max Concurrent: 5 (Wave 1)
 ---
 
 ## Final Verification Wave
-  Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
-  Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
+  **ALL APPROVED ✅**
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F1. **Plan Compliance Audit** — `oracle`
+  Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
+  Output: `Must Have [4/4] | Must NOT Have [6/6] | Deliverables [7/7] | Quality Gate [6/6] | VERDICT: APPROVE`
+
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run `pnpm run typecheck` + `pnpm run lint` + `pnpm run test:coverage`. Review all changed files for: `as any`/`@ts-ignore`, empty catches, console.log in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic names. Verify branch coverage ≥ 85%.
   Output: `Build [PASS/FAIL] | Lint [PASS/FAIL] | Tests [N pass/N fail] | Coverage [X%] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Real Manual QA** — `unspecified-high`
+- [x] F3. **Real Manual QA** — `unspecified-high`
   Start from clean state (`pnpm install && pnpm run ci`). Verify CI workflow file syntax (actionlint or similar). Verify each deliverable: CI triggers, katakanaMap module import, private property access from outside fails, package.json exports field valid, CHANGELOG.md exists, README_en.md matches README.md content. Save to `.sisyphus/evidence/final-qa/`.
   Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   For each task: read "What to do", read actual diff (`git log/diff`). Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance. Detect cross-task contamination. Flag unaccounted changes.
   Output: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
 
@@ -872,9 +875,9 @@ pnpm run ci            # Expected: full CI pipeline passes
 ```
 
 ### Final Checklist
-- [ ] All "Must Have" present (CI workflow, private properties, exports, etc.)
-- [ ] All "Must NOT Have" absent (no algorithm changes, no new features)
-- [ ] All 47 existing tests still pass
-- [ ] Branch coverage ≥ 85%
-- [ ] `pnpm run ci` passes locally
-- [ ] GitHub Actions CI runs on push/PR
+- [x] All "Must Have" present (CI workflow, private properties, exports, etc.)
+- [x] All "Must NOT Have" absent (no algorithm changes, no new features)
+- [x] All 47 existing tests still pass
+- [x] Branch coverage ≥ 85%
+- [x] `pnpm run ci` passes locally
+- [x] GitHub Actions CI runs on push/PR

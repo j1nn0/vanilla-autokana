@@ -1,0 +1,14 @@
+=== CHANGELOG VERIFICATION ===
+
+18. test -f CHANGELOG.md: EXISTS ✓
+19. test -f CHANGELOG:    OLD GONE ✓ (old file without .md extension removed)
+20. head -10 CHANGELOG.md:
+    # Changelog
+    ## Unreleased
+    ### Added
+    - IME composition event handling...
+    - Chrome quirk handling...
+    - Blur-during-composition fallback...
+    - Composition event test suite (20 tests)...
+
+Content preserved, properly formatted as .md ✓

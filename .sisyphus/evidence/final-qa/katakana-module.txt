@@ -1,0 +1,14 @@
+=== KATAKANA MODULE VERIFICATION ===
+
+8. File exists: src/katakanaMap.ts - PASS
+   - Exports: fullToHalfKatakanaMap (named export) - PASS
+   - Type annotation: Record<string, string> - PASS
+   - Entries: 87 (full-width katakana → half-width katakana pairs)
+
+9. Import in AutoKana.ts: PASS
+   - import { fullToHalfKatakanaMap } from './katakanaMap'
+   - Used in toKatakana() method (line 194)
+   - No inline const definition remains in AutoKana.ts
+
+10. Typecheck: PASS (pnpm run typecheck - no errors)
+    Build: PASS (pnpm run build - successful)

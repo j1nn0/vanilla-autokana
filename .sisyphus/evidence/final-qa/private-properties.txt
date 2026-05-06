@@ -1,0 +1,29 @@
+=== PRIVATE PROPERTIES VERIFICATION ===
+
+12. Private property access from outside — verify typecheck REPORTS errors:
+    Created temporary test accessing ak.baseKana, ak.furigana, ak.elName from outside class.
+    Typecheck output:
+      error TS2341: Property 'baseKana' is private and only accessible within class 'AutoKana'.
+      error TS2341: Property 'furigana' is private and only accessible within class 'AutoKana'.
+      error TS2341: Property 'elName' is private and only accessible within class 'AutoKana'.
+    Result: PASS (all three private props correctly blocked)
+
+13. isActive and option are still public: PASS
+    Accessing ak.isActive and ak.option did NOT produce type errors in the same test file.
+
+Private properties confirmed (all declared with `private` keyword):
+    - elName (line 54): private ✓
+    - elFurigana (line 55): private ✓
+    - baseKana (line 56): private ✓
+    - furigana (line 57): private ✓
+    - isComposing (line 58): private ✓
+    - ignoreString (line 59): private ✓
+    - input (line 60): private ✓
+    - values (line 61): private ✓
+
+Public properties confirmed (no private modifier):
+    - isActive (line 52): public ✓
+    - option (line 53): public ✓
+
+Test file uses 64 @ts-expect-error annotations for internal private property access.
+All 50 tests pass.

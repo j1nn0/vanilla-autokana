@@ -2,10 +2,18 @@
   "active_plan": "/home/j1nn0/repos/j1nn0.github/vanilla-autokana/.sisyphus/plans/comprehensive-improvements.md",
   "started_at": "2026-05-06T13:54:06.162Z",
   "session_ids": [
-    "ses_2027cd20bffe31Za7BtN8tm2Kk"
+    "ses_2027cd20bffe31Za7BtN8tm2Kk",
+    "ses_2024edb15ffeF1PBVV3NjTTIj3",
+    "ses_2024e9673ffefcIfVVqMQ6HCJR",
+    "ses_2024e2e23ffevkzXhv1m5nyi49",
+    "ses_2024dca2fffeFE7mAPeNpLMKw9"
   ],
   "session_origins": {
-    "ses_2027cd20bffe31Za7BtN8tm2Kk": "direct"
+    "ses_2027cd20bffe31Za7BtN8tm2Kk": "direct",
+    "ses_2024edb15ffeF1PBVV3NjTTIj3": "appended",
+    "ses_2024e9673ffefcIfVVqMQ6HCJR": "appended",
+    "ses_2024e2e23ffevkzXhv1m5nyi49": "appended",
+    "ses_2024dca2fffeFE7mAPeNpLMKw9": "appended"
   },
   "plan_name": "comprehensive-improvements",
   "agent": "atlas",
@@ -18,6 +26,15 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-05-06T13:56:58.141Z"
+    },
+    "final-wave:f2": {
+      "task_key": "final-wave:f2",
+      "task_label": "F2",
+      "task_title": "**Code Quality Review** — `unspecified-high`",
+      "session_id": "ses_2024dca2fffeFE7mAPeNpLMKw9",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-06T14:40:36.105Z"
     }
   }
 }
