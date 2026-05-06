@@ -504,3 +504,40 @@ describe('IME composition events', () => {
     expect(autokana.option).not.toHaveProperty('checkInterval');
   });
 });
+
+describe('uncovered branches', () => {
+  test('HTML要素以外のElementを渡すとエラーになる', () => {
+    setup();
+    const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    expect(() => new AutoKana(svgElement)).toThrow('Element not found');
+  });
+
+  test('ignoreStringと入力の前方一致文字がremoveStringで除去される', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    nameInput.value = 'あいう';
+    autokana.processValue();
+
+    autokana.ignoreString = 'あいう';
+    nameInput.value = 'あいか';
+    autokana.processValue();
+
+    expect(autokana.input).toBe('か');
+  });
+
+  test('漢字混じり入力からかなのみが抽出され不要文字が除去される', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    nameInput.value = 'や';
+    autokana.processValue();
+
+    nameInput.value = 'a';
+    autokana.processValue();
+
+    expect(autokana.baseKana).toBe('や');
+  });
+});
