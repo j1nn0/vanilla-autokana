@@ -1,5 +1,5 @@
 import AutoKana from './AutoKana';
-import type { AutoKanaOption, Bindable } from './AutoKana';
+import type { AutoKanaOption, Bindable, KatakanaOption } from './AutoKana';
 
 /**
  * Bind elements to AutoKana.
@@ -18,4 +18,4 @@ export function bind(
 }
 
 export { AutoKana };
-export type { AutoKanaOption, Bindable };
+export type { AutoKanaOption, Bindable, KatakanaOption };

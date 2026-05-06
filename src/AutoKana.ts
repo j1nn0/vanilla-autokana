@@ -46,7 +46,7 @@ const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
 import { fullToHalfKatakanaMap } from './katakanaMap';
 
-export type { AutoKanaOption, Bindable };
+export type { AutoKanaOption, Bindable, KatakanaOption };
 
 export default class AutoKana {
   isActive: boolean;
@@ -117,18 +117,34 @@ export default class AutoKana {
     }
   }
 
+  /**
+   * Get the current furigana string.
+   *
+   * @returns The current furigana string.
+   */
   getFurigana(): string {
     return this.furigana;
   }
 
+  /**
+   * Resume auto-kana tracking.
+   */
   start(): void {
     this.isActive = true;
   }
 
+  /**
+   * Pause auto-kana tracking.
+   */
   stop(): void {
     this.isActive = false;
   }
 
+  /**
+   * Toggle auto-kana tracking on or off.
+   *
+   * @param event Optional checkbox change event. When provided, uses the checked state of the target.
+   */
   toggle(event?: { target: { checked: boolean } }): void {
     if (event) {
       this.isActive = event.target.checked;
@@ -137,6 +153,9 @@ export default class AutoKana {
     }
   }
 
+  /**
+   * Reset all internal state (base kana, furigana, composing flag, etc.).
+   */
   initializeValues(): void {
     this.baseKana = '';
     this.furigana = '';
@@ -244,6 +263,9 @@ export default class AutoKana {
     this.values = [];
   }
 
+  /**
+   * Remove all event listeners (blur, focus, compositionstart, compositionend, input) from the name element.
+   */
   destroy(): void {
     this.elName.removeEventListener('blur', this.blurHandler);
     this.elName.removeEventListener('focus', this.focusHandler);
