@@ -104,23 +104,25 @@ When a furigana output input is provided, an `input` event with `bubbles: true` 
   </div>
 </template>
 
-<script>
+<script setup>
+  import { ref, onMounted, onUnmounted } from 'vue';
   import { bind } from '@j1nn0/vanilla-autokana';
 
-  export default {
-    name: 'App',
-    data() {
-      return {
-        name: '',
-        furigana: '',
-      }
-    },
-    mounted() {
-      bind('#name', '#furigana', {
-        onChange: (furigana) => { this.furigana = furigana; }
-      });
-    },
-  }
+  const name = ref('');
+  const furigana = ref('');
+  let autokana;
+
+  onMounted(() => {
+    autokana = bind('#name', '#furigana', {
+      onChange: (value) => {
+        furigana.value = value;
+      },
+    });
+  });
+
+  onUnmounted(() => {
+    autokana?.destroy();
+  });
 </script>
 ```
 
@@ -137,39 +139,45 @@ You can also use the `getFurigana` method to retrieve the furigana, but `onChang
 The same `onChange` callback approach works with React.
 
 ```jsx
-import React, { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { bind } from '@j1nn0/vanilla-autokana';
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      name: '',
-      furigana: '',
-    };
-  }
-  componentDidMount() {
-    bind('#name', '#furigana', {
-      onChange: (furigana) => { this.setState({ furigana }); }
+function App() {
+  const [name, setName] = useState('');
+  const [furigana, setFurigana] = useState('');
+
+  useEffect(() => {
+    const autokana = bind('#name', '#furigana', {
+      onChange: (value) => {
+        setFurigana(value);
+      },
     });
-  }
-  render() {
-    return (
-      <div className="App">
-        <div>
-          <label htmlFor="name">Name</label>
-          <input name="name" id="name" value={this.state.name} onInput={(e) => this.setState({ name: e.target.value })} />
-        </div>
-        <div>
-          <label htmlFor="furigana">Furigana</label>
-          <input name="furigana" id="furigana" value={this.state.furigana} readOnly />
-        </div>
-        <h2>Confirm your input</h2>
-        <p>Name: { this.state.name }</p>
-        <p>Furigana: { this.state.furigana }</p>
+
+    return () => {
+      autokana.destroy();
+    };
+  }, []);
+
+  return (
+    <div className="App">
+      <div>
+        <label htmlFor="name">Name</label>
+        <input
+          name="name"
+          id="name"
+          value={name}
+          onInput={(e) => setName(e.target.value)}
+        />
       </div>
-    );
-  }
+      <div>
+        <label htmlFor="furigana">Furigana</label>
+        <input name="furigana" id="furigana" value={furigana} readOnly />
+      </div>
+      <h2>Confirm your input</h2>
+      <p>Name: {name}</p>
+      <p>Furigana: {furigana}</p>
+    </div>
+  );
 }
 
 export default App;
