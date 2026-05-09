@@ -25,8 +25,8 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 
 ## 使用方法
 
-- `AutoKana.bind()` メソッドの第1引数にふりがな入力元のinput要素、第2引数にふりがな出力先のinput要素を指定します
-- 要素の指定にはCSSセレクタ（`#id`、`.class`、`[name="foo"]`など）またはDOM Elementを渡せます。IDのみを渡した場合も従来どおり動作します
+- `AutoKana.bind()` メソッドの第1引数にふりがな入力元の input 要素を指定します。第2引数にはふりがな出力先の input 要素を指定できますが、省略も可能です
+- 要素の指定には `#` / `.` / `[` / `:` で始まるセレクタ文字列、または DOM Element を渡せます。IDのみを渡した場合も従来どおり動作します
 - input要素が見つけられない場合は正常に動作できないため、DOMContentLoadedイベント内での実行を推奨します
 - ライブラリ本体はDOMのライフサイクルイベントに依存しないため、ライブラリの読み込みには`defer`属性の追加を推奨します
 
@@ -58,7 +58,10 @@ AutoKana.bind('#name', '#furigana');
 
 ### オプション
 
-`AutoKana.bind(name, furigana, option)` の第3引数には以下を指定できます。
+`AutoKana.bind(name, furigana?, option)` の第3引数には以下を指定できます。
+
+- `name`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、または DOM Element
+- `furigana`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、DOM Element、または省略
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
@@ -84,6 +87,7 @@ AutoKana.bind('#name', '#furigana');
 ### Vue.jsと組み合わせる
 
 `onChange` コールバックを使うと、`getFurigana()` のポーリングなしでふりがなの変更を検知できます。
+また、出力先の input 要素を指定している場合は、その要素に `bubbles: true` の `input` イベントも発火します。
 
 ```
 <template>
@@ -122,7 +126,7 @@ AutoKana.bind('#name', '#furigana');
 </script>
 ```
 
-`v-model`を使用している場合、input要素のvalue属性への値のセットは動作しません。
+`v-model`を使用している場合でも、出力先 input には `input` イベントが発火します。ただし、状態同期には `onChange` コールバックの利用を推奨します。
 `onChange` コールバックを使わずに `getFurigana` メソッドでふりがなを取り出すこともできますが、`onChange` の使用を推奨します。
 
 ```

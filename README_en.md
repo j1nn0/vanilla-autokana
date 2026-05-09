@@ -25,8 +25,8 @@ Download `dist/autokana.umd.js` from this repository and load it with a script t
 
 ## Usage
 
-- Pass the source input element (where the user types) as the first argument to `AutoKana.bind()`, and the destination input element (where furigana appears) as the second argument.
-- Elements can be specified via CSS selectors (`#id`, `.class`, `[name="foo"]`, etc.) or DOM Element instances. Passing a bare ID string also works for backward compatibility.
+- Pass the source input element (where the user types) as the first argument to `AutoKana.bind()`. The second argument can specify the destination input element (where furigana appears), but it is optional.
+- Elements can be specified via selector strings starting with `#`, `.`, `[`, or `:`, or DOM Element instances. Passing a bare ID string also works for backward compatibility.
 - Run inside a `DOMContentLoaded` event to ensure input elements are available.
 - The library itself does not depend on DOM lifecycle events, so adding the `defer` attribute to the script tag is recommended.
 
@@ -56,9 +56,10 @@ AutoKana.bind('#name', '#furigana');
 
 ### Options
 
-You can pass the following as the third argument to `AutoKana.bind(name, furigana, option)`:
+You can pass the following as the third argument to `AutoKana.bind(name, furigana?, option)`:
 
-The first two arguments accept CSS selectors (e.g. `#id`, `.class`, `[name="foo"]`) or DOM Element instances. A bare ID string also works for backward compatibility.
+- `name`: a selector string starting with `#`, `.`, `[`, or `:`, or a DOM Element instance
+- `furigana`: a selector string starting with `#`, `.`, `[`, or `:`, a DOM Element instance, or omitted
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
@@ -84,6 +85,7 @@ The first two arguments accept CSS selectors (e.g. `#id`, `.class`, `[name="foo"
 ### Using with Vue.js
 
 Use the `onChange` callback to detect furigana changes without polling `getFurigana()`.
+When a furigana output input is provided, an `input` event with `bubbles: true` is also dispatched on that element.
 
 ```vue
 <template>
@@ -122,7 +124,7 @@ Use the `onChange` callback to detect furigana changes without polling `getFurig
 </script>
 ```
 
-When using `v-model`, directly setting the `value` attribute on the furigana input will not work.
+Even when using `v-model`, an `input` event is dispatched on the furigana output input. Still, `onChange` is the recommended way to keep framework state in sync.
 You can also use the `getFurigana` method to retrieve the furigana, but `onChange` is recommended.
 
 ```html
