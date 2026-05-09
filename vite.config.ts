@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
+import dts from "unplugin-dts/vite";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   plugins: [
     dts({
-      outDir: "dist",
       tsconfigPath: "./tsconfig.build.json",
     }),
   ],

@@ -5,7 +5,7 @@ import type { AutoKanaOption, Bindable, KatakanaOption } from './AutoKana';
  * Bind elements to AutoKana.
  *
  * @param name CSS selector or element of the name input.
- * @param furigana CSS selector or element of the furigana input.
+ * @param furigana CSS selector or element of the furigana output input. Optional.
  * @param option Option.
  * @returns An AutoKana instance.
  */

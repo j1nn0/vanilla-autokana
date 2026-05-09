@@ -62,6 +62,7 @@ AutoKana.bind('#name', '#furigana');
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
+- `onChange`: `(furigana: string) => void` — ふりがなが変更されるたびに呼ばれるコールバック
 
 `katakana` の値ごとの挙動:
 
@@ -69,17 +70,27 @@ AutoKana.bind('#name', '#furigana');
 - `'full'`: 全角カタカナで出力
 - `'half'`: 半角カタカナで出力（全角空白は半角空白に正規化）
 
+### メソッド
+
+- `getFurigana()`: 現在のふりがな文字列を返す
+- `start()`: ふりがなの自動追跡を再開する
+- `stop()`: ふりがなの自動追跡を一時停止する
+- `toggle(event?)`: ふりがなの自動追跡を切り替える。チェックボックスの変更イベントを渡すと、その `checked` 状態を使う
+- `reset()`: 内部状態（ふりがな、変換フラグなど）をすべてリセットする
+- `destroy()`: イベントリスナーをすべて削除する
+
+> **注意**: `initializeValues()` は非推奨です。代わりに `reset()` を使用してください。
+
 ### Vue.jsと組み合わせる
 
-`v-model`を使用している場合、input要素のvalue属性への値のセットは動作しません。
-↓のように、 `getFurigana` メソッドを使ってふりがなを取り出し、リアクティブプロパティにセットしてください。
+`onChange` コールバックを使うと、`getFurigana()` のポーリングなしでふりがなの変更を検知できます。
 
 ```
 <template>
   <div id="app">
     <div>
       <label for="name">名前</label>
-      <input name="name" id="name" v-model="name" @input="handleNameInput">
+      <input name="name" id="name" v-model="name">
     </div>
     <div>
       <label for="furigana">ふりがな</label>
@@ -92,9 +103,7 @@ AutoKana.bind('#name', '#furigana');
 </template>
 
 <script>
-  import * as AutoKana from '@j1nn0/vanilla-autokana';
-
-  let autokana;
+  import { bind } from '@j1nn0/vanilla-autokana';
 
   export default {
     name: 'App',
@@ -105,26 +114,29 @@ AutoKana.bind('#name', '#furigana');
       }
     },
     mounted() {
-      autokana = AutoKana.bind('#name', '#furigana');
+      bind('#name', '#furigana', {
+        onChange: (furigana) => { this.furigana = furigana; }
+      });
     },
-    methods: {
-      handleNameInput() {
-        this.furigana = autokana.getFurigana();
-      }
-    }
   }
 </script>
 ```
 
-### React.jsと組み合わせる
-
-Vue.jsと同様の対応が必要です。
+`v-model`を使用している場合、input要素のvalue属性への値のセットは動作しません。
+`onChange` コールバックを使わずに `getFurigana` メソッドでふりがなを取り出すこともできますが、`onChange` の使用を推奨します。
 
 ```
-import React, { Component } from 'react';
-import * as AutoKana from '@j1nn0/vanilla-autokana';
+<!-- 非推奨: getFurigana() のポーリング -->
+<input name="name" id="name" v-model="name" @input="handleNameInput">
+```
 
-let autokana;
+### React.jsと組み合わせる
+
+Vue.jsと同様に `onChange` コールバックが使えます。
+
+```jsx
+import React, { Component } from 'react';
+import { bind } from '@j1nn0/vanilla-autokana';
 
 class App extends Component {
   constructor() {
@@ -133,15 +145,10 @@ class App extends Component {
       name: '',
       furigana: '',
     };
-    this.handleNameInput = this.handleNameInput.bind(this);
   }
   componentDidMount() {
-    autokana = AutoKana.bind('#name', '#furigana');
-  }
-  handleNameInput(ev) {
-    this.setState({
-      name: ev.target.value,
-      furigana: autokana.getFurigana(),
+    bind('#name', '#furigana', {
+      onChange: (furigana) => { this.setState({ furigana }); }
     });
   }
   render() {
@@ -149,11 +156,11 @@ class App extends Component {
       <div className="App">
         <div>
           <label htmlFor="name">名前</label>
-          <input name="name" id="name" value={this.state.name} onInput={this.handleNameInput} />
+          <input name="name" id="name" value={this.state.name} onInput={(e) => this.setState({ name: e.target.value })} />
         </div>
         <div>
           <label htmlFor="furigana">ふりがな</label>
-          <input name="furigana" id="furigana" value={this.state.furigana} />
+          <input name="furigana" id="furigana" value={this.state.furigana} readOnly />
         </div>
         <h2>入力内容の確認</h2>
         <p>名前: { this.state.name }</p>

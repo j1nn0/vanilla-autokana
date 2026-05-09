@@ -62,6 +62,7 @@ The first two arguments accept CSS selectors (e.g. `#id`, `.class`, `[name="foo"
 
 - `katakana`: `false | 'full' | 'half'`
 - `debug`: `boolean`
+- `onChange`: `(furigana: string) => void` — Callback invoked whenever the furigana changes
 
 `katakana` modes:
 
@@ -69,17 +70,27 @@ The first two arguments accept CSS selectors (e.g. `#id`, `.class`, `[name="foo"
 - `'full'`: Output in full-width katakana
 - `'half'`: Output in half-width katakana (full-width spaces are normalized to half-width spaces)
 
+### Methods
+
+- `getFurigana()`: Returns the current furigana string
+- `start()`: Resume auto-kana tracking
+- `stop()`: Pause auto-kana tracking
+- `toggle(event?)`: Toggle auto-kana tracking on or off. When a checkbox change event is provided, uses its `checked` state
+- `reset()`: Reset all internal state (furigana, conversion flags, etc.)
+- `destroy()`: Remove all event listeners
+
+> **Note**: `initializeValues()` is deprecated. Use `reset()` instead.
+
 ### Using with Vue.js
 
-When using `v-model`, directly setting the `value` attribute on the furigana input will not work.
-Use the `getFurigana` method to retrieve the furigana and set it on a reactive property as shown below.
+Use the `onChange` callback to detect furigana changes without polling `getFurigana()`.
 
 ```vue
 <template>
   <div id="app">
     <div>
       <label for="name">Name</label>
-      <input name="name" id="name" v-model="name" @input="handleNameInput">
+      <input name="name" id="name" v-model="name">
     </div>
     <div>
       <label for="furigana">Furigana</label>
@@ -92,9 +103,7 @@ Use the `getFurigana` method to retrieve the furigana and set it on a reactive p
 </template>
 
 <script>
-  import * as AutoKana from '@j1nn0/vanilla-autokana';
-
-  let autokana;
+  import { bind } from '@j1nn0/vanilla-autokana';
 
   export default {
     name: 'App',
@@ -105,26 +114,29 @@ Use the `getFurigana` method to retrieve the furigana and set it on a reactive p
       }
     },
     mounted() {
-      autokana = AutoKana.bind('#name', '#furigana');
+      bind('#name', '#furigana', {
+        onChange: (furigana) => { this.furigana = furigana; }
+      });
     },
-    methods: {
-      handleNameInput() {
-        this.furigana = autokana.getFurigana();
-      }
-    }
   }
 </script>
 ```
 
+When using `v-model`, directly setting the `value` attribute on the furigana input will not work.
+You can also use the `getFurigana` method to retrieve the furigana, but `onChange` is recommended.
+
+```html
+<!-- Not recommended: polling getFurigana() -->
+<input name="name" id="name" v-model="name" @input="handleNameInput">
+```
+
 ### Using with React.js
 
-The same approach as Vue.js is needed.
+The same `onChange` callback approach works with React.
 
 ```jsx
 import React, { Component } from 'react';
-import * as AutoKana from '@j1nn0/vanilla-autokana';
-
-let autokana;
+import { bind } from '@j1nn0/vanilla-autokana';
 
 class App extends Component {
   constructor() {
@@ -133,15 +145,10 @@ class App extends Component {
       name: '',
       furigana: '',
     };
-    this.handleNameInput = this.handleNameInput.bind(this);
   }
   componentDidMount() {
-    autokana = AutoKana.bind('#name', '#furigana');
-  }
-  handleNameInput(ev) {
-    this.setState({
-      name: ev.target.value,
-      furigana: autokana.getFurigana(),
+    bind('#name', '#furigana', {
+      onChange: (furigana) => { this.setState({ furigana }); }
     });
   }
   render() {
@@ -149,11 +156,11 @@ class App extends Component {
       <div className="App">
         <div>
           <label htmlFor="name">Name</label>
-          <input name="name" id="name" value={this.state.name} onInput={this.handleNameInput} />
+          <input name="name" id="name" value={this.state.name} onInput={(e) => this.setState({ name: e.target.value })} />
         </div>
         <div>
           <label htmlFor="furigana">Furigana</label>
-          <input name="furigana" id="furigana" value={this.state.furigana} />
+          <input name="furigana" id="furigana" value={this.state.furigana} readOnly />
         </div>
         <h2>Confirm your input</h2>
         <p>Name: { this.state.name }</p>

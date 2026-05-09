@@ -6,7 +6,8 @@
     "lib": ["ES2020", "DOM"],
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react-jsx"
   },
   "include": ["src", "__tests__", "stories", ".storybook", "vite.config.ts", "vitest.config.ts"]
 }
