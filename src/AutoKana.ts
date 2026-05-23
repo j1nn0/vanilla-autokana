@@ -1,5 +1,6 @@
 /** A CSS selector string or a DOM Element. */
 type Bindable = string | HTMLElement;
+type KanaElement = HTMLInputElement | HTMLTextAreaElement;
 
 type KatakanaOption = false | 'full' | 'half';
 
@@ -13,7 +14,7 @@ interface AutoKanaOption {
 }
 
 const HIRAGANA_START = 12353; // ぁ
-const HIRAGANA_END = 12435; // ん
+const HIRAGANA_END = 12436; // ゔ
 const HIRAGANA_ITERATION_MARK = 12445; // ゝ
 const HIRAGANA_VOICED_ITERATION_MARK = 12446; // ゞ
 
@@ -29,8 +30,10 @@ function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
   if (typeof selectorOrElement === 'string') {
     // CSS selectors (starting with #, ., [, or :) are passed directly to querySelector.
     // Bare strings are treated as IDs for backward compatibility.
-    const selector = /^[[.#:]/.test(selectorOrElement) ? selectorOrElement : `#${selectorOrElement}`;
-    return document.querySelector(selector);
+    if (!/^[[.#:]/.test(selectorOrElement)) {
+      return document.getElementById(selectorOrElement);
+    }
+    return document.querySelector(selectorOrElement);
   }
   if (selectorOrElement instanceof HTMLElement) {
     return selectorOrElement;
@@ -38,7 +41,11 @@ function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
   return null;
 }
 
-function requireElement(selectorOrElement: Bindable): HTMLElement {
+function isKanaElement(el: HTMLElement): el is KanaElement {
+  return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+}
+
+function requireElement(selectorOrElement: Bindable): KanaElement {
   const el = ensureElement(selectorOrElement);
   if (!el) {
     const label = typeof selectorOrElement === 'string'
@@ -50,11 +57,17 @@ function requireElement(selectorOrElement: Bindable): HTMLElement {
       `For SPAs, call bind() after the component is mounted.`,
     );
   }
+  if (!isKanaElement(el)) {
+    const label = typeof selectorOrElement === 'string'
+      ? `"${selectorOrElement}"`
+      : 'the provided element';
+    throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
+  }
   return el;
 }
 
 // eslint-disable-next-line no-irregular-whitespace
-const kanaExtractionPattern = /[^ 　ぁあ-んー]/g;
+const kanaExtractionPattern = /[^ 　ぁあ-んゔー]/g;
 const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
 
 import { fullToHalfKatakanaMap } from './katakanaMap';
@@ -64,8 +77,8 @@ export type { AutoKanaOption, Bindable, KatakanaOption };
 export default class AutoKana {
   isActive: boolean;
   option: AutoKanaOption;
-  private elName: HTMLInputElement;
-  private elFurigana?: HTMLInputElement;
+  private elName: KanaElement;
+  private elFurigana?: KanaElement;
   private baseKana: string;
   private furigana: string;
   private isComposing: boolean;
@@ -133,12 +146,16 @@ export default class AutoKana {
       option,
     );
 
-    this.elName = requireElement(name) as HTMLInputElement;
+    this.elName = requireElement(name);
     this.registerEvents(this.elName);
 
     const elFurigana = furigana ? ensureElement(furigana) : null;
     if (elFurigana) {
-      this.elFurigana = elFurigana as HTMLInputElement;
+      if (!isKanaElement(elFurigana)) {
+        const label = typeof furigana === 'string' ? `"${furigana}"` : 'the provided element';
+        throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
+      }
+      this.elFurigana = elFurigana;
     }
   }
 
@@ -198,7 +215,7 @@ export default class AutoKana {
     this.reset();
   }
 
-  private registerEvents(elName: HTMLInputElement): void {
+  private registerEvents(elName: KanaElement): void {
     elName.addEventListener('blur', this.blurHandler);
     elName.addEventListener('focus', this.focusHandler);
     elName.addEventListener('compositionstart', this.compositionStartHandler);

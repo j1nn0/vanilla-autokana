@@ -311,6 +311,12 @@ test('bind with bare ID string resolves element (backward compat)', () => {
   expect(autokana.isActive).toBe(true);
 });
 
+test('bind with bare ID string resolves IDs containing CSS selector special characters', () => {
+  setup('<input name="name" id="user:name"><input name="furigana" id="furigana:field">');
+  const autokana = new AutoKana('user:name', 'furigana:field');
+  expect(autokana.isActive).toBe(true);
+});
+
 test('bind with # prefix ID selector resolves element (backward compat)', () => {
   setup();
   const autokana = new AutoKana('#name', '#furigana');
@@ -846,6 +852,11 @@ describe('uncovered branches', () => {
     expect(() => new AutoKana(svgElement)).toThrow('AutoKana: Element not found');
   });
 
+  test('valueを持たないHTML要素をnameに渡すとAutoKanaエラーになる', () => {
+    setup('<div id="name"></div><input name="furigana" id="furigana">');
+    expect(() => new AutoKana('name', 'furigana')).toThrow('AutoKana: Element must be an input or textarea');
+  });
+
   test('ignoreStringと入力の前方一致文字がremoveStringで除去される', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
@@ -984,5 +995,28 @@ describe('input event dispatch on furigana element', () => {
     nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
 
     expect(bubbledListener).toHaveBeenCalled();
+  });
+});
+
+describe('vu hiragana handling', () => {
+  test('ゔ is extracted as kana during input', () => {
+    setup();
+    new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    nameInput.value = 'ゔぁ';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
+
+    expect(furiganaInput.value).toBe('ゔぁ');
+  });
+
+  test('ゔ is converted to katakana', () => {
+    setup();
+    const full = new AutoKana('name', 'furigana', { katakana: 'full' });
+    expect(full.toKatakana('ゔぁ')).toBe('ヴァ');
+
+    const half = new AutoKana('name', 'furigana', { katakana: 'half' });
+    expect(half.toKatakana('ゔぁ')).toBe('ｳﾞｧ');
   });
 });
