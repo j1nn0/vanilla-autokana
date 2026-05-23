@@ -1,6 +1,6 @@
 /** A CSS selector string or a DOM Element. */
-type Bindable = string | HTMLElement;
 type KanaElement = HTMLInputElement | HTMLTextAreaElement;
+type Bindable = string | KanaElement;
 
 type KatakanaOption = false | 'full' | 'half';
 
@@ -26,6 +26,12 @@ function isHiragana(charCode: number): boolean {
   );
 }
 
+function getElementLabel(selectorOrElement: Bindable): string {
+  return typeof selectorOrElement === 'string'
+    ? `"${selectorOrElement}"`
+    : 'the provided element';
+}
+
 function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
   if (typeof selectorOrElement === 'string') {
     // CSS selectors (starting with #, ., [, or :) are passed directly to querySelector.
@@ -33,7 +39,11 @@ function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
     if (!/^[[.#:]/.test(selectorOrElement)) {
       return document.getElementById(selectorOrElement);
     }
-    return document.querySelector(selectorOrElement);
+    try {
+      return document.querySelector(selectorOrElement);
+    } catch {
+      throw new Error(`AutoKana: Invalid selector for ${getElementLabel(selectorOrElement)}.`);
+    }
   }
   if (selectorOrElement instanceof HTMLElement) {
     return selectorOrElement;
@@ -48,9 +58,7 @@ function isKanaElement(el: HTMLElement): el is KanaElement {
 function requireElement(selectorOrElement: Bindable): KanaElement {
   const el = ensureElement(selectorOrElement);
   if (!el) {
-    const label = typeof selectorOrElement === 'string'
-      ? `"${selectorOrElement}"`
-      : 'the provided element';
+    const label = getElementLabel(selectorOrElement);
     throw new Error(
       `AutoKana: Element not found for ${label}. ` +
       `Ensure the DOM element exists before calling bind(). ` +
@@ -58,9 +66,7 @@ function requireElement(selectorOrElement: Bindable): KanaElement {
     );
   }
   if (!isKanaElement(el)) {
-    const label = typeof selectorOrElement === 'string'
-      ? `"${selectorOrElement}"`
-      : 'the provided element';
+    const label = getElementLabel(selectorOrElement);
     throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
   }
   return el;
@@ -146,17 +152,16 @@ export default class AutoKana {
       option,
     );
 
-    this.elName = requireElement(name);
-    this.registerEvents(this.elName);
+    const elName = requireElement(name);
+    const elFurigana = furigana === undefined || furigana === ''
+      ? undefined
+      : requireElement(furigana);
 
-    const elFurigana = furigana ? ensureElement(furigana) : null;
+    this.elName = elName;
     if (elFurigana) {
-      if (!isKanaElement(elFurigana)) {
-        const label = typeof furigana === 'string' ? `"${furigana}"` : 'the provided element';
-        throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
-      }
       this.elFurigana = elFurigana;
     }
+    this.registerEvents(this.elName);
   }
 
   /**
@@ -247,13 +252,17 @@ export default class AutoKana {
     return str;
   }
 
-  setFurigana(newValues?: string[]): void {
+  setFurigana(newValues?: string[], force = false): void {
     if (newValues) {
       this.values = newValues;
     }
     if (this.isActive) {
       const kana = this.toKatakana(this.baseKana + this.values.join(''));
-      this.furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
+      const furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
+      if (!force && furigana === this.furigana) {
+        return;
+      }
+      this.furigana = furigana;
       if (this.elFurigana) {
         this.elFurigana.value = this.furigana;
         this.elFurigana.dispatchEvent(new Event('input', { bubbles: true }));
@@ -303,7 +312,7 @@ export default class AutoKana {
 
     if (newInput === '') {
       this.reset();
-      this.setFurigana();
+      this.setFurigana(undefined, true);
       return;
     }
 

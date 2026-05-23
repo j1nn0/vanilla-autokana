@@ -16,8 +16,8 @@ test('init', () => {
 
 test('init with pass elements', () => {
   setup('<input name="name"><input name="furigana">');
-  const name = document.querySelector('[name=name]') as HTMLElement;
-  const furigana = document.querySelector('[name=furigana]') as HTMLElement;
+  const name = document.querySelector('[name=name]') as HTMLInputElement;
+  const furigana = document.querySelector('[name=furigana]') as HTMLInputElement;
   const autokana = new AutoKana(name, furigana);
   autokana.start();
   expect(autokana.isActive).toBe(true);
@@ -326,6 +326,18 @@ test('bind with # prefix ID selector resolves element (backward compat)', () => 
 test('bind with invalid selector throws Error', () => {
   setup();
   expect(() => new AutoKana('.nonexistent')).toThrow('AutoKana: Element not found for ".nonexistent"');
+});
+
+test('bind with malformed selector throws AutoKana Error', () => {
+  setup();
+  expect(() => new AutoKana('#')).toThrow('AutoKana: Invalid selector for "#"');
+});
+
+test('bind with missing furigana selector throws Error when explicitly provided', () => {
+  setup('<input name="name" id="name">');
+  expect(() => new AutoKana('name', 'missing-furigana')).toThrow(
+    'AutoKana: Element not found for "missing-furigana"',
+  );
 });
 
 test('error message includes guidance for SPA users', () => {
@@ -857,6 +869,17 @@ describe('uncovered branches', () => {
     expect(() => new AutoKana('name', 'furigana')).toThrow('AutoKana: Element must be an input or textarea');
   });
 
+  test('furigana検証で失敗した場合はnameにイベントリスナーを登録しない', () => {
+    setup('<input name="name" id="name"><div id="furigana"></div>');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const addEventListenerSpy = vi.spyOn(nameInput, 'addEventListener');
+
+    expect(() => new AutoKana('name', 'furigana')).toThrow('AutoKana: Element must be an input or textarea');
+    expect(addEventListenerSpy).not.toHaveBeenCalled();
+
+    addEventListenerSpy.mockRestore();
+  });
+
   test('ignoreStringと入力の前方一致文字がremoveStringで除去される', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
@@ -961,6 +984,26 @@ describe('onChange callback', () => {
     expect(onChange).toHaveBeenCalledWith('やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
   });
+
+  test('onChange is not called when furigana value is unchanged', () => {
+    setup();
+    const onChange = vi.fn();
+    new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }));
+    nameInput.value = '山谷';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }));
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: '山田' }));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('やまだ');
+  });
 });
 
 describe('input event dispatch on furigana element', () => {
@@ -996,6 +1039,24 @@ describe('input event dispatch on furigana element', () => {
 
     expect(bubbledListener).toHaveBeenCalled();
   });
+
+  test('input event is not dispatched when furigana value is unchanged', () => {
+    setup();
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    const inputListener = vi.fn();
+    furiganaInput.addEventListener('input', inputListener);
+
+    new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.value = '山田';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }));
+
+    expect(inputListener).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('vu hiragana handling', () => {
@@ -1018,5 +1079,20 @@ describe('vu hiragana handling', () => {
 
     const half = new AutoKana('name', 'furigana', { katakana: 'half' });
     expect(half.toKatakana('ゔぁ')).toBe('ｳﾞｧ');
+  });
+});
+
+describe('public types', () => {
+  test('Bindable accepts only form value elements at compile time', () => {
+    const typeCheckOnly = () => {
+      const div = document.createElement('div');
+      // @ts-expect-error - AutoKana only binds input or textarea elements
+      new AutoKana(div);
+
+      const textarea = document.createElement('textarea');
+      new AutoKana(textarea);
+    };
+
+    expect(typeof typeCheckOnly).toBe('function');
   });
 });
