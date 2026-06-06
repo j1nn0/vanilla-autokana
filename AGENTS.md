@@ -57,3 +57,5 @@
 1. Edit `src/` only; treat it as the source of truth.
 2. Update tests in `__tests__/AutoKana.test.ts` if behavior changes.
 3. Run `pnpm run ci` before finishing.
+
+@RTK.md
