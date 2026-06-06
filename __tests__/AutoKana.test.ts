@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from 'vitest';
 import AutoKana from '../src/AutoKana';
 import { KanaExtractor } from '../src/KanaExtractor';
 import { KanaConverter } from '../src/KanaConverter';
+import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
 function setup(html = '<input name="name" id="name"><input name="furigana" id="furigana">') {
   document.body.innerHTML = html;
@@ -1162,5 +1163,27 @@ describe('destroy()', () => {
     expect(autokana.elName).toBeNull();
     // @ts-expect-error - accessing private property for test verification
     expect(autokana.elFurigana).toBeUndefined();
+  });
+});
+
+describe('fullToHalfKatakanaMap', () => {
+  test('map entries are bijectively correct', () => {
+    for (const [full, half] of Object.entries(fullToHalfKatakanaMap)) {
+      const converted = KanaConverter.toKatakana(full, 'half');
+      expect(converted).toBe(half);
+    }
+  });
+
+  test('special characters are correctly mapped', () => {
+    expect(fullToHalfKatakanaMap['ヴ']).toBe('ｳﾞ');
+    expect(fullToHalfKatakanaMap['ヺ']).toBe('ｦﾞ');
+    expect(fullToHalfKatakanaMap['ヰ']).toBe('ｲ');
+    expect(fullToHalfKatakanaMap['ヱ']).toBe('ｴ');
+    expect(fullToHalfKatakanaMap['。']).toBe('｡');
+    expect(fullToHalfKatakanaMap['、']).toBe('､');
+  });
+
+  test('map has 87 entries', () => {
+    expect(Object.keys(fullToHalfKatakanaMap)).toHaveLength(87);
   });
 });
