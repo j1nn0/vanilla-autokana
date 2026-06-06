@@ -63,13 +63,13 @@ AutoKana.bind('#name', '#furigana');
 - `name`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、または DOM Element
 - `furigana`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、DOM Element、または省略
 
-- `katakana`: `false | 'full' | 'half'`
+- `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`
 - `onChange`: `(furigana: string) => void` — ふりがなが変更されるたびに呼ばれるコールバック
 
 `katakana` の値ごとの挙動:
 
-- `false`: ひらがなで出力（デフォルト）
+- `'hiragana'`: ひらがなで出力（デフォルト）
 - `'full'`: 全角カタカナで出力
 - `'half'`: 半角カタカナで出力（全角空白は半角空白に正規化）
 

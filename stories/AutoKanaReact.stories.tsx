@@ -87,7 +87,7 @@ type Story = StoryObj<Args>;
 
 export const ReactHiragana: Story = {
   name: 'React + ひらがな',
-  args: { katakana: false },
+  args: { katakana: 'hiragana' },
 };
 
 export const ReactKatakanaFull: Story = {

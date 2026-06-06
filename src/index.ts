@@ -1,5 +1,7 @@
 import AutoKana from './AutoKana';
 import type { AutoKanaOption, Bindable, KatakanaOption } from './AutoKana';
+import { KanaConverter } from './KanaConverter';
+import { KanaExtractor } from './KanaExtractor';
 
 /**
  * Bind elements to AutoKana.
@@ -17,5 +19,5 @@ export function bind(
   return new AutoKana(name, furigana, option);
 }
 
-export { AutoKana };
+export { AutoKana, KanaConverter, KanaExtractor };
 export type { AutoKanaOption, Bindable, KatakanaOption };

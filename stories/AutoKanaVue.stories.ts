@@ -17,7 +17,7 @@ function getModeLabel(katakana: AutoKanaOption['katakana']): string {
 
 const DemoWrapper = defineComponent({
   props: {
-    katakana: { default: false },
+    katakana: { default: 'hiragana' as AutoKanaOption['katakana'] },
   },
   setup(props) {
     const furigana = ref('');
@@ -27,7 +27,7 @@ const DemoWrapper = defineComponent({
     onMounted(() => {
       if (nameRef.value) {
         autokana = bind(nameRef.value, undefined, {
-          katakana: props.katakana as AutoKanaOption['katakana'],
+          katakana: props.katakana,
           onChange: (furi) => {
             furigana.value = furi;
           },
@@ -39,7 +39,7 @@ const DemoWrapper = defineComponent({
       autokana?.destroy();
     });
 
-    return { furigana, nameRef, modeLabel: getModeLabel(props.katakana as AutoKanaOption['katakana']) };
+    return { furigana, nameRef, modeLabel: getModeLabel(props.katakana) };
   },
   render() {
     return h('div', {
@@ -95,7 +95,7 @@ type Story = StoryObj<Args>;
 
 export const VueHiragana: Story = {
   name: 'Vue + ひらがな',
-  args: { katakana: false },
+  args: { katakana: 'hiragana' },
 };
 
 export const VueKatakanaFull: Story = {

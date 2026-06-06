@@ -2,28 +2,15 @@
 type KanaElement = HTMLInputElement | HTMLTextAreaElement;
 type Bindable = string | KanaElement;
 
-type KatakanaOption = false | 'full' | 'half';
+type KatakanaOption = 'hiragana' | 'full' | 'half';
 
 interface AutoKanaOption {
-  /** Output format for furigana. `false` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
+  /** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
   katakana: KatakanaOption;
   /** When `true`, logs debug information to the console. */
   debug: boolean;
   /** Callback invoked with the current furigana string whenever it changes. */
   onChange?: (furigana: string) => void;
-}
-
-const HIRAGANA_START = 12353; // ぁ
-const HIRAGANA_END = 12436; // ゔ
-const HIRAGANA_ITERATION_MARK = 12445; // ゝ
-const HIRAGANA_VOICED_ITERATION_MARK = 12446; // ゞ
-
-function isHiragana(charCode: number): boolean {
-  return (
-    (charCode >= HIRAGANA_START && charCode <= HIRAGANA_END) ||
-    charCode === HIRAGANA_ITERATION_MARK ||
-    charCode === HIRAGANA_VOICED_ITERATION_MARK
-  );
 }
 
 function getElementLabel(selectorOrElement: Bindable): string {
@@ -72,11 +59,8 @@ function requireElement(selectorOrElement: Bindable): KanaElement {
   return el;
 }
 
-// eslint-disable-next-line no-irregular-whitespace
-const kanaExtractionPattern = /[^ 　ぁあ-んゔー]/g;
-const kanaCompactingPattern = /[ぁぃぅぇぉっゃゅょ]/g;
-
-import { fullToHalfKatakanaMap } from './katakanaMap';
+import { KanaExtractor } from './KanaExtractor';
+import { KanaConverter } from './KanaConverter';
 
 export type { AutoKanaOption, Bindable, KatakanaOption };
 
@@ -85,12 +69,12 @@ export default class AutoKana {
   option: AutoKanaOption;
   private elName: KanaElement;
   private elFurigana?: KanaElement;
-  private baseKana: string;
+  private committedKana: string;
   private furigana: string;
   private isComposing: boolean;
-  private ignoreString: string;
-  private input: string;
-  private values: string[];
+  private lastConvertedInput: string;
+  private lastNewInput: string;
+  private pendingKana: string[];
 
   private previousRawInput: string;
 
@@ -102,13 +86,13 @@ export default class AutoKana {
   private focusHandler = (): void => {
     this.debug('focus');
     if (this.elFurigana) {
-      this.baseKana = this.elFurigana.value;
+      this.committedKana = this.elFurigana.value;
     }
     this.isComposing = false;
-    this.values = [];
-    this.input = '';
+    this.pendingKana = [];
+    this.lastNewInput = '';
     this.previousRawInput = '';
-    this.ignoreString = this.elName.value;
+    this.lastConvertedInput = this.elName.value;
     this.processValue();
   };
 
@@ -121,10 +105,10 @@ export default class AutoKana {
     this.debug('compositionend');
     this.isComposing = false;
     // Reset input tracking so processValue() treats this as a new input
-    // and runs the full non-composition path (checkConvert, etc.)
-    // Do NOT reset this.values — they contain the kana accumulated during
-    // composition that onConvert() needs to move into baseKana.
-    this.input = '';
+    // and runs the full non-composition path (detectAndCommitConversion, etc.)
+    // Do NOT reset this.pendingKana — they contain the kana accumulated during
+    // composition that commitPendingKana() needs to move into committedKana.
+    this.lastNewInput = '';
     this.previousRawInput = '';
     this.processValue();
   };
@@ -136,17 +120,17 @@ export default class AutoKana {
 
   constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
-    this.baseKana = '';
+    this.committedKana = '';
     this.furigana = '';
     this.isComposing = false;
-    this.ignoreString = '';
-    this.input = '';
-    this.values = [];
+    this.lastConvertedInput = '';
+    this.lastNewInput = '';
+    this.pendingKana = [];
     this.previousRawInput = '';
 
     this.option = Object.assign(
       {
-        katakana: false as KatakanaOption,
+        katakana: 'hiragana' as KatakanaOption,
         debug: false,
       },
       option,
@@ -201,15 +185,15 @@ export default class AutoKana {
   }
 
   /**
-   * Reset all internal state (base kana, furigana, composing flag, etc.).
+   * Reset all internal state (committed kana, furigana, composing flag, etc.).
    */
   reset(): void {
-    this.baseKana = '';
+    this.committedKana = '';
     this.furigana = '';
     this.isComposing = false;
-    this.ignoreString = '';
-    this.input = '';
-    this.values = [];
+    this.lastConvertedInput = '';
+    this.lastNewInput = '';
+    this.pendingKana = [];
     this.previousRawInput = '';
   }
 
@@ -228,36 +212,9 @@ export default class AutoKana {
     elName.addEventListener('input', this.inputHandler as EventListener);
   }
 
-  toKatakana(src: string): string {
-    if (!this.option.katakana) {
-      return src;
-    }
-
-    let c: number;
-    let str = '';
-    for (let i = 0; i < src.length; i += 1) {
-      c = src.charCodeAt(i);
-      if (isHiragana(c)) {
-        str += String.fromCharCode(c + 96);
-      } else {
-        str += src.charAt(i);
-      }
-    }
-
-    if (this.option.katakana === 'half') {
-      // Characters not in fullToHalfKatakanaMap are left unchanged (fallback to the original character).
-      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] ?? ch);
-    }
-
-    return str;
-  }
-
-  setFurigana(newValues?: string[], force = false): void {
-    if (newValues) {
-      this.values = newValues;
-    }
+  setFurigana(force = false): void {
     if (this.isActive) {
-      const kana = this.toKatakana(this.baseKana + this.values.join(''));
+      const kana = KanaConverter.toKatakana(this.committedKana + this.pendingKana.join(''), this.option.katakana);
       const furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
       if (!force && furigana === this.furigana) {
         return;
@@ -273,11 +230,11 @@ export default class AutoKana {
     }
   }
 
-  removeString(newInput: string): string {
-    if (newInput.indexOf(this.ignoreString) !== -1) {
-      return newInput.replace(this.ignoreString, '');
+  private extractNewInput(newInput: string): string {
+    if (newInput.indexOf(this.lastConvertedInput) !== -1) {
+      return newInput.replace(this.lastConvertedInput, '');
     }
-    const ignoreArray = this.ignoreString.split('');
+    const ignoreArray = this.lastConvertedInput.split('');
     const inputArray = newInput.split('');
     for (let i = 0; i < ignoreArray.length; i += 1) {
       if (ignoreArray[i] === inputArray[i]) {
@@ -287,86 +244,76 @@ export default class AutoKana {
     return inputArray.join('');
   }
 
-  checkConvert(newValues: string[]): void {
-    if (Math.abs(this.values.length - newValues.length) > 1) {
-      // If the old values are a prefix of the new values, this is an addition
-      // (not a conversion), so skip onConvert.
-      const oldKana = this.values.join('');
-      const newKana = newValues.join('');
+  detectAndCommitConversion(newPendingKana: string[]): void {
+    if (Math.abs(this.pendingKana.length - newPendingKana.length) > 1) {
+      const oldKana = this.pendingKana.join('');
+      const newKana = newPendingKana.join('');
       if (!newKana.startsWith(oldKana)) {
-        const tmpValues = newKana.replace(kanaCompactingPattern, '').split('');
-        if (Math.abs(this.values.length - tmpValues.length) > 1) {
-          this.onConvert();
+        const compacted = KanaExtractor.compact(newKana).split('');
+        if (Math.abs(this.pendingKana.length - compacted.length) > 1) {
+          this.commitPendingKana();
         }
       }
-    } else if (this.values.length === this.input.length && this.values.join('') !== this.input) {
-      if (this.input.match(kanaExtractionPattern)) {
-        this.onConvert();
+    } else if (this.pendingKana.length === this.lastNewInput.length && this.pendingKana.join('') !== this.lastNewInput) {
+      if (KanaExtractor.containsNonKana(this.lastNewInput)) {
+        this.commitPendingKana();
       }
     }
   }
 
-  processValue(): void {
-    const rawInput = this.elName.value;
-    let newInput = rawInput;
-
-    if (newInput === '') {
-      this.reset();
-      this.setFurigana(undefined, true);
-      return;
+  private handleCompositionInput(newInput: string): void {
+    const newPendingKana = KanaExtractor.extract(newInput);
+    if (newPendingKana.length >= this.pendingKana.length) {
+      this.pendingKana = newPendingKana;
     }
+    this.setFurigana();
+  }
 
-    newInput = this.removeString(newInput);
+  private handleNormalInput(newInput: string, rawInput: string): void {
+    if (this.lastNewInput === newInput) return;
 
-    if (this.isComposing) {
-      // During IME composition, accumulate kana in values for real-time display.
-      // However, do NOT overwrite values when characters are stripped by
-      // kanaExtractionPattern (e.g. "病まだ" → "まだ" losing "や"),
-      // as this happens during candidate browsing and would corrupt state.
-      const newValues = newInput.replace(kanaExtractionPattern, '').split('');
-      if (newValues.length >= this.values.length) {
-        // More or equal kana — safe to update (normal typing or additions)
-        this.values = newValues;
-      }
-      // If newValues.length < this.values.length, candidate browsing is
-      // stripping kana. Keep existing values to preserve furigana.
-      this.setFurigana();
-      return;
-    }
-
-    if (this.input === newInput) return;
-
-    // Detect deletion: if the raw input is shorter than before, the user
-    // deleted characters. Skip onConvert to prevent incorrect accumulation.
     const isDeletion = rawInput.length < this.previousRawInput.length;
-
-    this.input = newInput;
+    this.lastNewInput = newInput;
     this.previousRawInput = rawInput;
 
-    const newValues = newInput.replace(kanaExtractionPattern, '').split('');
+    const newPendingKana = KanaExtractor.extract(newInput);
 
     if (!isDeletion) {
-      const prevBaseKana = this.baseKana;
-      this.checkConvert(newValues);
-      // If onConvert() was called inside checkConvert(), values were already
-      // moved to baseKana and cleared. Overwriting values with newValues would
-      // re-add kana fragments (e.g. "まだ" from "病まだ"), causing duplication
-      // like "やまだまだ". Update ignoreString so that subsequent processValue()
-      // calls strip the already-converted text via removeString().
-      if (this.baseKana !== prevBaseKana) {
-        this.ignoreString = rawInput;
+      const prevCommittedKana = this.committedKana;
+      this.detectAndCommitConversion(newPendingKana);
+      if (this.committedKana !== prevCommittedKana) {
+        this.lastConvertedInput = rawInput;
         this.setFurigana();
         return;
       }
     }
-    this.values = newValues;
 
+    this.pendingKana = newPendingKana;
     this.setFurigana();
   }
 
-  onConvert(): void {
-    this.baseKana = this.baseKana + this.values.join('');
-    this.values = [];
+  processValue(): void {
+    const rawInput = this.elName.value;
+
+    if (rawInput === '') {
+      this.reset();
+      this.setFurigana(true);
+      return;
+    }
+
+    const newInput = this.extractNewInput(rawInput);
+
+    if (this.isComposing) {
+      this.handleCompositionInput(newInput);
+      return;
+    }
+
+    this.handleNormalInput(newInput, rawInput);
+  }
+
+  commitPendingKana(): void {
+    this.committedKana = this.committedKana + this.pendingKana.join('');
+    this.pendingKana = [];
   }
 
   /**
@@ -380,7 +327,7 @@ export default class AutoKana {
     this.elName.removeEventListener('input', this.inputHandler as EventListener);
   }
 
-  debug(...args: unknown[]): void {
+  private debug(...args: unknown[]): void {
     if (this.option.debug) {
       // eslint-disable-next-line no-console
       console.log(...args);

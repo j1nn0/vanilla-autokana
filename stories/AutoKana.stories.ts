@@ -115,7 +115,7 @@ type Story = StoryObj<Args>;
 
 export const Hiragana: Story = {
   name: 'ひらがな変換',
-  args: { katakana: false },
+  args: { katakana: 'hiragana' },
 };
 
 export const KatakanaFull: Story = {
@@ -131,5 +131,5 @@ export const KatakanaHalf: Story = {
 export const OnChangeCallback: Story = {
   name: 'onChange コールバック',
   render: buildFormWithCallback,
-  args: { katakana: false },
+  args: { katakana: 'hiragana' },
 };
