@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## 2.0.0
+
+### Breaking Changes
+
+- **API: `katakana` option type changed.** `false` is no longer accepted. Use `'hiragana'` for hiragana output (default). Migration: `katakana: false` → `katakana: 'hiragana'`.
+- **Internal rename: `toKatakana()` removed from public API.** `AutoKana#toKatakana()` is no longer public. Use `KanaConverter.toKatakana(src, option)` directly.
+- **Internal rename: `baseKana` → `committedKana`, `values` → `pendingKana`, `input` → `lastNewInput`, `ignoreString` → `lastConvertedInput`, `onConvert` → `commitPendingKana`, `checkConvert` → `detectAndCommitConversion`, `removeString` → `extractNewInput`.** These are internal-only changes but may affect consumers who accessed them via `@ts-ignore`.
+
+### Added
+
+- `KanaExtractor` class for pure kana extraction and compaction logic.
+- `KanaConverter` class for pure hiragana-to-katakana conversion logic.
+- `containsNonKana()` utility method in `KanaExtractor`.
+- `CONTEXT.md` and `docs/adr/0001-katakana-type-unification.md` for domain terminology and architecture decisions.
+
+### Changed
+
+- `AutoKanaOption` interface: `katakana` and `debug` are now optional at the public API level (defaults applied internally).
+- `setFurigana()` no longer accepts `newValues` parameter; state updates are explicit at call sites.
+- `debug()` method is now `private`.
+- `processValue()` split into `handleCompositionInput()` and `handleNormalInput()` for clearer responsibilities.
+
+### Fixed
+
+- `KanaExtractor.containsNonKana()` now uses `search()` instead of `test()` to avoid `lastIndex` mutation bugs with global regex.
+
+### Tests
+
+- Added `KanaExtractor` unit tests (extract, compact, containsNonKana).
+- Added `KanaConverter` unit tests (toKatakana for half/full/hiragana modes).
+- Removed direct `AutoKana#toKatakana()` tests in favor of `KanaConverter` tests.
+- Total tests: 87.
+
+## Unreleased
+
 ### Added
 
 - IME composition event handling (`compositionstart`, `compositionend`, `input`). Replaces the polling-based approach for more reliable detection of Japanese IME conversion across browsers, especially fixing a long-standing bug on Linux Chrome + ibus/fcitx where furigana would freeze after kanji conversion.

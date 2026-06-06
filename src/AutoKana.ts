@@ -1,6 +1,10 @@
-/** A CSS selector string or a DOM Element. */
-type KanaElement = HTMLInputElement | HTMLTextAreaElement;
-type Bindable = string | KanaElement;
+import { KanaExtractor } from './KanaExtractor';
+import { KanaConverter } from './KanaConverter';
+import type { KanaElement, Bindable } from './ElementResolver';
+import { requireElement } from './ElementResolver';
+
+export type { Bindable };
+export type { KatakanaOption };
 
 type KatakanaOption = 'hiragana' | 'full' | 'half';
 
@@ -12,57 +16,6 @@ export interface AutoKanaOption {
   /** Callback invoked with the current furigana string whenever it changes. */
   onChange?: (furigana: string) => void;
 }
-
-function getElementLabel(selectorOrElement: Bindable): string {
-  return typeof selectorOrElement === 'string'
-    ? `"${selectorOrElement}"`
-    : 'the provided element';
-}
-
-function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
-  if (typeof selectorOrElement === 'string') {
-    // CSS selectors (starting with #, ., [, or :) are passed directly to querySelector.
-    // Bare strings are treated as IDs for backward compatibility.
-    if (!/^[[.#:]/.test(selectorOrElement)) {
-      return document.getElementById(selectorOrElement);
-    }
-    try {
-      return document.querySelector(selectorOrElement);
-    } catch {
-      throw new Error(`AutoKana: Invalid selector for ${getElementLabel(selectorOrElement)}.`);
-    }
-  }
-  if (selectorOrElement instanceof HTMLElement) {
-    return selectorOrElement;
-  }
-  return null;
-}
-
-function isKanaElement(el: HTMLElement): el is KanaElement {
-  return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
-}
-
-function requireElement(selectorOrElement: Bindable): KanaElement {
-  const el = ensureElement(selectorOrElement);
-  if (!el) {
-    const label = getElementLabel(selectorOrElement);
-    throw new Error(
-      `AutoKana: Element not found for ${label}. ` +
-      `Ensure the DOM element exists before calling bind(). ` +
-      `For SPAs, call bind() after the component is mounted.`,
-    );
-  }
-  if (!isKanaElement(el)) {
-    const label = getElementLabel(selectorOrElement);
-    throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
-  }
-  return el;
-}
-
-import { KanaExtractor } from './KanaExtractor';
-import { KanaConverter } from './KanaConverter';
-
-export type { Bindable, KatakanaOption };
 
 export default class AutoKana {
   isActive: boolean;

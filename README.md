@@ -185,6 +185,28 @@ function App() {
 export default App;
 ```
 
+## 移行ガイド（v1 → v2）
+
+v2.0.0 で `katakana` オプションの値が変更されました。
+
+### 変更点
+
+| 変更前 (v1) | 変更後 (v2) |
+|-------------|-------------|
+| `katakana: false` | `katakana: 'hiragana'` |
+| `katakana: 'full'` | `katakana: 'full'`（変更なし） |
+| `katakana: 'half'` | `katakana: 'half'`（変更なし） |
+
+### 移行手順
+
+```js
+// v1
+AutoKana.bind('#name', '#furigana', { katakana: false });
+
+// v2
+AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
+```
+
 ## ライセンス
 
 MIT

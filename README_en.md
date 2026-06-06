@@ -61,15 +61,37 @@ You can pass the following as the third argument to `AutoKana.bind(name, furigan
 - `name`: a selector string starting with `#`, `.`, `[`, or `:`, or a DOM Element instance
 - `furigana`: a selector string starting with `#`, `.`, `[`, or `:`, a DOM Element instance, or omitted
 
-- `katakana`: `false | 'full' | 'half'`
+- `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`
 - `onChange`: `(furigana: string) => void` — Callback invoked whenever the furigana changes
 
 `katakana` modes:
 
-- `false`: Output in hiragana (default)
+- `'hiragana'`: Output in hiragana (default)
 - `'full'`: Output in full-width katakana
 - `'half'`: Output in half-width katakana (full-width spaces are normalized to half-width spaces)
+
+## Migration Guide (v1 → v2)
+
+### Breaking Change
+
+The `katakana` option type has changed in v2.0.0.
+
+| Before (v1) | After (v2) |
+|-------------|------------|
+| `katakana: false` | `katakana: 'hiragana'` |
+| `katakana: 'full'` | `katakana: 'full'` (no change) |
+| `katakana: 'half'` | `katakana: 'half'` (no change) |
+
+### Migration
+
+```js
+// v1
+AutoKana.bind('#name', '#furigana', { katakana: false });
+
+// v2
+AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
+```
 
 ### Methods
 
