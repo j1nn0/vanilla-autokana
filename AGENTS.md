@@ -3,7 +3,7 @@
 ## Basic Rules
 
 - All user-facing responses must be in Japanese.
-- Use MCP `context7` and `serena` proactively.
+- Use MCP `codegraph` and `context7` and `serena` proactively.
 
 ## Repository Overview
 
