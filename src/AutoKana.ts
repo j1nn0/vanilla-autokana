@@ -4,11 +4,11 @@ type Bindable = string | KanaElement;
 
 type KatakanaOption = 'hiragana' | 'full' | 'half';
 
-interface AutoKanaOption {
+export interface AutoKanaOption {
   /** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
-  katakana: KatakanaOption;
+  katakana?: KatakanaOption;
   /** When `true`, logs debug information to the console. */
-  debug: boolean;
+  debug?: boolean;
   /** Callback invoked with the current furigana string whenever it changes. */
   onChange?: (furigana: string) => void;
 }
@@ -62,11 +62,11 @@ function requireElement(selectorOrElement: Bindable): KanaElement {
 import { KanaExtractor } from './KanaExtractor';
 import { KanaConverter } from './KanaConverter';
 
-export type { AutoKanaOption, Bindable, KatakanaOption };
+export type { Bindable, KatakanaOption };
 
 export default class AutoKana {
   isActive: boolean;
-  option: AutoKanaOption;
+  option: AutoKanaOption & { katakana: KatakanaOption; debug: boolean };
   private elName: KanaElement;
   private elFurigana?: KanaElement;
   private committedKana: string;

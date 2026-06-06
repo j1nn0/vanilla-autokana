@@ -12,6 +12,6 @@ export class KanaExtractor {
   }
 
   static containsNonKana(input: string): boolean {
-    return this.EXTRACTION_PATTERN.test(input);
+    return input.search(this.EXTRACTION_PATTERN) !== -1;
   }
 }

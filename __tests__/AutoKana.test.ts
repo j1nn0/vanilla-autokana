@@ -925,6 +925,14 @@ describe('KanaExtractor', () => {
     expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
     expect(KanaExtractor.containsNonKana('山田')).toBe(true);
   });
+
+  test('containsNonKana works correctly on consecutive calls', () => {
+    // Regression guard: the old /g regex with .test() mutated lastIndex.
+    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
+    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
+    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
+    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
+  });
 });
 
 describe('onChange callback', () => {

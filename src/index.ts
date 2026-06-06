@@ -14,7 +14,7 @@ import { KanaExtractor } from './KanaExtractor';
 export function bind(
   name: Bindable,
   furigana?: Bindable,
-  option: Partial<AutoKanaOption> = {},
+  option: AutoKanaOption = {},
 ): AutoKana {
   return new AutoKana(name, furigana, option);
 }
