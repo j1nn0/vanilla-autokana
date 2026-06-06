@@ -1144,3 +1144,22 @@ describe('public types', () => {
     expect(typeof typeCheckOnly).toBe('function');
   });
 });
+
+describe('destroy()', () => {
+  test('destroy removes event listeners and nullifies element references', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    // @ts-expect-error - accessing private property for test verification
+    expect(autokana.elName).toBe(nameInput);
+
+    autokana.destroy();
+
+    // After destroy, elName should be null to prevent memory leaks
+    // @ts-expect-error - accessing private property for test verification
+    expect(autokana.elName).toBeNull();
+    // @ts-expect-error - accessing private property for test verification
+    expect(autokana.elFurigana).toBeUndefined();
+  });
+});

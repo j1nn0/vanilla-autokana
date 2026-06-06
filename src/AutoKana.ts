@@ -20,7 +20,7 @@ export interface AutoKanaOption {
 export default class AutoKana {
   isActive: boolean;
   option: AutoKanaOption & { katakana: KatakanaOption; debug: boolean };
-  private elName: KanaElement;
+  private elName!: KanaElement;
   private elFurigana?: KanaElement;
   private committedKana: string;
   private furigana: string;
@@ -278,6 +278,8 @@ export default class AutoKana {
     this.elName.removeEventListener('compositionstart', this.compositionStartHandler);
     this.elName.removeEventListener('compositionend', this.compositionEndHandler);
     this.elName.removeEventListener('input', this.inputHandler as EventListener);
+    this.elName = null as unknown as KanaElement;
+    this.elFurigana = undefined;
   }
 
   private debug(...args: unknown[]): void {
