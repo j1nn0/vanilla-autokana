@@ -38,7 +38,7 @@ export function requireElement(selectorOrElement: Bindable): KanaElement {
     throw new Error(
       `AutoKana: Element not found for ${label}. ` +
       `Ensure the DOM element exists before calling bind(). ` +
-      `For SPAs, call bind() after the component is mounted.`,
+      `For Vue/React, call bind() inside onMounted()/useEffect() or after the component is mounted.`,
     );
   }
   if (!isKanaElement(el)) {

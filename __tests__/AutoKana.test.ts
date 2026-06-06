@@ -334,6 +334,7 @@ test('bind with missing furigana selector throws Error when explicitly provided'
 test('error message includes guidance for SPA users', () => {
   setup();
   expect(() => new AutoKana('.nonexistent')).toThrow(/Ensure the DOM element exists before calling bind/);
+  expect(() => new AutoKana('.nonexistent')).toThrow(/Vue\/React/);
 });
 
 test('paste input extracts kana from pasted text', () => {
