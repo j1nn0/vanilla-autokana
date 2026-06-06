@@ -27,6 +27,15 @@
       "type": "local",
       "enabled": true,
       "command": ["npx", "-y", "chrome-devtools-mcp@latest"]
+    },
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true
     }
   },
   "agent": {
