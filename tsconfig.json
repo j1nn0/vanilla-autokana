@@ -5,8 +5,11 @@
     "moduleResolution": "bundler",
     "lib": ["ES2020", "DOM"],
     "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
     "noEmit": true,
     "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
     "jsx": "react-jsx"
   },
   "include": ["src", "__tests__", "stories", ".storybook", "vite.config.ts", "vitest.config.ts"]

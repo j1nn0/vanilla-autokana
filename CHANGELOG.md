@@ -26,14 +26,23 @@
 
 ### Fixed
 
+- CommonJS package entry now points to a dedicated `dist/autokana.cjs` build instead of the browser UMD bundle.
 - `KanaExtractor.containsNonKana()` now uses `search()` instead of `test()` to avoid `lastIndex` mutation bugs with global regex.
 
 ### Tests
 
 - Added `KanaExtractor` unit tests (extract, compact, containsNonKana).
 - Added `KanaConverter` unit tests (toKatakana for half/full/hiragana modes).
+- Added package export smoke checks for ESM and CommonJS builds.
 - Removed direct `AutoKana#toKatakana()` tests in favor of `KanaConverter` tests.
 - Total tests: 87.
+
+### Build/Tooling
+
+- Build now emits separate ES module, CommonJS, and UMD artifacts.
+- Publish checks now use one-shot coverage tests instead of Vitest watch mode.
+- CI now validates package exports, dry-run package contents, package metadata, and published type resolution.
+- TypeScript configuration now checks published declarations with `isolatedDeclarations`.
 
 ## Unreleased
 
@@ -63,7 +72,7 @@
 - `AutoKanaOption` interface updated around the event-driven model and now exposes `katakana`, `debug`, and `onChange`.
 - Focus/blur handlers no longer manage a polling interval; blur resets `isComposing` flag as a safety fallback.
 - Focus handling now clears transient conversion buffers on re-focus to avoid double-counting previously processed kana.
-- **Breaking:** Replaced `halfWidthKatakana: boolean` with `katakana: false | 'full' | 'half'`.
+- **Breaking:** Replaced `halfWidthKatakana: boolean` with `katakana: 'hiragana' | 'full' | 'half'`.
 - Migrated the entire codebase from JavaScript to TypeScript.
 - Switched build system from Webpack to Vite (UMD + ES modules + d.ts).
 - Improved element resolution/type safety around `requireElement()` and selector handling.
@@ -74,7 +83,7 @@
 - Added JSDoc to exported APIs and conversion-related methods to clarify their roles in the conversion state machine.
 - Updated package metadata for publication readiness (scope `@j1nn0`, description, repository, bugs, homepage, contributors).
 - Aligned type declaration module name with the published package name `@j1nn0/vanilla-autokana`.
-- Updated Node.js engine requirement to `>=24` and pinned `pnpm@10.33.2`.
+- Updated Node.js engine requirement to `>=24` and pinned `pnpm@10.34.1`.
 - Added `.editorconfig`, `.oxlintrc.json`, `.oxfmtrc.json`, `.npmrc`, `pnpm-workspace.yaml`, `mise.toml`, VSCode settings.
 
 ### Fixed

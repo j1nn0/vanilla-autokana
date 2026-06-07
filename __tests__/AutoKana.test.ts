@@ -340,7 +340,7 @@ test('error message includes guidance for SPA users', () => {
 
 test('paste input extracts kana from pasted text', () => {
   setup();
-  const _autokana = new AutoKana('name', 'furigana');
+  new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
   const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
   nameInput.value = 'やまだ';
@@ -505,7 +505,7 @@ describe('IME composition events', () => {
 
   test('input event with isComposing=false processes kana extraction and updates furigana', () => {
     setup();
-    const _autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
     nameInput.value = 'やまだ';
@@ -529,7 +529,7 @@ describe('IME composition events', () => {
 
   test('compositionend triggers processing even without subsequent input event (Chrome quirk)', () => {
     setup();
-    const _autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
     nameInput.value = 'やまだ';

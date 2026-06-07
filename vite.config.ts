@@ -12,8 +12,13 @@ export default defineConfig({
     lib: {
       entry: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
       name: "AutoKana",
-      fileName: (format) => `autokana.${format}.js`,
-      formats: ["umd", "es"],
+      fileName: (format) => {
+        if (format === "cjs") {
+          return "autokana.cjs";
+        }
+        return `autokana.${format}.js`;
+      },
+      formats: ["es", "cjs", "umd"],
     },
   },
 });

@@ -83,8 +83,8 @@ const meta: Meta<Args> = {
   argTypes: {
     katakana: {
       control: 'select',
-      options: [false, 'full', 'half'],
-      description: '出力文字種。false = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
+      options: ['hiragana', 'full', 'half'],
+      description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
     },
   },
 };

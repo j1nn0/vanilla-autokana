@@ -5,11 +5,6 @@ import { bind, type AutoKanaOption } from '../src/index';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
 
-const FIELD_STYLE =
-  'box-sizing:border-box;width:100%;padding:8px 12px;font-size:16px;border:1px solid #ccc;border-radius:4px;outline:none;';
-const LABEL_STYLE = 'display:block;margin-bottom:4px;font-size:13px;color:#555;';
-const FIELD_WRAP_STYLE = 'margin-bottom:12px;';
-
 function ReactDemo({ katakana }: Args): React.ReactElement {
   const [furigana, setFurigana] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
@@ -75,8 +70,8 @@ const meta: Meta<Args> = {
   argTypes: {
     katakana: {
       control: 'select',
-      options: [false, 'full', 'half'],
-      description: '出力文字種。false = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
+      options: ['hiragana', 'full', 'half'],
+      description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
     },
   },
 };

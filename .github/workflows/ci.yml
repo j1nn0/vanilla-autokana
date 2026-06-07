@@ -43,6 +43,18 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Verify package exports
+        run: pnpm run verify:exports
+
+      - name: Pack dry run
+        run: pnpm pack --dry-run
+
+      - name: Validate package metadata
+        run: pnpm dlx publint
+
+      - name: Validate package types
+        run: pnpm dlx @arethetypeswrong/cli --pack .
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
