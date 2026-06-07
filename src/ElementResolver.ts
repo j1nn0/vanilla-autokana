@@ -3,9 +3,7 @@ export type KanaElement = HTMLInputElement | HTMLTextAreaElement;
 export type Bindable = string | KanaElement;
 
 export function getElementLabel(selectorOrElement: Bindable): string {
-  return typeof selectorOrElement === 'string'
-    ? `"${selectorOrElement}"`
-    : 'the provided element';
+  return typeof selectorOrElement === 'string' ? `"${selectorOrElement}"` : 'the provided element';
 }
 
 export function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
@@ -37,8 +35,8 @@ export function requireElement(selectorOrElement: Bindable): KanaElement {
     const label = getElementLabel(selectorOrElement);
     throw new Error(
       `AutoKana: Element not found for ${label}. ` +
-      `Ensure the DOM element exists before calling bind(). ` +
-      `For Vue/React, call bind() inside onMounted()/useEffect() or after the component is mounted.`,
+        `Ensure the DOM element exists before calling bind(). ` +
+        `For Vue/React, call bind() inside onMounted()/useEffect() or after the component is mounted.`,
     );
   }
   if (!isKanaElement(el)) {

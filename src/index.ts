@@ -11,11 +11,7 @@ import { KanaExtractor } from './KanaExtractor';
  * @param option Option.
  * @returns An AutoKana instance.
  */
-export function bind(
-  name: Bindable,
-  furigana?: Bindable,
-  option: AutoKanaOption = {},
-): AutoKana {
+export function bind(name: Bindable, furigana?: Bindable, option: AutoKanaOption = {}): AutoKana {
   return new AutoKana(name, furigana, option);
 }
 

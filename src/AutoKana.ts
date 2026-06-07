@@ -48,12 +48,12 @@ export default class AutoKana {
   private previousRawInput: string;
 
   private blurHandler = (): void => {
-    this.debug('blur');
+    if (this.option.debug) this.debug('blur');
     this.isComposing = false;
   };
 
   private focusHandler = (): void => {
-    this.debug('focus');
+    if (this.option.debug) this.debug('focus');
     if (this.elFurigana) {
       this.committedKana = this.elFurigana.value;
     }
@@ -66,12 +66,12 @@ export default class AutoKana {
   };
 
   private compositionStartHandler = (): void => {
-    this.debug('compositionstart');
+    if (this.option.debug) this.debug('compositionstart');
     this.isComposing = true;
   };
 
   private compositionEndHandler = (): void => {
-    this.debug('compositionend');
+    if (this.option.debug) this.debug('compositionend');
     this.isComposing = false;
     // Reset input tracking so processValue() treats this as a new input
     // and runs the full non-composition path (detectAndCommitConversion, etc.)
@@ -83,7 +83,7 @@ export default class AutoKana {
   };
 
   private inputHandler = (event: InputEvent): void => {
-    this.debug('input', event.isComposing);
+    if (this.option.debug) this.debug('input', event.isComposing);
     this.processValue();
   };
 
@@ -185,7 +185,10 @@ export default class AutoKana {
         this.committedKana + this.pendingKana.join(''),
         this.option.katakana,
       );
-      const furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
+      const furigana =
+        this.option.katakana === 'half' && kana.indexOf('　') !== -1
+          ? kana.replace(/　/g, ' ')
+          : kana;
       if (!force && furigana === this.furigana) {
         return;
       }
@@ -201,17 +204,21 @@ export default class AutoKana {
   }
 
   private extractNewInput(newInput: string): string {
-    if (newInput.indexOf(this.lastConvertedInput) !== -1) {
-      return newInput.replace(this.lastConvertedInput, '');
+    const convertedIndex = newInput.indexOf(this.lastConvertedInput);
+    if (convertedIndex !== -1) {
+      return (
+        newInput.slice(0, convertedIndex) +
+        newInput.slice(convertedIndex + this.lastConvertedInput.length)
+      );
     }
-    const ignoreArray = this.lastConvertedInput.split('');
-    const inputArray = newInput.split('');
-    for (let i = 0; i < ignoreArray.length; i += 1) {
-      if (ignoreArray[i] === inputArray[i]) {
-        inputArray[i] = '';
+
+    let input = '';
+    for (let i = 0; i < newInput.length; i += 1) {
+      if (this.lastConvertedInput.charCodeAt(i) !== newInput.charCodeAt(i)) {
+        input += newInput.charAt(i);
       }
     }
-    return inputArray.join('');
+    return input;
   }
 
   detectAndCommitConversion(newPendingKana: string[]): void {
@@ -302,10 +309,16 @@ export default class AutoKana {
     this.elFurigana = undefined;
   }
 
-  private debug(...args: unknown[]): void {
-    if (this.option.debug) {
-      // eslint-disable-next-line no-console
-      console.log(...args);
+  private debug(message: unknown, detail?: unknown): void {
+    if (!this.option.debug) {
+      return;
     }
+    if (detail === undefined) {
+      // eslint-disable-next-line no-console
+      console.log(message);
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.log(message, detail);
   }
 }

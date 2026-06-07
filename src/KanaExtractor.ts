@@ -1,6 +1,7 @@
 export class KanaExtractor {
   // eslint-disable-next-line no-irregular-whitespace
   private static readonly EXTRACTION_PATTERN = /[^ 　ぁあ-んゔー]/g;
+  private static readonly CONTAINS_NON_KANA_PATTERN = /[^ 　ぁあ-んゔー]/;
   private static readonly COMPACTING_PATTERN = /[ぁぃぅぇぉっゃゅょ]/g;
 
   static extract(input: string): string[] {
@@ -12,6 +13,6 @@ export class KanaExtractor {
   }
 
   static containsNonKana(input: string): boolean {
-    return input.search(this.EXTRACTION_PATTERN) !== -1;
+    return input.search(this.CONTAINS_NON_KANA_PATTERN) !== -1;
   }
 }

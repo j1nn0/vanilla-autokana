@@ -20,19 +20,11 @@ export class KanaConverter {
       return src;
     }
 
-    let c: number;
     let str = '';
     for (let i = 0; i < src.length; i += 1) {
-      c = src.charCodeAt(i);
-      if (isHiragana(c)) {
-        str += String.fromCharCode(c + 96);
-      } else {
-        str += src.charAt(i);
-      }
-    }
-
-    if (option === 'half') {
-      return str.replace(/[ァ-ヴヺー。、]/g, (ch) => fullToHalfKatakanaMap[ch] ?? ch);
+      const charCode = src.charCodeAt(i);
+      const char = isHiragana(charCode) ? String.fromCharCode(charCode + 96) : src.charAt(i);
+      str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
     }
 
     return str;
