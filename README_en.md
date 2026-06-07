@@ -26,8 +26,8 @@ Download `dist/autokana.umd.js` from this repository and load it with a script t
 ## Usage
 
 - Pass the source input element (where the user types) as the first argument to `AutoKana.bind()`. The second argument can specify the destination input element (where furigana appears), but it is optional.
-- Elements can be specified via selector strings starting with `#`, `.`, `[`, or `:`, or DOM Element instances. Passing a bare ID string also works for backward compatibility.
-- Run inside a `DOMContentLoaded` event to ensure input elements are available.
+- Elements can be specified via selector strings starting with `#`, `.`, `[`, or `:`, or input / textarea elements. Passing a bare ID string also works for backward compatibility.
+- Run inside a `DOMContentLoaded` event to ensure input / textarea elements are available.
 - The library itself does not depend on DOM lifecycle events, so adding the `defer` attribute to the script tag is recommended.
 
 ```html
@@ -58,8 +58,8 @@ AutoKana.bind('#name', '#furigana');
 
 You can pass the following as the third argument to `AutoKana.bind(name, furigana?, option)`:
 
-- `name`: a selector string starting with `#`, `.`, `[`, or `:`, or a DOM Element instance
-- `furigana`: a selector string starting with `#`, `.`, `[`, or `:`, a DOM Element instance, or omitted
+- `name`: a selector string starting with `#`, `.`, `[`, or `:`, or an input / textarea element
+- `furigana`: a selector string starting with `#`, `.`, `[`, or `:`, an input / textarea element, or omitted
 
 - `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`

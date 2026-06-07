@@ -1,7 +1,7 @@
 import { KanaExtractor } from './KanaExtractor';
 import { KanaConverter } from './KanaConverter';
 import type { KanaElement, Bindable } from './ElementResolver';
-import { requireElement } from './ElementResolver';
+import { ensureElement, getElementLabel, isKanaElement, requireElement } from './ElementResolver';
 
 export type { Bindable };
 export type { KatakanaOption };
@@ -15,6 +15,22 @@ export interface AutoKanaOption {
   debug?: boolean;
   /** Callback invoked with the current furigana string whenever it changes. */
   onChange?: (furigana: string) => void;
+}
+
+function resolveOptionalFurigana(furigana: Bindable | undefined): KanaElement | undefined {
+  if (furigana === undefined || furigana === '') {
+    return undefined;
+  }
+  const el = ensureElement(furigana);
+  if (!el) {
+    return undefined;
+  }
+  if (!isKanaElement(el)) {
+    throw new Error(
+      `AutoKana: Element must be an input or textarea for ${getElementLabel(furigana)}.`,
+    );
+  }
+  return el;
 }
 
 export default class AutoKana {
@@ -90,9 +106,7 @@ export default class AutoKana {
     );
 
     const elName = requireElement(name);
-    const elFurigana = furigana === undefined || furigana === ''
-      ? undefined
-      : requireElement(furigana);
+    const elFurigana = resolveOptionalFurigana(furigana);
 
     this.elName = elName;
     if (elFurigana) {
@@ -167,7 +181,10 @@ export default class AutoKana {
 
   setFurigana(force = false): void {
     if (this.isActive) {
-      const kana = KanaConverter.toKatakana(this.committedKana + this.pendingKana.join(''), this.option.katakana);
+      const kana = KanaConverter.toKatakana(
+        this.committedKana + this.pendingKana.join(''),
+        this.option.katakana,
+      );
       const furigana = this.option.katakana === 'half' ? kana.replace(/　/g, ' ') : kana;
       if (!force && furigana === this.furigana) {
         return;
@@ -207,7 +224,10 @@ export default class AutoKana {
           this.commitPendingKana();
         }
       }
-    } else if (this.pendingKana.length === this.lastNewInput.length && this.pendingKana.join('') !== this.lastNewInput) {
+    } else if (
+      this.pendingKana.length === this.lastNewInput.length &&
+      this.pendingKana.join('') !== this.lastNewInput
+    ) {
       if (KanaExtractor.containsNonKana(this.lastNewInput)) {
         this.commitPendingKana();
       }

@@ -26,8 +26,8 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 ## 使用方法
 
 - `AutoKana.bind()` メソッドの第1引数にふりがな入力元の input 要素を指定します。第2引数にはふりがな出力先の input 要素を指定できますが、省略も可能です
-- 要素の指定には `#` / `.` / `[` / `:` で始まるセレクタ文字列、または DOM Element を渡せます。IDのみを渡した場合も従来どおり動作します
-- input要素が見つけられない場合は正常に動作できないため、DOMContentLoadedイベント内での実行を推奨します
+- 要素の指定には `#` / `.` / `[` / `:` で始まるセレクタ文字列、または input / textarea 要素を渡せます。IDのみを渡した場合も従来どおり動作します
+- input / textarea 要素が見つけられない場合は正常に動作できないため、DOMContentLoadedイベント内での実行を推奨します
 - ライブラリ本体はDOMのライフサイクルイベントに依存しないため、ライブラリの読み込みには`defer`属性の追加を推奨します
 
 ```html
@@ -60,8 +60,8 @@ AutoKana.bind('#name', '#furigana');
 
 `AutoKana.bind(name, furigana?, option)` の第3引数には以下を指定できます。
 
-- `name`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、または DOM Element
-- `furigana`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、DOM Element、または省略
+- `name`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、または input / textarea 要素
+- `furigana`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、input / textarea 要素、または省略
 
 - `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`

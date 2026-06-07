@@ -325,11 +325,17 @@ test('bind with malformed selector throws AutoKana Error', () => {
   expect(() => new AutoKana('#')).toThrow('AutoKana: Invalid selector for "#"');
 });
 
-test('bind with missing furigana selector throws Error when explicitly provided', () => {
+test('bind with missing furigana selector continues without output element', () => {
   setup('<input name="name" id="name">');
-  expect(() => new AutoKana('name', 'missing-furigana')).toThrow(
-    'AutoKana: Element not found for "missing-furigana"',
-  );
+  const onChange = vi.fn();
+  const autokana = new AutoKana('name', 'missing-furigana', { onChange });
+  const nameInput = document.getElementById('name') as HTMLInputElement;
+
+  nameInput.value = 'やまだ';
+  nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
+
+  expect(autokana.getFurigana()).toBe('やまだ');
+  expect(onChange).toHaveBeenCalledWith('やまだ');
 });
 
 test('error message includes guidance for SPA users', () => {

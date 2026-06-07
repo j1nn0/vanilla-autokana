@@ -35,7 +35,6 @@
 - Added `KanaConverter` unit tests (toKatakana for half/full/hiragana modes).
 - Added package export smoke checks for ESM and CommonJS builds.
 - Removed direct `AutoKana#toKatakana()` tests in favor of `KanaConverter` tests.
-- Total tests: 87.
 
 ### Build/Tooling
 
