@@ -1,0 +1,53 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリをチェックアウト（フル履歴）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # pnpmをセットアップ
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.33.0"
+
+      # nodeをセットアップ
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Takumi Guardをセットアップ
+      - name: Use Takumi Guard
+        uses: flatt-security/setup-takumi-guard-npm@v1
+
+      # OIDCにnpm@11.5.1以降が必要
+      - name: Install npm@latest
+        run: npm install -g npm@latest
+
+      # 依存関係をインストール
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ビルド
+      - name: Build
+        run: pnpm build
+
+      # npm に公開（Git チェックをスキップ）
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks --provenance --registry https://registry.npmjs.org/
