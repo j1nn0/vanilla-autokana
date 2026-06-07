@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 2.1.0 - 2026-06-07
+
+### Changed
+
+- Improved input-event hot paths without changing public behavior: debug logging now avoids work when disabled, input diffing avoids intermediate arrays, half-width katakana conversion runs in a single pass, and non-kana detection uses a non-global regex.
 
 ## 2.0.0
 
