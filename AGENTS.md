@@ -57,7 +57,7 @@
 ## コマンド
 
 - 必要環境: Node.js `>=24`、pnpm `>=10`
-- パッケージマネージャ: `pnpm@10.33.2`
+- パッケージマネージャ: `pnpm@10.34.1`
 - 依存関係の導入: `rtk pnpm install`
 - lint: `rtk pnpm run lint`
 - typecheck: `rtk pnpm run typecheck`
