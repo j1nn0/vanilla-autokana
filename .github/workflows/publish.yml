@@ -45,8 +45,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # ビルド
-      - name: Build
-        run: pnpm build
+      - name: Verify
+        run: pnpm run lint && pnpm run typecheck && pnpm run test:coverage && pnpm run build && pnpm run verify:exports
 
       # npm に公開（Git チェックをスキップ）
       - name: Publish to npm
