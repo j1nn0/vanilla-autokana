@@ -117,3 +117,17 @@
 - コメントは複雑な IME / 変換検出ロジックの意図を補う場合だけ追加する。
 - 互換性のない API 変更は、ユーザーの明示依頼または ADR を伴う場合に限る。
 - 小さな修正で新しい抽象化を増やさない。既存の責務分割に沿って変更する。
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`j1nn0/vanilla-autokana`); external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo: one `CONTEXT.md` at root and `docs/adr/` for architectural decisions. See `docs/agents/domain.md`.
