@@ -8,6 +8,9 @@ export type { KatakanaOption };
 
 type KatakanaOption = 'hiragana' | 'full' | 'half';
 
+/** Minimal shape of a checkbox change event accepted by {@link AutoKana.toggle}. */
+type ToggleEventLike = { target: { checked: boolean } };
+
 export interface AutoKanaOption {
   /** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
   katakana?: KatakanaOption;
@@ -48,12 +51,12 @@ export default class AutoKana {
   private previousRawInput: string;
 
   private blurHandler = (): void => {
-    if (this.option.debug) this.debug('blur');
+    this.debug('blur');
     this.isComposing = false;
   };
 
   private focusHandler = (): void => {
-    if (this.option.debug) this.debug('focus');
+    this.debug('focus');
     if (this.elFurigana) {
       this.committedKana = this.elFurigana.value;
     }
@@ -66,12 +69,12 @@ export default class AutoKana {
   };
 
   private compositionStartHandler = (): void => {
-    if (this.option.debug) this.debug('compositionstart');
+    this.debug('compositionstart');
     this.isComposing = true;
   };
 
   private compositionEndHandler = (): void => {
-    if (this.option.debug) this.debug('compositionend');
+    this.debug('compositionend');
     this.isComposing = false;
     // Reset input tracking so processValue() treats this as a new input
     // and runs the full non-composition path (detectAndCommitConversion, etc.)
@@ -83,7 +86,7 @@ export default class AutoKana {
   };
 
   private inputHandler = (event: InputEvent): void => {
-    if (this.option.debug) this.debug('input', event.isComposing);
+    this.debug('input', event.isComposing);
     this.processValue();
   };
 
@@ -97,13 +100,11 @@ export default class AutoKana {
     this.pendingKana = [];
     this.previousRawInput = '';
 
-    this.option = Object.assign(
-      {
-        katakana: 'hiragana' as KatakanaOption,
-        debug: false,
-      },
-      option,
-    );
+    this.option = {
+      ...option,
+      katakana: option.katakana ?? 'hiragana',
+      debug: option.debug ?? false,
+    };
 
     const elName = requireElement(name);
     const elFurigana = resolveOptionalFurigana(furigana);
@@ -143,7 +144,7 @@ export default class AutoKana {
    *
    * @param event Optional checkbox change event. When provided, uses the checked state of the target.
    */
-  toggle(event?: { target: { checked: boolean } }): void {
+  toggle(event?: ToggleEventLike): void {
     if (event) {
       this.isActive = event.target.checked;
     } else {
@@ -179,6 +180,7 @@ export default class AutoKana {
     elName.addEventListener('input', this.inputHandler as EventListener);
   }
 
+  /** @internal Internal mechanics; not part of the supported public API. */
   setFurigana(force = false): void {
     if (this.isActive) {
       const kana = KanaConverter.toKatakana(
@@ -203,6 +205,19 @@ export default class AutoKana {
     }
   }
 
+  /**
+   * Subtract the last converted (committed) portion of the raw input so that only the
+   * not-yet-committed remainder is returned for kana extraction.
+   *
+   * Two strategies:
+   * 1. If `lastConvertedInput` appears as a contiguous substring of the current input,
+   *    slice it out. This is the common case (the committed kanji sits intact inside the
+   *    field while the user keeps typing before/after it). An empty `lastConvertedInput`
+   *    matches at index 0 and returns the input unchanged.
+   * 2. Otherwise fall back to a positional charCode comparison, keeping only the
+   *    characters that differ from `lastConvertedInput` at the same index. This handles
+   *    cases where the committed text is no longer contiguous after an IME conversion.
+   */
   private extractNewInput(newInput: string): string {
     const convertedIndex = newInput.indexOf(this.lastConvertedInput);
     if (convertedIndex !== -1) {
@@ -221,6 +236,25 @@ export default class AutoKana {
     return input;
   }
 
+  /**
+   * Decide whether the user just confirmed an IME conversion and, if so, move the
+   * current pending kana (未確定かな) into committed kana (確定かな).
+   *
+   * Two heuristics signal a conversion:
+   *
+   * 1. **Large length jump** — the pending kana count changed by more than one in a single
+   *    input event. A jump that big is not plain typing (which adds/removes one kana at a
+   *    time); it means the IME replaced the reading with converted text. We skip the case
+   *    where the new kana merely extends the old (`startsWith`), and re-check after kana
+   *    compacting (小さなかな除去) so that small kana like っ/ゃ don't inflate the diff and
+   *    cause a false positive.
+   *
+   * 2. **Same length, different content with non-kana present** — the pending kana count is
+   *    unchanged but the raw last input now contains non-kana characters (e.g. kanji). That
+   *    means the reading was converted in place, so commit it.
+   *
+   * @internal Internal mechanics; not part of the supported public API.
+   */
   detectAndCommitConversion(newPendingKana: string[]): void {
     if (Math.abs(this.pendingKana.length - newPendingKana.length) > 1) {
       const oldKana = this.pendingKana.join('');
@@ -272,6 +306,7 @@ export default class AutoKana {
     this.setFurigana();
   }
 
+  /** @internal Internal mechanics; not part of the supported public API. */
   processValue(): void {
     const rawInput = this.elName.value;
 
@@ -291,6 +326,7 @@ export default class AutoKana {
     this.handleNormalInput(newInput, rawInput);
   }
 
+  /** @internal Internal mechanics; not part of the supported public API. */
   commitPendingKana(): void {
     this.committedKana = this.committedKana + this.pendingKana.join('');
     this.pendingKana = [];
@@ -305,6 +341,9 @@ export default class AutoKana {
     this.elName.removeEventListener('compositionstart', this.compositionStartHandler);
     this.elName.removeEventListener('compositionend', this.compositionEndHandler);
     this.elName.removeEventListener('input', this.inputHandler as EventListener);
+    // Intentionally drop the element references after teardown so the instance no longer
+    // pins the DOM nodes. `elName` is declared non-nullable for the active lifetime, so the
+    // cast is a deliberate teardown-only escape hatch; methods must not run after destroy().
     this.elName = null as unknown as KanaElement;
     this.elFurigana = undefined;
   }

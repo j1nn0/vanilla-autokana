@@ -50,7 +50,7 @@
     "watch": "vite build --watch",
     "lint": "oxlint src __tests__",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json",
-    "format": "oxfmt --write src",
+    "format": "oxfmt --write src __tests__",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "verify:exports": "node scripts/verify-package-exports.mjs",
