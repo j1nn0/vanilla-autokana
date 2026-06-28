@@ -92,11 +92,11 @@ When a furigana output input is provided, an `input` event with `bubbles: true` 
   <div id="app">
     <div>
       <label for="name">Name</label>
-      <input name="name" id="name" v-model="name">
+      <input name="name" id="name" v-model="name" />
     </div>
     <div>
       <label for="furigana">Furigana</label>
-      <input name="furigana" id="furigana" v-model="furigana">
+      <input name="furigana" id="furigana" v-model="furigana" />
     </div>
     <h2>Confirm your input</h2>
     <p>Name: {{ name }}</p>
@@ -105,24 +105,24 @@ When a furigana output input is provided, an `input` event with `bubbles: true` 
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
-  import { bind } from '@j1nn0/vanilla-autokana';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { bind } from '@j1nn0/vanilla-autokana';
 
-  const name = ref('');
-  const furigana = ref('');
-  let autokana;
+const name = ref('');
+const furigana = ref('');
+let autokana;
 
-  onMounted(() => {
-    autokana = bind('#name', '#furigana', {
-      onChange: (value) => {
-        furigana.value = value;
-      },
-    });
+onMounted(() => {
+  autokana = bind('#name', '#furigana', {
+    onChange: (value) => {
+      furigana.value = value;
+    },
   });
+});
 
-  onUnmounted(() => {
-    autokana?.destroy();
-  });
+onUnmounted(() => {
+  autokana?.destroy();
+});
 </script>
 ```
 
@@ -131,7 +131,7 @@ You can also use the `getFurigana` method to retrieve the furigana, but `onChang
 
 ```html
 <!-- Not recommended: polling getFurigana() -->
-<input name="name" id="name" v-model="name" @input="handleNameInput">
+<input name="name" id="name" v-model="name" @input="handleNameInput" />
 ```
 
 ### Using with React.js
@@ -162,12 +162,7 @@ function App() {
     <div className="App">
       <div>
         <label htmlFor="name">Name</label>
-        <input
-          name="name"
-          id="name"
-          value={name}
-          onInput={(e) => setName(e.target.value)}
-        />
+        <input name="name" id="name" value={name} onInput={(e) => setName(e.target.value)} />
       </div>
       <div>
         <label htmlFor="furigana">Furigana</label>
@@ -187,18 +182,18 @@ export default App;
 
 The `katakana` option type has changed in v2.0.0.
 
-| Before (v1) | After (v2) |
-|-------------|------------|
-| `katakana: false` | `katakana: 'hiragana'` |
-| `katakana: 'full'` | `katakana: 'full'` (no change) |
-| `katakana: 'half'` | `katakana: 'half'` (no change) |
+| Before (v1)       | After (v2)               |
+| ----------------- | ------------------------ |
+| `katakana: false` | `katakana: 'hiragana'`   |
+| `katakana: true`  | `katakana: 'full'`       |
+| none              | `katakana: 'half'` (new) |
 
 ```js
 // v1
-AutoKana.bind('#name', '#furigana', { katakana: false });
+AutoKana.bind('#name', '#furigana', { katakana: true });
 
 // v2
-AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
+AutoKana.bind('#name', '#furigana', { katakana: 'full' });
 ```
 
 ## License

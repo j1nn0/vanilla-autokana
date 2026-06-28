@@ -31,13 +31,13 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 - ライブラリ本体はDOMのライフサイクルイベントに依存しないため、ライブラリの読み込みには`defer`属性の追加を推奨します
 
 ```html
-<input name="name" id="name">
-<input name="furigana" id="furigana">
+<input name="name" id="name" />
+<input name="furigana" id="furigana" />
 <script src="autokana.umd.js" defer></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener('DOMContentLoaded', function () {
     // ひらがなで出力（デフォルト）
-    AutoKana.bind("#name", "#furigana");
+    AutoKana.bind('#name', '#furigana');
     // 全角カタカナで出力したい場合
     // AutoKana.bind("#name", "#furigana", { katakana: 'full' });
     // 半角カタカナで出力したい場合
@@ -94,11 +94,11 @@ AutoKana.bind('#name', '#furigana');
   <div id="app">
     <div>
       <label for="name">名前</label>
-      <input name="name" id="name" v-model="name">
+      <input name="name" id="name" v-model="name" />
     </div>
     <div>
       <label for="furigana">ふりがな</label>
-      <input name="furigana" id="furigana" v-model="furigana">
+      <input name="furigana" id="furigana" v-model="furigana" />
     </div>
     <h2>入力内容の確認</h2>
     <p>名前: {{ name }}</p>
@@ -107,24 +107,24 @@ AutoKana.bind('#name', '#furigana');
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
-  import { bind } from '@j1nn0/vanilla-autokana';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { bind } from '@j1nn0/vanilla-autokana';
 
-  const name = ref('');
-  const furigana = ref('');
-  let autokana;
+const name = ref('');
+const furigana = ref('');
+let autokana;
 
-  onMounted(() => {
-    autokana = bind('#name', '#furigana', {
-      onChange: (value) => {
-        furigana.value = value;
-      },
-    });
+onMounted(() => {
+  autokana = bind('#name', '#furigana', {
+    onChange: (value) => {
+      furigana.value = value;
+    },
   });
+});
 
-  onUnmounted(() => {
-    autokana?.destroy();
-  });
+onUnmounted(() => {
+  autokana?.destroy();
+});
 </script>
 ```
 
@@ -133,7 +133,7 @@ AutoKana.bind('#name', '#furigana');
 
 ```html
 <!-- 非推奨: getFurigana() のポーリング -->
-<input name="name" id="name" v-model="name" @input="handleNameInput">
+<input name="name" id="name" v-model="name" @input="handleNameInput" />
 ```
 
 ### React.jsと組み合わせる
@@ -164,12 +164,7 @@ function App() {
     <div className="App">
       <div>
         <label htmlFor="name">名前</label>
-        <input
-          name="name"
-          id="name"
-          value={name}
-          onInput={(e) => setName(e.target.value)}
-        />
+        <input name="name" id="name" value={name} onInput={(e) => setName(e.target.value)} />
       </div>
       <div>
         <label htmlFor="furigana">ふりがな</label>
@@ -191,20 +186,20 @@ v2.0.0 で `katakana` オプションの値が変更されました。
 
 ### 変更点
 
-| 変更前 (v1) | 変更後 (v2) |
-|-------------|-------------|
-| `katakana: false` | `katakana: 'hiragana'` |
-| `katakana: 'full'` | `katakana: 'full'`（変更なし） |
-| `katakana: 'half'` | `katakana: 'half'`（変更なし） |
+| 変更前 (v1)       | 変更後 (v2)                |
+| ----------------- | -------------------------- |
+| `katakana: false` | `katakana: 'hiragana'`     |
+| `katakana: treu`  | `katakana: 'full'`         |
+| なし              | `katakana: 'half'`（新設） |
 
 ### 移行手順
 
 ```js
 // v1
-AutoKana.bind('#name', '#furigana', { katakana: false });
+AutoKana.bind('#name', '#furigana', { katakana: true });
 
 // v2
-AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
+AutoKana.bind('#name', '#furigana', { katakana: 'full' });
 ```
 
 ## ライセンス
