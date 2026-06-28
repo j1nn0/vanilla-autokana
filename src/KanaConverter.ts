@@ -33,6 +33,9 @@ export class KanaConverter {
       str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
     }
 
-    return str;
+    // Half-width katakana output normalizes the full-width space (　) to a half-width space,
+    // matching the ASCII spacing convention of half-width katakana fields.
+    // eslint-disable-next-line no-irregular-whitespace
+    return option === 'half' && str.indexOf('　') !== -1 ? str.replace(/　/g, ' ') : str;
   }
 }
