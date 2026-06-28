@@ -71,28 +71,6 @@ You can pass the following as the third argument to `AutoKana.bind(name, furigan
 - `'full'`: Output in full-width katakana
 - `'half'`: Output in half-width katakana (full-width spaces are normalized to half-width spaces)
 
-## Migration Guide (v1 → v2)
-
-### Breaking Change
-
-The `katakana` option type has changed in v2.0.0.
-
-| Before (v1) | After (v2) |
-|-------------|------------|
-| `katakana: false` | `katakana: 'hiragana'` |
-| `katakana: 'full'` | `katakana: 'full'` (no change) |
-| `katakana: 'half'` | `katakana: 'half'` (no change) |
-
-### Migration
-
-```js
-// v1
-AutoKana.bind('#name', '#furigana', { katakana: false });
-
-// v2
-AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
-```
-
 ### Methods
 
 - `getFurigana()`: Returns the current furigana string
@@ -203,6 +181,24 @@ function App() {
 }
 
 export default App;
+```
+
+## Migration Guide (v1 → v2)
+
+The `katakana` option type has changed in v2.0.0.
+
+| Before (v1) | After (v2) |
+|-------------|------------|
+| `katakana: false` | `katakana: 'hiragana'` |
+| `katakana: 'full'` | `katakana: 'full'` (no change) |
+| `katakana: 'half'` | `katakana: 'half'` (no change) |
+
+```js
+// v1
+AutoKana.bind('#name', '#furigana', { katakana: false });
+
+// v2
+AutoKana.bind('#name', '#furigana', { katakana: 'hiragana' });
 ```
 
 ## License

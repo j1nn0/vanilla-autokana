@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.2.0 - 2026-06-28
+
+### Changed
+
+- Extracted the IME conversion state machine into an internal `InputTracker` class. `AutoKana` is now a thin DOM adapter; all committed/pending kana state and conversion-detection heuristics live in `InputTracker`. No public API changes.
+- Moved full-width space → half-width space normalization from `AutoKana` into `KanaConverter.toKatakana()`. Observable behavior in half-width katakana mode is unchanged.
+
+### Tests
+
+- Migrated white-box tests that accessed moved private state to equivalent black-box tests via the public API.
+- Added an `InputTracker` unit test block (6 tests: composition flow, resync, reset, conversion detection, compact-recheck false branch).
+- 104 tests passing; branch coverage 97.87%.
+
+### Docs
+
+- Added `再同期（Resync）` to `CONTEXT.md`.
+- Added `docs/adr/0002-extract-inputtracker-as-state-machine.md` recording the extraction decision.
+
 ## 2.1.0 - 2026-06-07
 
 ### Changed
