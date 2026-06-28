@@ -5,10 +5,10 @@ push:
 	git push origin main --tags
 
 release-patch:
-	pnpm release patch
+	pnpm version patch
 
 release-minor:
-	pnpm release minor
+	pnpm version minor
 
 release-major:
-	pnpm release major
+	pnpm version major
