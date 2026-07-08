@@ -55,10 +55,13 @@
     "test:coverage": "vitest run --coverage",
     "verify:exports": "node scripts/verify-package-exports.mjs",
     "ci": "oxlint src __tests__ && tsc --noEmit && tsc --noEmit -p tsconfig.build.json && vitest run --coverage && vite build && node scripts/prepare-cjs-types.mjs && node scripts/verify-package-exports.mjs",
+    "release": "release-it",
+    "release:dry-run": "release-it --dry-run --ci --no-git.requireCleanWorkingDir",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^11.0.1",
     "@storybook/html": "^10.4.6",
     "@storybook/html-vite": "^10.4.6",
     "@types/node": "^26.0.1",
@@ -71,6 +74,7 @@
     "oxlint": "^1.72.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "release-it": "^20.2.1",
     "storybook": "^10.4.6",
     "typescript": "^6.0.2",
     "unplugin-dts": "^1.0.3",
