@@ -1,26 +1,62 @@
 {
   "$schema": "https://unpkg.com/release-it@20/schema/release-it.json",
   "git": {
-    "commitMessage": "chore: release v${version}",
+    "commitMessage": "chore(release): v${version}",
     "tagName": "v${version}",
     "requireBranch": "main",
     "requireCleanWorkingDir": true
   },
   "github": {
-    "release": false
+    "release": true
   },
   "npm": {
     "publish": false
   },
   "hooks": {
-    "before:init": "pnpm run ci"
+    "before:init": "pnpm run ci",
+    "after:release": "echo Successfully released ${name} v${version} to GitHub."
   },
   "plugins": {
     "@release-it/conventional-changelog": {
+      "infile": "CHANGELOG.md",
       "preset": {
         "name": "conventionalcommits"
       },
-      "infile": "CHANGELOG.md"
+      "header": "# Changelog",
+      "types": [
+        {
+          "type": "feat",
+          "section": "Features"
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes"
+        },
+        {
+          "type": "perf",
+          "section": "Performance"
+        },
+        {
+          "type": "refactor",
+          "section": "Refactor"
+        },
+        {
+          "type": "docs",
+          "section": "Documentation"
+        },
+        {
+          "type": "test",
+          "section": "Tests"
+        },
+        {
+          "type": "chore",
+          "section": "Chore"
+        },
+        {
+          "type": "revert",
+          "section": "Reverts"
+        }
+      ]
     }
   }
 }
