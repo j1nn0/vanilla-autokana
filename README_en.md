@@ -1,11 +1,15 @@
 # vanilla-autokana
 
+[日本語 README はこちら](./README.md)
+
 A JavaScript library to complete Furigana automatically when typing in a form field.
 
 This project is a fork of [ryo-utsunomiya/vanilla-autokana](https://github.com/ryo-utsunomiya/vanilla-autokana).
 
+## Features
+
 - Not dependent on jQuery
-- Supports both script tag loading and ESModules import
+- Supports script tag loading, ES Modules import, and CommonJS require
 
 This library is inspired by [jquery-autokana](https://github.com/harisenbon/autokana).
 
@@ -15,13 +19,22 @@ This library is inspired by [jquery-autokana](https://github.com/harisenbon/auto
 
 ### npm
 
-```
-npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
+```sh
+npm i @j1nn0/vanilla-autokana
+# or
+pnpm add @j1nn0/vanilla-autokana
+# or
+yarn add @j1nn0/vanilla-autokana
 ```
 
 ### Without npm
 
-Download `dist/autokana.umd.js` from this repository and load it with a script tag.
+Load `dist/autokana.umd.js` from the npm package with a script tag.
+When using a CDN, pin the package version in the URL.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.2.2/dist/autokana.umd.js" defer></script>
+```
 
 ## Usage
 
@@ -48,18 +61,36 @@ Download `dist/autokana.umd.js` from this repository and load it with a script t
 
 ### Import as a module
 
+ES Modules can use either named imports or namespace imports.
+
+```js
+import { bind } from '@j1nn0/vanilla-autokana';
+
+bind('#name', '#furigana');
+```
+
 ```js
 import * as AutoKana from '@j1nn0/vanilla-autokana';
 
 AutoKana.bind('#name', '#furigana');
 ```
 
-### Options
+CommonJS can use `require()`.
 
-You can pass the following as the third argument to `AutoKana.bind(name, furigana?, option)`:
+```js
+const { bind } = require('@j1nn0/vanilla-autokana');
+
+bind('#name', '#furigana');
+```
+
+### Arguments and Options
+
+`AutoKana.bind(name, furigana?, option)` accepts the following arguments:
 
 - `name`: a selector string starting with `#`, `.`, `[`, or `:`, or an input / textarea element
 - `furigana`: a selector string starting with `#`, `.`, `[`, or `:`, an input / textarea element, or omitted
+
+The third `option` argument accepts the following:
 
 - `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`
@@ -182,11 +213,15 @@ export default App;
 
 The `katakana` option type has changed in v2.0.0.
 
+### Changes
+
 | Before (v1)       | After (v2)               |
 | ----------------- | ------------------------ |
 | `katakana: false` | `katakana: 'hiragana'`   |
 | `katakana: true`  | `katakana: 'full'`       |
 | none              | `katakana: 'half'` (new) |
+
+### Migration Steps
 
 ```js
 // v1

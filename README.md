@@ -9,23 +9,34 @@
 ## 特徴
 
 - jQueryに依存していません
-- scriptタグからの読み込みとESModulesのimportに対応しています
+- scriptタグからの読み込み、ES Modules の import、CommonJS の require に対応しています
 
 ## インストール方法
+
+> **Note:** 開発には [pnpm](https://pnpm.io/) 10 以上が必要です。利用側のプロジェクトでは任意のパッケージマネージャでインストールできます。
 
 ### npm
 
 ```sh
-npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
+npm i @j1nn0/vanilla-autokana
+# or
+pnpm add @j1nn0/vanilla-autokana
+# or
+yarn add @j1nn0/vanilla-autokana
 ```
 
 ### npmを使わない方法
 
-このリポジトリの `dist/autokana.umd.js` をダウンロードし、scriptタグで読み込んでください。
+npm パッケージに含まれる `dist/autokana.umd.js` を scriptタグで読み込んでください。
+CDN を使う場合は、バージョンを固定した URL の利用を推奨します。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.2.2/dist/autokana.umd.js" defer></script>
+```
 
 ## 使用方法
 
-- `AutoKana.bind()` メソッドの第1引数にふりがな入力元の input 要素を指定します。第2引数にはふりがな出力先の input 要素を指定できますが、省略も可能です
+- `AutoKana.bind()` メソッドの第1引数にふりがな入力元の input / textarea 要素を指定します。第2引数にはふりがな出力先の input / textarea 要素を指定できますが、省略も可能です
 - 要素の指定には `#` / `.` / `[` / `:` で始まるセレクタ文字列、または input / textarea 要素を渡せます。IDのみを渡した場合も従来どおり動作します
 - input / textarea 要素が見つけられない場合は正常に動作できないため、DOMContentLoadedイベント内での実行を推奨します
 - ライブラリ本体はDOMのライフサイクルイベントに依存しないため、ライブラリの読み込みには`defer`属性の追加を推奨します
@@ -46,9 +57,15 @@ npm i @j1nn0/vanilla-autokana # or yarn add @j1nn0/vanilla-autokana
 </script>
 ```
 
-### モジュールとしてimportする
+### モジュールとして import する
 
-ESModulesとしてimportすることができます。
+ES Modules では named import と namespace import のどちらも使用できます。
+
+```js
+import { bind } from '@j1nn0/vanilla-autokana';
+
+bind('#name', '#furigana');
+```
 
 ```js
 import * as AutoKana from '@j1nn0/vanilla-autokana';
@@ -56,12 +73,22 @@ import * as AutoKana from '@j1nn0/vanilla-autokana';
 AutoKana.bind('#name', '#furigana');
 ```
 
-### オプション
+CommonJS では `require()` で読み込めます。
 
-`AutoKana.bind(name, furigana?, option)` の第3引数には以下を指定できます。
+```js
+const { bind } = require('@j1nn0/vanilla-autokana');
+
+bind('#name', '#furigana');
+```
+
+### 引数とオプション
+
+`AutoKana.bind(name, furigana?, option)` の引数は以下のとおりです。
 
 - `name`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、または input / textarea 要素
 - `furigana`: `#` / `.` / `[` / `:` で始まるセレクタ文字列、input / textarea 要素、または省略
+
+第3引数の `option` には以下を指定できます。
 
 - `katakana`: `'hiragana' | 'full' | 'half'`
 - `debug`: `boolean`
@@ -189,7 +216,7 @@ v2.0.0 で `katakana` オプションの値が変更されました。
 | 変更前 (v1)       | 変更後 (v2)                |
 | ----------------- | -------------------------- |
 | `katakana: false` | `katakana: 'hiragana'`     |
-| `katakana: treu`  | `katakana: 'full'`         |
+| `katakana: true`  | `katakana: 'full'`         |
 | なし              | `katakana: 'half'`（新設） |
 
 ### 移行手順
