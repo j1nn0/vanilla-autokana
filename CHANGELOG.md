@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.3 - 2026-07-08
+
+### Docs
+
+- Added CommonJS `require()` usage examples to README and README_en.
+- Improved installation guidance with separate npm, pnpm, and yarn commands.
+- Added version-pinned CDN script tag examples for UMD usage.
+- Clarified ES Modules usage, script tag guidance, and input / textarea argument descriptions.
+- Fixed the v1 → v2 migration table typo from `katakana: treu` to `katakana: true`.
+
 ## 2.2.0 - 2026-06-28
 
 ### Changed
