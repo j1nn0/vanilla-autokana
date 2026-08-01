@@ -41,31 +41,30 @@ export default class AutoKana {
   private elName!: KanaElement;
   private elFurigana?: KanaElement;
   private furigana: string;
-  private isComposing: boolean;
   private readonly tracker: InputTracker;
 
   private blurHandler = (): void => {
     this.debug('blur');
-    this.isComposing = false;
+    this.tracker.blur();
   };
 
   private focusHandler = (): void => {
     this.debug('focus');
-    this.isComposing = false;
-    this.tracker.resync(this.elName.value, this.elFurigana?.value);
-    this.processValue();
+    const rawInput = this.elName.value;
+    const furigana = this.tracker.resync(rawInput, this.elFurigana?.value);
+    this.setFurigana(rawInput === '', furigana);
   };
 
   private compositionStartHandler = (): void => {
     this.debug('compositionstart');
-    this.isComposing = true;
+    this.tracker.startComposition();
   };
 
   private compositionEndHandler = (): void => {
     this.debug('compositionend');
-    this.isComposing = false;
-    this.tracker.endComposition();
-    this.processValue();
+    const rawInput = this.elName.value;
+    const furigana = this.tracker.endComposition(rawInput);
+    this.setFurigana(rawInput === '', furigana);
   };
 
   private inputHandler = (event: InputEvent): void => {
@@ -76,7 +75,6 @@ export default class AutoKana {
   constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
     this.furigana = '';
-    this.isComposing = false;
 
     this.option = {
       ...option,
@@ -137,7 +135,6 @@ export default class AutoKana {
    */
   reset(): void {
     this.furigana = '';
-    this.isComposing = false;
     this.tracker.reset();
   }
 
@@ -157,15 +154,14 @@ export default class AutoKana {
   }
 
   /** @internal Internal mechanics; not part of the supported public API. */
-  setFurigana(force = false): void {
+  setFurigana(force = false, nextFurigana: string = this.furigana): void {
     if (!this.isActive) {
       return;
     }
-    const furigana = this.tracker.getFurigana();
-    if (!force && furigana === this.furigana) {
+    if (!force && nextFurigana === this.furigana) {
       return;
     }
-    this.furigana = furigana;
+    this.furigana = nextFurigana;
     if (this.elFurigana) {
       this.elFurigana.value = this.furigana;
       this.elFurigana.dispatchEvent(new Event('input', { bubbles: true }));
@@ -178,15 +174,8 @@ export default class AutoKana {
   /** @internal Internal mechanics; not part of the supported public API. */
   processValue(): void {
     const rawInput = this.elName.value;
-
-    if (rawInput === '') {
-      this.reset();
-      this.setFurigana(true);
-      return;
-    }
-
-    this.tracker.update(rawInput, this.isComposing);
-    this.setFurigana();
+    const furigana = this.tracker.trackInput(rawInput);
+    this.setFurigana(rawInput === '', furigana);
   }
 
   /**

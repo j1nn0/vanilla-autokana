@@ -125,13 +125,11 @@ test('destroy() removes all event listeners', () => {
   const nameInput = document.getElementById('name') as HTMLInputElement;
   autokana.destroy();
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
   nameInput.dispatchEvent(new Event('focus'));
   expect(autokana.getFurigana()).toBe('');
 });
 
-test('focus captures committedKana and blur resets isComposing', () => {
+test('focus captures committed kana and blur ends composition tracking', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
@@ -143,27 +141,27 @@ test('focus captures committedKana and blur resets isComposing', () => {
   // focus adopts the existing furigana as committed kana and treats '山田' as already
   // converted, so the furigana is preserved (not duplicated) on the next keystroke.
   expect(autokana.getFurigana()).toBe('やまだ');
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
 
-  // @ts-expect-error - accessing private property for test verification
-  autokana.isComposing = true;
+  nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+  nameInput.value = '山田たろう';
+  nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+  expect(autokana.getFurigana()).toBe('やまだたろう');
+
   nameInput.dispatchEvent(new Event('blur'));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
+  nameInput.value = '山田たろ';
+  nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+  expect(autokana.getFurigana()).toBe('やまだたろ');
 });
 
 test('input during composition updates furigana', () => {
   setup();
-  const autokana = new AutoKana('name', 'furigana');
+  new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
   const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
   nameInput.value = 'やまだたろう';
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
   nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(true);
   expect(furiganaInput.value).toBe('やまだたろう');
 });
 
@@ -177,8 +175,6 @@ test('initializeValues() resets all internal state', () => {
 
   autokana.initializeValues();
   expect(autokana.getFurigana()).toBe('');
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
 
   // After reset the tracker starts fresh: re-typing does not accumulate the old kana.
   nameInput.value = 'たろう';
@@ -196,8 +192,6 @@ test('reset() resets all internal state (alias for initializeValues)', () => {
 
   autokana.reset();
   expect(autokana.getFurigana()).toBe('');
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
 
   nameInput.value = 'たろう';
   autokana.processValue();
@@ -245,11 +239,9 @@ test('processValue() without furigana element does not throw', () => {
 
 test('a confirmed IME conversion commits pending kana into the furigana', () => {
   const tracker = new InputTracker('hiragana');
-  tracker.update('やまだ', true); // composing: pending kana = やまだ
-  expect(tracker.getFurigana()).toBe('やまだ');
-  tracker.endComposition();
-  tracker.update('山田', false); // conversion confirmed: pending kana committed
-  expect(tracker.getFurigana()).toBe('やまだ');
+  tracker.startComposition();
+  expect(tracker.trackInput('やまだ')).toBe('やまだ');
+  expect(tracker.endComposition('山田')).toBe('やまだ');
 });
 
 test('bind with class selector resolves element by class', () => {
@@ -363,19 +355,16 @@ test('empty input after composition resets state', () => {
     new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
   );
   expect(autokana.getFurigana()).toBe('');
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
 });
 
-test('processValue() updates furigana even when isComposing is true', () => {
+test('processValue() updates furigana during composition', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
   const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
   nameInput.value = 'やまだ';
-  // @ts-expect-error - accessing private property for test verification
-  autokana.isComposing = true;
+  nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
   autokana.processValue();
   expect(furiganaInput.value).toBe('やまだ');
 });
@@ -405,68 +394,74 @@ test('processValue() with mixed romaji and kana extracts only kana', () => {
   expect(furiganaInput.value).toBe('やまだ');
 });
 
-test('compositionstart fired twice keeps isComposing true', () => {
+test('compositionstart fired twice keeps composition tracking active', () => {
   setup();
-  const autokana = new AutoKana('name', 'furigana');
+  new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
+  const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(true);
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(true);
+  nameInput.value = 'やまだ';
+  nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+  nameInput.value = 'やま';
+  nameInput.dispatchEvent(
+    new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
+  );
+  expect(furiganaInput.value).toBe('やまだ');
 });
 
-test('initializeValues during composition resets all state including isComposing', () => {
+test('initializeValues during composition resets all tracking state', () => {
   setup();
   const autokana = new AutoKana('name', 'furigana');
   const nameInput = document.getElementById('name') as HTMLInputElement;
   nameInput.value = 'やまだ';
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
   nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(true);
   autokana.initializeValues();
-  // @ts-expect-error - accessing private property for test verification
-  expect(autokana.isComposing).toBe(false);
   expect(autokana.getFurigana()).toBe('');
+
+  nameInput.value = 'たろう';
+  autokana.processValue();
+  expect(autokana.getFurigana()).toBe('たろう');
 });
 
 test('consecutive IME conversions accumulate committed kana correctly', () => {
   const tracker = new InputTracker('hiragana');
-  tracker.update('やまだ', true);
-  tracker.endComposition();
-  tracker.update('山田', false); // first conversion committed
-  expect(tracker.getFurigana()).toBe('やまだ');
+  tracker.startComposition();
+  tracker.trackInput('やまだ');
+  expect(tracker.endComposition('山田')).toBe('やまだ');
 
-  tracker.update('山田たろう', true);
-  tracker.endComposition();
-  tracker.update('山田太郎', false); // second conversion committed
-  expect(tracker.getFurigana()).toBe('やまだたろう');
+  tracker.startComposition();
+  tracker.trackInput('山田たろう');
+  expect(tracker.endComposition('山田太郎')).toBe('やまだたろう');
 });
 
 describe('IME composition events', () => {
-  test('compositionstart sets isComposing to true', () => {
+  test('compositionstart routes subsequent input through composition tracking', () => {
     setup();
-    const autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(false);
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(true);
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.value = 'やま';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
+    );
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
-  test('compositionend sets isComposing to false and processes final value', () => {
+  test('compositionend processes the final value', () => {
     setup();
-    const autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
     nameInput.value = 'やまだ';
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
     nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: 'やまだ' }));
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(false);
     expect(furiganaInput.value).toBe('やまだ');
   });
 
@@ -484,7 +479,7 @@ describe('IME composition events', () => {
 
   test('input event with isComposing=true updates furigana during composition', () => {
     setup();
-    const autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
     furiganaInput.value = 'やまだ';
@@ -493,8 +488,6 @@ describe('IME composition events', () => {
     nameInput.dispatchEvent(
       new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
     );
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(true);
     expect(furiganaInput.value).toBe('やまだたろう');
   });
 
@@ -519,19 +512,21 @@ describe('IME composition events', () => {
     nameInput.value = '山田';
     nameInput.dispatchEvent(new Event('focus'));
     expect(autokana.getFurigana()).toBe('やまだ');
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(false);
   });
 
-  test('blur handler resets isComposing if stuck at true', () => {
+  test('blur ends composition tracking', () => {
     setup();
-    const autokana = new AutoKana('name', 'furigana');
+    new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    // @ts-expect-error - accessing private property for test verification
-    autokana.isComposing = true;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
     nameInput.dispatchEvent(new Event('blur'));
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(false);
+    nameInput.value = 'やま';
+    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    expect(furiganaInput.value).toBe('やま');
   });
 
   test('getFurigana returns correct value after full composition sequence', () => {
@@ -865,13 +860,11 @@ describe('IME composition events', () => {
     expect(autokana.getFurigana()).toBe('やまだ　たろう');
   });
 
-  test('isConverting property no longer exists (renamed to isComposing)', () => {
+  test('composition state is not exposed on AutoKana', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     expect(autokana).not.toHaveProperty('isConverting');
-    expect(autokana).toHaveProperty('isComposing');
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.isComposing).toBe(false);
+    expect(autokana).not.toHaveProperty('isComposing');
   });
 
   test('checkInterval option is removed from AutoKanaOption', () => {
@@ -915,65 +908,108 @@ describe('uncovered branches', () => {
     // and keeps only the differing tail 'か'.
     const tracker = new InputTracker('hiragana');
     tracker.resync('あいう', '');
-    tracker.update('あいか', false);
-    expect(tracker.getFurigana()).toBe('か');
+    expect(tracker.trackInput('あいか')).toBe('か');
   });
 
   test('non-kana replacing same-length kana commits the prior reading', () => {
     const tracker = new InputTracker('hiragana');
-    tracker.update('や', false);
-    tracker.update('a', false); // same length, non-kana → commit 'や'
-    expect(tracker.getFurigana()).toBe('や');
+    tracker.trackInput('や');
+    expect(tracker.trackInput('a')).toBe('や');
   });
 });
 
 describe('InputTracker', () => {
+  test('trackInput() returns the current furigana and clears state for empty input', () => {
+    const tracker = new InputTracker('hiragana');
+
+    expect(tracker.trackInput('やまだ')).toBe('やまだ');
+    expect(tracker.trackInput('')).toBe('');
+  });
+
+  test('startComposition() keeps the longest pending kana during composition', () => {
+    const tracker = new InputTracker('hiragana');
+
+    expect(tracker.startComposition()).toBe('');
+    expect(tracker.trackInput('やまだ')).toBe('やまだ');
+    expect(tracker.trackInput('やま')).toBe('やまだ');
+  });
+
+  test('endComposition() processes the current raw input atomically', () => {
+    const tracker = new InputTracker('hiragana');
+
+    tracker.startComposition();
+    tracker.trackInput('やまだ');
+    expect(tracker.endComposition('山田')).toBe('やまだ');
+    expect(tracker.trackInput('山田たろう')).toBe('やまだたろう');
+  });
+
+  test('blur() leaves pending kana untouched and ends composition mode', () => {
+    const tracker = new InputTracker('hiragana');
+
+    tracker.startComposition();
+    tracker.trackInput('やまだ');
+    expect(tracker.blur()).toBe('やまだ');
+    expect(tracker.trackInput('やま')).toBe('やま');
+  });
+
+  test('resync() returns the adopted furigana without a follow-up input', () => {
+    const tracker = new InputTracker('hiragana');
+
+    expect(tracker.resync('山田', 'やまだ')).toBe('やまだ');
+  });
+
+  test('resync() clears all state when the raw input is empty', () => {
+    const tracker = new InputTracker('hiragana');
+
+    expect(tracker.resync('', 'やまだ')).toBe('');
+  });
+
+  test('reset() returns an empty furigana', () => {
+    const tracker = new InputTracker('hiragana');
+
+    tracker.trackInput('やまだ');
+    expect(tracker.reset()).toBe('');
+  });
+
   test('extracts kana from mixed input', () => {
     const tracker = new InputTracker('hiragana');
-    tracker.update('yamadaやまだ', false);
-    expect(tracker.getFurigana()).toBe('やまだ');
+    expect(tracker.trackInput('yamadaやまだ')).toBe('やまだ');
   });
 
   test('emits the configured katakana format', () => {
     const tracker = new InputTracker('full');
-    tracker.update('やまだ', false);
-    expect(tracker.getFurigana()).toBe('ヤマダ');
+    expect(tracker.trackInput('やまだ')).toBe('ヤマダ');
   });
 
   test('reset() clears committed and pending kana', () => {
     const tracker = new InputTracker('hiragana');
-    tracker.update('やまだ', true);
-    tracker.endComposition();
-    tracker.update('山田', false); // commit やまだ
-    tracker.update('山田たろう', false); // pending たろう
-    expect(tracker.getFurigana()).toBe('やまだたろう');
+    tracker.startComposition();
+    tracker.trackInput('やまだ');
+    tracker.endComposition('山田');
+    expect(tracker.trackInput('山田たろう')).toBe('やまだたろう');
 
-    tracker.reset();
-    expect(tracker.getFurigana()).toBe('');
+    expect(tracker.reset()).toBe('');
   });
 
   test('resync() adopts the seeded furigana as committed kana', () => {
     const tracker = new InputTracker('hiragana');
-    tracker.resync('山田', 'やまだ');
-    expect(tracker.getFurigana()).toBe('やまだ');
+    expect(tracker.resync('山田', 'やまだ')).toBe('やまだ');
   });
 
   test('resync() without a seed leaves committed kana untouched', () => {
     const tracker = new InputTracker('hiragana');
-    tracker.update('やまだ', true);
-    tracker.endComposition();
-    tracker.update('山田', false); // commit やまだ
-    tracker.resync('山田', undefined); // no furigana element → committed kana unchanged
-    expect(tracker.getFurigana()).toBe('やまだ');
+    tracker.startComposition();
+    tracker.trackInput('やまだ');
+    tracker.endComposition('山田');
+    expect(tracker.resync('山田', undefined)).toBe('やまだ');
   });
 
   test('a large length jump that is only small kana does not falsely commit', () => {
     // 'しゃち' is 3 kana but compacts to 2 (small ゃ removed); the length jump from 'か' is
     // therefore not a real IME conversion, so the kana compacting check suppresses the commit.
     const tracker = new InputTracker('hiragana');
-    tracker.update('か', false);
-    tracker.update('しゃち', false);
-    expect(tracker.getFurigana()).toBe('しゃち');
+    tracker.trackInput('か');
+    expect(tracker.trackInput('しゃち')).toBe('しゃち');
   });
 });
 

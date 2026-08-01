@@ -15,34 +15,47 @@ export class InputTracker {
   private lastConvertedInput = '';
   private lastNewInput = '';
   private previousRawInput = '';
+  private isComposing = false;
 
   constructor(private readonly katakana: KatakanaOption) {}
 
-  /**
-   * Feed the current raw field value and composition flag, advancing the state machine.
-   *
-   * @param raw The full value of the name field.
-   * @param isComposing Whether an IME composition is in progress.
-   */
-  update(raw: string, isComposing: boolean): void {
-    const newInput = this.extractNewInput(raw);
+  /** Start an IME composition and return the current furigana. */
+  startComposition(): string {
+    this.isComposing = true;
+    return this.formatFurigana();
+  }
 
-    if (isComposing) {
-      this.handleCompositionInput(newInput);
-      return;
+  /** Track the current raw field value and return the resulting furigana. */
+  trackInput(raw: string): string {
+    if (raw === '') {
+      return this.reset();
     }
 
-    this.handleNormalInput(newInput, raw);
+    const newInput = this.extractNewInput(raw);
+
+    if (this.isComposing) {
+      this.handleCompositionInput(newInput);
+    } else {
+      this.handleNormalInput(newInput, raw);
+    }
+
+    return this.formatFurigana();
   }
 
   /**
-   * Reset the input-tracking flags at the end of an IME composition so the next
-   * {@link update} runs the full non-composition path (変換 detection, commit, etc.).
-   * The accumulated pending kana are intentionally kept so they can still be committed.
+   * End an IME composition and process the current raw value in one transition.
    */
-  endComposition(): void {
+  endComposition(raw: string): string {
+    this.isComposing = false;
     this.lastNewInput = '';
     this.previousRawInput = '';
+    return this.trackInput(raw);
+  }
+
+  /** End composition mode without changing the current kana. */
+  blur(): string {
+    this.isComposing = false;
+    return this.formatFurigana();
   }
 
   /**
@@ -53,7 +66,12 @@ export class InputTracker {
    * @param committedSeed The current furigana value to adopt as committed kana, or `undefined`
    *   when there is no furigana element (leaves committed kana untouched).
    */
-  resync(raw: string, committedSeed: string | undefined): void {
+  resync(raw: string, committedSeed: string | undefined): string {
+    if (raw === '') {
+      return this.reset();
+    }
+
+    this.isComposing = false;
     if (committedSeed !== undefined) {
       this.committedKana = committedSeed;
     }
@@ -61,19 +79,21 @@ export class InputTracker {
     this.lastNewInput = '';
     this.previousRawInput = '';
     this.lastConvertedInput = raw;
+    return this.formatFurigana();
   }
 
   /** Clear all tracking state (committed kana, pending kana, and the diff anchors). */
-  reset(): void {
+  reset(): string {
+    this.isComposing = false;
     this.committedKana = '';
     this.pendingKana = [];
     this.lastConvertedInput = '';
     this.lastNewInput = '';
     this.previousRawInput = '';
+    return this.formatFurigana();
   }
 
-  /** The current furigana string in the configured output format. */
-  getFurigana(): string {
+  private formatFurigana(): string {
     return KanaConverter.toKatakana(this.committedKana + this.pendingKana.join(''), this.katakana);
   }
 
