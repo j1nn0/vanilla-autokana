@@ -446,7 +446,9 @@ describe('IME composition events', () => {
 
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
     nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
+    );
     nameInput.value = 'やま';
     nameInput.dispatchEvent(
       new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
@@ -522,10 +524,14 @@ describe('IME composition events', () => {
 
     nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
     nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
+    );
     nameInput.dispatchEvent(new Event('blur'));
     nameInput.value = 'やま';
-    nameInput.dispatchEvent(new InputEvent('input', { isComposing: true, inputType: 'insertText' }));
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
+    );
     expect(furiganaInput.value).toBe('やま');
   });
 
