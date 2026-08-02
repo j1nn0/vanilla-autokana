@@ -28,6 +28,10 @@ _同義語を避ける_: commit, finalize
 The mechanism that compares the current raw input against previously seen input to detect what the user actually typed versus what the IME composed.
 _同義語を避ける_: input processing, value processing
 
+**追跡停止（Tracking Pause）**:
+The temporary state in which DOM input and IME events are ignored while explicit commands such as reset and output-format changes remain available.
+_同義語を避ける_: disabled, inactive mode
+
 **再同期（Resync）**:
 Re-aligning the tracker's state with the live DOM when the name field receives focus. All pending state is discarded and the current raw input becomes the new conversion baseline. If a furigana element is present, its current value is also adopted as committed kana; otherwise committed kana is left as-is.
 _同義語を避ける_: reload, reinitialize, refresh

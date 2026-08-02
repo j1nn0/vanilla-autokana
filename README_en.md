@@ -105,12 +105,13 @@ The third `option` argument accepts the following:
 ### Methods
 
 - `getFurigana()`: Returns the current furigana string
-- `setKatakana(katakana)`: Changes the output format (`'hiragana' | 'full' | 'half'`) at runtime. The current furigana is re-rendered immediately
+- `setKatakana(katakana)`: Changes the output format (`'hiragana' | 'full' | 'half'`) at runtime. The current furigana is re-rendered immediately, including while tracking is stopped
 - `start()`: Resume auto-kana tracking
-- `stop()`: Pause auto-kana tracking
+- `stop()`: Pause auto-kana tracking for DOM input and IME events. `reset()` and `setKatakana()` still run while stopped
 - `toggle(event?)`: Toggle auto-kana tracking on or off. When a checkbox change event is provided, uses its `checked` state
-- `reset()`: Reset all internal state and clear the furigana output (DOM element and onChange)
-- `destroy()`: Remove all event listeners
+- `reset()`: Reset all internal state and clear the furigana output (DOM element and onChange), including while tracking is stopped
+- `destroy()`: Remove all event listeners. It is safe to call more than once; state-changing methods become no-ops after destruction
+After `destroy()`, `getFurigana()` and `option` continue to return their last values. Tracking cannot be resumed after destruction.
 
 > **Note**: The `option` and `isActive` properties are read-only. Use `setKatakana()` for the output format, and `start()` / `stop()` / `toggle()` for tracking on/off.
 
@@ -252,6 +253,8 @@ Other changes in v3.0.0:
 - The `option` property is now read-only. Use `setKatakana()` to change the output format at runtime
 - The `isActive` property is now read-only. Use `start()` / `stop()` / `toggle()` for tracking on/off
 - `initializeValues()` has been removed. Use `reset()` instead
+- `stop()` pauses only DOM input and IME event tracking. `reset()` and `setKatakana()` still update the output while stopped
+- `destroy()` is idempotent. State-changing methods become no-ops after destruction, while `getFurigana()` and `option` retain their last values
 - `reset()` now also clears the furigana output (DOM element and onChange); onChange fires on reset
 
 ## License

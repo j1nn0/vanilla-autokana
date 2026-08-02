@@ -10,8 +10,8 @@ export interface FuriganaResult {
 
 /**
  * IME conversion state machine: separates 確定かな (committed) from 未確定かな (pending)
- * and detects 変換 (conversion). AutoKana's DOM adapter owns the elements, events, and
- * output policy (isActive/dedup/onChange).
+ * and detects 変換 (conversion). AutoKana's DOM adapter owns the elements and events; the
+ * tracker owns the output format and state transitions, while the adapter owns output policy.
  *
  * @internal Not part of the supported public API; not exported from the package entry.
  */
@@ -24,6 +24,10 @@ export class InputTracker {
   private isComposing = false;
 
   constructor(private katakana: KatakanaOption) {}
+  /** Return the output format currently owned by the tracker. */
+  getKatakana(): KatakanaOption {
+    return this.katakana;
+  }
 
   /** Change the output format at runtime and return the current furigana in the new format. */
   setKatakana(katakana: KatakanaOption): FuriganaResult {

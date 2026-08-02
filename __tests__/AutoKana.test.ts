@@ -85,7 +85,9 @@ describe('binding', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
     nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new InputEvent('input', { isComposing: false, inputType: 'insertText' }));
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
 
     expect(autokana.getFurigana()).toBe('やまだ');
     expect(onChange).toHaveBeenCalledWith('やまだ');
@@ -210,6 +212,45 @@ describe('methods', () => {
       new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
     );
     expect(autokana.getFurigana()).toBe('たろう');
+  });
+  test('stop() ignores DOM input events without changing tracker state', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
+
+    autokana.stop();
+    nameInput.value = '';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
+    );
+    autokana.start();
+    autokana.setKatakana('full');
+
+    expect(autokana.getFurigana()).toBe('ヤマダ');
+  });
+
+  test('reset() updates the output while tracking is stopped', () => {
+    setup();
+    const onChange = vi.fn();
+    const autokana = new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
+    onChange.mockClear();
+
+    autokana.stop();
+    autokana.reset();
+
+    expect(autokana.getFurigana()).toBe('');
+    expect(furiganaInput.value).toBe('');
+    expect(onChange).toHaveBeenLastCalledWith('');
   });
 
   test('reset() resets all tracking state', () => {
@@ -718,6 +759,26 @@ describe('setKatakana()', () => {
     );
     expect(autokana.getFurigana()).toBe('ヤマダタロウ');
   });
+  test('setKatakana() updates the output while tracking is stopped', () => {
+    setup();
+    const onChange = vi.fn();
+    const autokana = new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
+    onChange.mockClear();
+
+    autokana.stop();
+    autokana.setKatakana('full');
+
+    expect(autokana.option.katakana).toBe('full');
+    expect(autokana.getFurigana()).toBe('ヤマダ');
+    expect(furiganaInput.value).toBe('ヤマダ');
+    expect(onChange).toHaveBeenLastCalledWith('ヤマダ');
+  });
 
   test('updates the public option value', () => {
     setup();
@@ -762,21 +823,27 @@ describe('setKatakana()', () => {
 });
 
 describe('destroy()', () => {
-  test('destroy removes event listeners and nullifies element references', () => {
+  test('destroy is idempotent and makes later state changes no-ops', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.elName).toBe(nameInput);
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
 
     autokana.destroy();
 
-    // After destroy, elName should be null to prevent memory leaks
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.elName).toBeNull();
-    // @ts-expect-error - accessing private property for test verification
-    expect(autokana.elFurigana).toBeUndefined();
+    expect(autokana.isActive).toBe(false);
+    expect(() => autokana.destroy()).not.toThrow();
+    autokana.reset();
+    autokana.setKatakana('full');
+    autokana.start();
+    autokana.toggle();
+
+    expect(autokana.getFurigana()).toBe('やまだ');
+    expect(autokana.option.katakana).toBe('hiragana');
+    expect(autokana.isActive).toBe(false);
   });
 });
 

@@ -101,6 +101,13 @@ describe('InputTracker', () => {
     expect(tracker.setKatakana('full')).toEqual({ furigana: 'ヤマダ', reset: false });
     expect(tracker.trackInput('やまだたろう')).toEqual({ furigana: 'ヤマダタロウ', reset: false });
   });
+  test('getKatakana() returns the tracker-owned output format', () => {
+    const tracker = new InputTracker('hiragana');
+    expect(tracker.getKatakana()).toBe('hiragana');
+
+    tracker.setKatakana('half');
+    expect(tracker.getKatakana()).toBe('half');
+  });
 
   test('extractNewInput falls back to positional diff when the converted input is not contiguous', () => {
     // resync seeds the converted anchor to 'あいう'; the next value 'あいか' does not contain
