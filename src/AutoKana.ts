@@ -191,7 +191,7 @@ export default class AutoKana {
     if (this.destroyed) {
       return;
     }
-    if (!result.reset && result.furigana === this.furigana) {
+    if (!result.notify && result.furigana === this.furigana) {
       return;
     }
     this.furigana = result.furigana;

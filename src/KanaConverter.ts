@@ -3,9 +3,22 @@ import { fullToHalfKatakanaMap } from './katakanaMap';
 /** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
 export type KatakanaOption = 'hiragana' | 'full' | 'half';
 
+const KATAKANA_START = 0x30a1; // ァ U+30A1
+const KATAKANA_END = 0x30f6; // ヶ U+30F6
+const KATAKANA_TO_HIRAGANA_OFFSET = 0x60;
+const KATAKANA_TO_HIRAGANA_EXCEPTIONS: Record<string, string> = {
+  ヽ: 'ゝ',
+  ヾ: 'ゞ',
+  ヷ: 'わ゙',
+  ヸ: 'ゐ゙',
+  ヹ: 'ゑ゙',
+  ヺ: 'を゙',
+};
+const HALF_WIDTH_KATAKANA_PATTERN = /[\uFF66-\uFF9F]+/g;
+
 // Hiragana block boundaries used to decide which characters get shifted to katakana.
 const HIRAGANA_START = 12353; // ぁ U+3041
-const HIRAGANA_END = 12436; // ゔ U+3094 (last regular hiragana, vu)
+const HIRAGANA_END = 12438; // ゖ U+3096 (last canonical hiragana, small ke)
 const HIRAGANA_ITERATION_MARK = 12445; // ゝ U+309D
 const HIRAGANA_VOICED_ITERATION_MARK = 12446; // ゞ U+309E
 
@@ -18,6 +31,27 @@ function isHiragana(charCode: number): boolean {
     charCode === HIRAGANA_ITERATION_MARK ||
     charCode === HIRAGANA_VOICED_ITERATION_MARK
   );
+}
+
+function canonicalizeHalfWidthKatakana(src: string): string {
+  return src.replace(HALF_WIDTH_KATAKANA_PATTERN, (segment) => segment.normalize('NFKC'));
+}
+
+/** Canonicalize accepted kana forms to the canonical hiragana representation. */
+export function canonicalizeKana(src: string): string {
+  const fullWidth = canonicalizeHalfWidthKatakana(src);
+  let canonical = '';
+
+  for (const char of fullWidth) {
+    const charCode = char.charCodeAt(0);
+    if (charCode >= KATAKANA_START && charCode <= KATAKANA_END) {
+      canonical += String.fromCharCode(charCode - KATAKANA_TO_HIRAGANA_OFFSET);
+      continue;
+    }
+    canonical += KATAKANA_TO_HIRAGANA_EXCEPTIONS[char] ?? char;
+  }
+
+  return canonical;
 }
 
 /** Convert hiragana and full-width katakana into the requested output format. */
@@ -35,7 +69,7 @@ export function toKatakana(src: string, option: KatakanaOption): string {
     str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
   }
 
-  // Half-width katakana output normalizes the full-width space (　) to a half-width space,
+  // Half-width katakana output converts the full-width space (　) to a half-width space,
   // matching the ASCII spacing convention of half-width katakana fields.
   // eslint-disable-next-line no-irregular-whitespace
   return option === 'half' && str.indexOf('　') !== -1 ? str.replace(/　/g, ' ') : str;

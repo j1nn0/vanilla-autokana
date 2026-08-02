@@ -1,11 +1,11 @@
 import { compactKana, containsNonKana, extractKana } from './KanaExtractor';
-import { toKatakana } from './KanaConverter';
+import { canonicalizeKana, toKatakana } from './KanaConverter';
 import type { KatakanaOption } from './KanaConverter';
 
-/** Result of a single state transition: the current ふりがな plus whether all tracking state was cleared. */
+/** Result of a single state transition: the current ふりがな and whether output notification is forced. */
 export interface FuriganaResult {
   furigana: string;
-  reset: boolean;
+  notify: boolean;
 }
 
 /**
@@ -32,19 +32,19 @@ export class InputTracker {
   /** Change the output format at runtime and return the current furigana in the new format. */
   setKatakana(katakana: KatakanaOption): FuriganaResult {
     this.katakana = katakana;
-    return { furigana: this.formatFurigana(), reset: false };
+    return { furigana: this.formatFurigana(), notify: false };
   }
 
   /** Start an IME composition and return the current furigana. */
   startComposition(): FuriganaResult {
     this.isComposing = true;
-    return { furigana: this.formatFurigana(), reset: false };
+    return { furigana: this.formatFurigana(), notify: false };
   }
 
   /** Track the current raw field value and return the resulting furigana. */
   trackInput(raw: string): FuriganaResult {
     if (raw === '') {
-      return this.reset();
+      return this.clearState(false);
     }
 
     const newInput = this.extractNewInput(raw);
@@ -55,7 +55,7 @@ export class InputTracker {
       this.handleNormalInput(newInput, raw);
     }
 
-    return { furigana: this.formatFurigana(), reset: false };
+    return { furigana: this.formatFurigana(), notify: false };
   }
 
   /**
@@ -71,42 +71,46 @@ export class InputTracker {
   /** End composition mode without changing the current kana. */
   blur(): FuriganaResult {
     this.isComposing = false;
-    return { furigana: this.formatFurigana(), reset: false };
+    return { furigana: this.formatFurigana(), notify: false };
   }
 
   /**
-   * Re-seed the tracker from the live DOM on focus: adopt the existing furigana as already
-   * committed kana, discard pending kana, and make the current raw input the conversion
-   * baseline. Empty raw input clears all state (再同期 / resync).
+   * Re-seed the tracker from the live DOM on focus: canonicalize the existing furigana to
+   * 正規かな（Canonical Kana） before adopting it as committed kana, discard pending kana, and make
+   * the current raw input the conversion baseline. Empty raw input clears all state (再同期 / resync).
    *
-   * @param committedSeed The current furigana value to adopt as committed kana, or `undefined`
-   *   when there is no furigana element (leaves committed kana untouched).
+   * @param committedSeed The current furigana value to canonicalize and adopt as committed kana, or
+   *   `undefined` when there is no furigana element (leaves committed kana untouched).
    */
   resync(raw: string, committedSeed: string | undefined): FuriganaResult {
     if (raw === '') {
-      return this.reset();
+      return this.clearState(false);
     }
 
     this.isComposing = false;
     if (committedSeed !== undefined) {
-      this.committedKana = committedSeed;
+      this.committedKana = canonicalizeKana(committedSeed);
     }
     this.pendingKana = '';
     this.lastNewInput = '';
     this.previousRawInput = '';
     this.lastConvertedInput = raw;
-    return { furigana: this.formatFurigana(), reset: false };
+    return { furigana: this.formatFurigana(), notify: false };
   }
 
-  /** Clear all tracking state (committed kana, pending kana, and the diff anchors). */
+  /** Clear all tracking state and force output notification for an explicit reset command. */
   reset(): FuriganaResult {
+    return this.clearState(true);
+  }
+
+  private clearState(notify: boolean): FuriganaResult {
     this.isComposing = false;
     this.committedKana = '';
     this.pendingKana = '';
     this.lastConvertedInput = '';
     this.lastNewInput = '';
     this.previousRawInput = '';
-    return { furigana: this.formatFurigana(), reset: true };
+    return { furigana: this.formatFurigana(), notify };
   }
 
   private formatFurigana(): string {

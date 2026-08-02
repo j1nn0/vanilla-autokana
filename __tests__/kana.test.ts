@@ -13,6 +13,19 @@ describe('kana extraction', () => {
   test('extract preserves full-width spaces', () => {
     expect(extractKana('やまだ　たろう')).toBe('やまだ　たろう');
   });
+  test('extract canonicalizes hiragana, full-width and half-width katakana, and iteration marks', () => {
+    expect(extractKana('ヤマダ　ﾀﾛｳ ゝゞ')).toBe('やまだ　たろう ゝゞ');
+  });
+
+  test('compact removes small katakana after extraction canonicalizes them', () => {
+    expect(compactKana(extractKana('ャュョ'))).toBe('');
+  });
+
+  test('containsNonKana treats all supported kana forms as kana', () => {
+    expect(containsNonKana('ヤマダ')).toBe(false);
+    expect(containsNonKana('ﾀﾛｳ')).toBe(false);
+    expect(containsNonKana('ゝゞ')).toBe(false);
+  });
 
   test('compact removes small kana', () => {
     expect(compactKana('ぁぃぅぇぉっゃゅょ')).toBe('');
@@ -53,6 +66,13 @@ describe('kana conversion', () => {
   test('converts hiragana to full-width katakana', () => {
     expect(toKatakana('あいうえお', 'full')).toBe('アイウエオ');
   });
+  test('converts small ka and ke from canonical kana to full and half-width katakana', () => {
+    const canonicalKana = extractKana('ヵヶ');
+
+    expect(canonicalKana).toBe('ゕゖ');
+    expect(toKatakana(canonicalKana, 'full')).toBe('ヵヶ');
+    expect(toKatakana(canonicalKana, 'half')).toBe('ｶｹ');
+  });
 
   test('keeps hiragana as-is', () => {
     expect(toKatakana('あいうえお', 'hiragana')).toBe('あいうえお');
@@ -73,6 +93,8 @@ describe('fullToHalfKatakanaMap', () => {
   });
 
   test('special characters are correctly mapped', () => {
+    expect(fullToHalfKatakanaMap['ヵ']).toBe('ｶ');
+    expect(fullToHalfKatakanaMap['ヶ']).toBe('ｹ');
     expect(fullToHalfKatakanaMap['ヴ']).toBe('ｳﾞ');
     expect(fullToHalfKatakanaMap['ヺ']).toBe('ｦﾞ');
     expect(fullToHalfKatakanaMap['ヰ']).toBe('ｲ');
@@ -81,7 +103,7 @@ describe('fullToHalfKatakanaMap', () => {
     expect(fullToHalfKatakanaMap['、']).toBe('､');
   });
 
-  test('map has 87 entries', () => {
-    expect(Object.keys(fullToHalfKatakanaMap)).toHaveLength(87);
+  test('map has 89 entries', () => {
+    expect(Object.keys(fullToHalfKatakanaMap)).toHaveLength(89);
   });
 });

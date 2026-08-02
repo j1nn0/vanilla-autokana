@@ -16,6 +16,8 @@ export const fullToHalfKatakanaMap: Record<string, string> = {
   ク: 'ｸ',
   グ: 'ｸﾞ',
   ケ: 'ｹ',
+  ヵ: 'ｶ',
+  ヶ: 'ｹ',
   ゲ: 'ｹﾞ',
   コ: 'ｺ',
   ゴ: 'ｺﾞ',

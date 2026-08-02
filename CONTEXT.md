@@ -8,6 +8,10 @@ A library that automatically generates furigana from Japanese name input fields,
 Kana characters that have already been confirmed through past IME conversions. Accumulated and never re-processed during ongoing composition.
 _同義語を避ける_: baseKana, base
 
+**正規かな（Canonical Kana）**:
+The neutral hiragana representation used for kana state. ふりがな is converted from 正規かな only when applying the 出力形式（Output Format）; full-width and half-width katakana are not stored as the state representation.
+_同義語を避ける_: normalized kana, internal kana
+
 **未確定かな（Pending Kana）**:
 Kana characters extracted from the current raw input that have not yet been confirmed by an IME conversion. May change or be discarded during composition.
 _同義語を避ける_: values, temporaryKana
@@ -15,6 +19,10 @@ _同義語を避ける_: values, temporaryKana
 **ふりがな（Furigana）**:
 The final output string displayed to the user, composed of committed kana plus pending kana, converted according to the 出力形式（Output Format）.
 _同義語を避ける_: output, result
+
+**出力通知（Output Notification）**:
+The delivery of a changed ふりがな to the output element and the `onChange` callback. Ordinary input is deduplicated when the value is unchanged; an explicit reset still forces one notification so consumers can observe the command.
+_同義語を避ける_: output event, change callback
 
 **出力形式（Output Format）**:
 The character form of the generated furigana: hiragana (default), full-width katakana, or half-width katakana. Controlled by the `katakana` option; represented as `KatakanaOption` in the code and owned by the kana conversion module.
@@ -33,15 +41,15 @@ The temporary state in which DOM input and IME events are ignored while explicit
 _同義語を避ける_: disabled, inactive mode
 
 **再同期（Resync）**:
-Re-aligning the tracker's state with the live DOM when the name field receives focus. All pending state is discarded and the current raw input becomes the new conversion baseline. If a furigana element is present, its current value is also adopted as committed kana; otherwise committed kana is left as-is.
+Re-aligning the tracker's state with the live DOM when the name field receives focus. All pending state is discarded and the current raw input becomes the new conversion baseline. If a furigana element is present, its current value is canonicalized to 正規かな before being adopted as committed kana; otherwise committed kana is left as-is.
 _同義語を避ける_: reload, reinitialize, refresh
 
 **かな抽出（Kana Extraction）**:
-The process of filtering a raw input string to retain only kana characters (including spaces), discarding kanji, romaji, and other symbols.
+The process of filtering a raw input string to retain kana (hiragana, full-width katakana, half-width katakana, iteration marks, long-vowel marks, and spaces), canonicalizing accepted kana to 正規かな, and discarding kanji, romaji, and other symbols.
 _同義語を避ける_: kana filtering, input cleaning
 
 **小さなかな除去（Kana Compacting）**:
-The process of removing small kana characters (ぁぃぅぇぉっゃゅょ) from a string to normalize it for length comparison during conversion detection.
+The process of removing small kana characters (ぁぃぅぇぉっゃゅょ) from a string to canonicalize it for length comparison during conversion detection.
 _同義語を避ける_: small kana stripping, kana normalization
 
 ## Example Dialogue

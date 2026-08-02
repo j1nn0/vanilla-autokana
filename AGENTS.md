@@ -26,8 +26,8 @@
 - `src/AutoKana.ts`: DOM イベントを `InputTracker` の状態遷移へ写し、返されたふりがなを既存の出力 policy で配信する adapter。
 - `src/InputTracker.ts`: IME 状態機械。composition 状態、確定かな / 未確定かな、入力追跡、変換検出を所有する。
 - `src/ElementResolver.ts`: 文字列セレクタまたは DOM 要素から `input` / `textarea` を解決する。
-- `src/KanaExtractor.ts`: 生入力からかなとスペースを抽出し、変換検出用に小さいかなを圧縮する。
-- `src/KanaConverter.ts`: ひらがな、全角カタカナ、半角カタカナへの変換を担当する。
+- `src/KanaExtractor.ts`: 生入力からかなとスペースを抽出して正規かなへ揃え、変換検出用に小さなかなを圧縮する。
+- `src/KanaConverter.ts`: 入力かなを正規かなへ揃え、ひらがな・全角カタカナ・半角カタカナの出力形式へ変換する。
 - `src/katakanaMap.ts`: 全角カタカナから半角カタカナへの対応表。
 - `__tests__/AutoKana.test.ts`: DOM adapter の公開契約を jsdom イベントで検証する。
 - `__tests__/AutoKana.ime.test.ts`: IME composition の adapter 契約を検証する。

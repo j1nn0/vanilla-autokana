@@ -305,6 +305,16 @@ describe('input handling', () => {
     compositionInput(nameInput, '山田たろ', 'insertText');
     expect(autokana.getFurigana()).toBe('やまだたろ');
   });
+  test('focus resync canonicalizes a formatted output seed before switching format', () => {
+    const { autokana, nameInput, furiganaInput } = mountAutoKana({ katakana: 'full' });
+    furiganaInput!.value = 'ヤマダ';
+    nameInput.value = '山田';
+
+    nameInput.dispatchEvent(new Event('focus'));
+    autokana.setKatakana('hiragana');
+
+    expect(autokana.getFurigana()).toBe('やまだ');
+  });
 
   test('paste input extracts kana from pasted text', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
@@ -453,6 +463,35 @@ describe('onChange callback', () => {
     );
     expect(onChange).toHaveBeenCalledWith('たろう');
   });
+  test('deduplicates ordinary repeated empty input but forces explicit reset notification', () => {
+    setup();
+    const onChange = vi.fn();
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+    const inputListener = vi.fn();
+    furiganaInput.addEventListener('input', inputListener);
+    const autokana = new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+
+    nameInput.value = 'やまだ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
+    nameInput.value = '';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
+    );
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(inputListener).toHaveBeenCalledTimes(2);
+
+    autokana.reset();
+
+    expect(onChange).toHaveBeenCalledTimes(3);
+    expect(inputListener).toHaveBeenCalledTimes(3);
+  });
 
   test('onChange is not called when isActive is false', () => {
     setup();
@@ -599,6 +638,22 @@ describe('vu hiragana handling', () => {
     );
 
     expect(furiganaInput.value).toBe('ゔぁ');
+  });
+});
+
+describe('kana canonicalization', () => {
+  test('full-width and half-width katakana input emits canonical hiragana', () => {
+    setup();
+    new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    nameInput.value = 'ヤマダ ﾀﾛｳ';
+    nameInput.dispatchEvent(
+      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
+    );
+
+    expect(furiganaInput.value).toBe('やまだ たろう');
   });
 });
 

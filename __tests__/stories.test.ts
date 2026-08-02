@@ -30,4 +30,29 @@ describe('Storybook teardown', () => {
 
     expect(registeredTeardown).toHaveBeenCalledOnce();
   });
+  test('attempts every teardown and rethrows an AggregateError after failures', () => {
+    const firstError = new Error('first teardown failed');
+    const failingTeardown = vi.fn(() => {
+      throw firstError;
+    });
+    const succeedingTeardown = vi.fn();
+    registerStoryTeardown(failingTeardown);
+    registerStoryTeardown(succeedingTeardown);
+
+    let caught: unknown;
+    try {
+      cleanupStoryTeardowns();
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(Error);
+    expect(caught).toMatchObject({ name: 'AggregateError' });
+    expect((caught as Error & { errors: unknown[] }).errors).toEqual([firstError]);
+    expect(failingTeardown).toHaveBeenCalledOnce();
+    expect(succeedingTeardown).toHaveBeenCalledOnce();
+
+    cleanupStoryTeardowns();
+    expect(succeedingTeardown).toHaveBeenCalledOnce();
+  });
 });
