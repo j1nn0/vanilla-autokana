@@ -5,6 +5,12 @@
   "singleQuote": true,
   "sortPackageJson": false,
   "ignorePatterns": [
-    ".github/**"
+    ".github/**",
+    ".agents/**",
+    ".serena/**",
+    "**/*.md",
+    ".oxfmtrc.json",
+    ".oxlintrc.json",
+    "opencode.json"
   ]
 }

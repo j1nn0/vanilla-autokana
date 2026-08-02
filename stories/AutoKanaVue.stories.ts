@@ -40,29 +40,33 @@ const DemoWrapper = defineComponent({
     return { furigana, nameRef, modeLabel: getModeLabel(props.katakana) };
   },
   render() {
-    return h('div', {
-      style: CONTAINER_STYLE,
-    }, [
-      h('div', { style: FIELD_WRAP_STYLE }, [
-        h('label', { style: LABEL_STYLE }, '名前'),
-        h('input', {
-          ref: 'nameRef',
-          type: 'text',
-          placeholder: '名前を入力してください',
-          style: FIELD_STYLE,
-        }),
-      ]),
-      h('div', { style: FIELD_WRAP_STYLE }, [
-        h('label', { style: LABEL_STYLE }, `${this.modeLabel}（onChange コールバック）`),
-        h('input', {
-          type: 'text',
-          value: this.furigana,
-          readOnly: true,
-          placeholder: 'onChange で更新されます',
-          style: `${FIELD_STYLE};background:#f5f5f5;`,
-        }),
-      ]),
-    ]);
+    return h(
+      'div',
+      {
+        style: CONTAINER_STYLE,
+      },
+      [
+        h('div', { style: FIELD_WRAP_STYLE }, [
+          h('label', { style: LABEL_STYLE }, '名前'),
+          h('input', {
+            ref: 'nameRef',
+            type: 'text',
+            placeholder: '名前を入力してください',
+            style: FIELD_STYLE,
+          }),
+        ]),
+        h('div', { style: FIELD_WRAP_STYLE }, [
+          h('label', { style: LABEL_STYLE }, `${this.modeLabel}（onChange コールバック）`),
+          h('input', {
+            type: 'text',
+            value: this.furigana,
+            readOnly: true,
+            placeholder: 'onChange で更新されます',
+            style: `${FIELD_STYLE};background:#f5f5f5;`,
+          }),
+        ]),
+      ],
+    );
   },
 });
 

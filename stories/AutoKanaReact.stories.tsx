@@ -36,7 +36,9 @@ function ReactDemo({ katakana }: Args): React.ReactElement {
   return createElement('div', {
     style: CONTAINER_STYLE_OBJECT,
     children: [
-      createElement('div', { key: 'name', style: FIELD_WRAP_STYLE_OBJECT },
+      createElement(
+        'div',
+        { key: 'name', style: FIELD_WRAP_STYLE_OBJECT },
         createElement('label', { style: LABEL_STYLE_OBJECT }, '名前'),
         createElement('input', {
           ref: nameRef,
@@ -45,8 +47,14 @@ function ReactDemo({ katakana }: Args): React.ReactElement {
           style: FIELD_STYLE_OBJECT,
         }),
       ),
-      createElement('div', { key: 'furi', style: FIELD_WRAP_STYLE_OBJECT },
-        createElement('label', { style: LABEL_STYLE_OBJECT }, `${modeLabel}（onChange コールバック）`),
+      createElement(
+        'div',
+        { key: 'furi', style: FIELD_WRAP_STYLE_OBJECT },
+        createElement(
+          'label',
+          { style: LABEL_STYLE_OBJECT },
+          `${modeLabel}（onChange コールバック）`,
+        ),
         createElement('input', {
           type: 'text',
           value: furigana,

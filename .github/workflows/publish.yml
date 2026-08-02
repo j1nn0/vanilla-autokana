@@ -44,9 +44,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ビルド
+      # 検証
       - name: Verify
-        run: pnpm run lint && pnpm run typecheck && pnpm run test:coverage && pnpm run build && pnpm run verify:exports
+        run: pnpm run ci
 
       # npm に公開（Git チェックをスキップ）
       - name: Publish to npm
