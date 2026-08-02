@@ -20,24 +20,23 @@ function isHiragana(charCode: number): boolean {
   );
 }
 
-export class KanaConverter {
-  static toKatakana(src: string, option: KatakanaOption): string {
-    if (option === 'hiragana') {
-      return src;
-    }
-
-    let str = '';
-    for (let i = 0; i < src.length; i += 1) {
-      const charCode = src.charCodeAt(i);
-      const char = isHiragana(charCode)
-        ? String.fromCharCode(charCode + HIRAGANA_TO_KATAKANA_OFFSET)
-        : src.charAt(i);
-      str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
-    }
-
-    // Half-width katakana output normalizes the full-width space (　) to a half-width space,
-    // matching the ASCII spacing convention of half-width katakana fields.
-    // eslint-disable-next-line no-irregular-whitespace
-    return option === 'half' && str.indexOf('　') !== -1 ? str.replace(/　/g, ' ') : str;
+/** Convert hiragana and full-width katakana into the requested output format. */
+export function toKatakana(src: string, option: KatakanaOption): string {
+  if (option === 'hiragana') {
+    return src;
   }
+
+  let str = '';
+  for (let i = 0; i < src.length; i += 1) {
+    const charCode = src.charCodeAt(i);
+    const char = isHiragana(charCode)
+      ? String.fromCharCode(charCode + HIRAGANA_TO_KATAKANA_OFFSET)
+      : src.charAt(i);
+    str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
+  }
+
+  // Half-width katakana output normalizes the full-width space (　) to a half-width space,
+  // matching the ASCII spacing convention of half-width katakana fields.
+  // eslint-disable-next-line no-irregular-whitespace
+  return option === 'half' && str.indexOf('　') !== -1 ? str.replace(/　/g, ' ') : str;
 }

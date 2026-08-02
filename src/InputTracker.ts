@@ -1,5 +1,5 @@
-import { KanaExtractor } from './KanaExtractor';
-import { KanaConverter } from './KanaConverter';
+import { compactKana, containsNonKana, extractKana } from './KanaExtractor';
+import { toKatakana } from './KanaConverter';
 import type { KatakanaOption } from './KanaConverter';
 
 /** Result of a single state transition: the current ふりがな plus whether all tracking state was cleared. */
@@ -110,7 +110,7 @@ export class InputTracker {
   }
 
   private formatFurigana(): string {
-    return KanaConverter.toKatakana(this.committedKana + this.pendingKana, this.katakana);
+    return toKatakana(this.committedKana + this.pendingKana, this.katakana);
   }
 
   /**
@@ -164,7 +164,7 @@ export class InputTracker {
   private detectAndCommitConversion(newPendingKana: string): void {
     if (Math.abs(this.pendingKana.length - newPendingKana.length) > 1) {
       if (!newPendingKana.startsWith(this.pendingKana)) {
-        const compacted = KanaExtractor.compact(newPendingKana);
+        const compacted = compactKana(newPendingKana);
         if (Math.abs(this.pendingKana.length - compacted.length) > 1) {
           this.commitPendingKana();
         }
@@ -173,14 +173,14 @@ export class InputTracker {
       this.pendingKana.length === this.lastNewInput.length &&
       this.pendingKana !== this.lastNewInput
     ) {
-      if (KanaExtractor.containsNonKana(this.lastNewInput)) {
+      if (containsNonKana(this.lastNewInput)) {
         this.commitPendingKana();
       }
     }
   }
 
   private handleCompositionInput(newInput: string): void {
-    const newPendingKana = KanaExtractor.extract(newInput);
+    const newPendingKana = extractKana(newInput);
     if (newPendingKana.length >= this.pendingKana.length) {
       this.pendingKana = newPendingKana;
     }
@@ -191,7 +191,7 @@ export class InputTracker {
     this.lastNewInput = newInput;
     this.previousRawInput = rawInput;
 
-    const newPendingKana = KanaExtractor.extract(newInput);
+    const newPendingKana = extractKana(newInput);
 
     if (!isDeletion) {
       const prevCommittedKana = this.committedKana;

@@ -1,73 +1,73 @@
 import { describe, expect, test } from 'vitest';
-import { KanaExtractor } from '../src/KanaExtractor';
-import { KanaConverter } from '../src/KanaConverter';
+import { compactKana, containsNonKana, extractKana } from '../src/KanaExtractor';
+import { toKatakana } from '../src/KanaConverter';
 import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
-describe('KanaExtractor', () => {
+describe('kana extraction', () => {
   test('extract removes non-kana characters', () => {
-    expect(KanaExtractor.extract('yamadaやまだ')).toBe('やまだ');
-    expect(KanaExtractor.extract('山田やまだ')).toBe('やまだ');
-    expect(KanaExtractor.extract('やまだ')).toBe('やまだ');
+    expect(extractKana('yamadaやまだ')).toBe('やまだ');
+    expect(extractKana('山田やまだ')).toBe('やまだ');
+    expect(extractKana('やまだ')).toBe('やまだ');
   });
 
   test('extract preserves full-width spaces', () => {
-    expect(KanaExtractor.extract('やまだ　たろう')).toBe('やまだ　たろう');
+    expect(extractKana('やまだ　たろう')).toBe('やまだ　たろう');
   });
 
   test('compact removes small kana', () => {
-    expect(KanaExtractor.compact('ぁぃぅぇぉっゃゅょ')).toBe('');
-    expect(KanaExtractor.compact('やまだ')).toBe('やまだ');
+    expect(compactKana('ぁぃぅぇぉっゃゅょ')).toBe('');
+    expect(compactKana('やまだ')).toBe('やまだ');
   });
 
   test('containsNonKana detects non-kana characters', () => {
-    expect(KanaExtractor.containsNonKana('yamada')).toBe(true);
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
+    expect(containsNonKana('yamada')).toBe(true);
+    expect(containsNonKana('やまだ')).toBe(false);
+    expect(containsNonKana('山田')).toBe(true);
   });
 
   test('containsNonKana works correctly on consecutive calls', () => {
     // Regression guard: the old /g regex with .test() mutated lastIndex.
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
+    expect(containsNonKana('やまだ')).toBe(false);
+    expect(containsNonKana('やまだ')).toBe(false);
+    expect(containsNonKana('山田')).toBe(true);
+    expect(containsNonKana('山田')).toBe(true);
   });
 });
 
-describe('KanaConverter', () => {
-  test('toKatakana converts basic hiragana to half-width katakana', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'half')).toBe('ｱｲｳｴｵ');
-    expect(KanaConverter.toKatakana('かきくけこ', 'half')).toBe('ｶｷｸｹｺ');
-    expect(KanaConverter.toKatakana('がぎぐげご', 'half')).toBe('ｶﾞｷﾞｸﾞｹﾞｺﾞ');
-    expect(KanaConverter.toKatakana('ぱぴぷぺぽ', 'half')).toBe('ﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ');
-    expect(KanaConverter.toKatakana('っゃゅょ', 'half')).toBe('ｯｬｭｮ');
-    expect(KanaConverter.toKatakana('ん', 'half')).toBe('ﾝ');
-    expect(KanaConverter.toKatakana('ー', 'half')).toBe('ｰ');
-    expect(KanaConverter.toKatakana('ヰ', 'half')).toBe('ｲ');
-    expect(KanaConverter.toKatakana('ヱ', 'half')).toBe('ｴ');
-    expect(KanaConverter.toKatakana('ヺ', 'half')).toBe('ｦﾞ');
-    expect(KanaConverter.toKatakana('。', 'half')).toBe('｡');
-    expect(KanaConverter.toKatakana('、', 'half')).toBe('､');
+describe('kana conversion', () => {
+  test('converts basic hiragana to half-width katakana', () => {
+    expect(toKatakana('あいうえお', 'half')).toBe('ｱｲｳｴｵ');
+    expect(toKatakana('かきくけこ', 'half')).toBe('ｶｷｸｹｺ');
+    expect(toKatakana('がぎぐげご', 'half')).toBe('ｶﾞｷﾞｸﾞｹﾞｺﾞ');
+    expect(toKatakana('ぱぴぷぺぽ', 'half')).toBe('ﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ');
+    expect(toKatakana('っゃゅょ', 'half')).toBe('ｯｬｭｮ');
+    expect(toKatakana('ん', 'half')).toBe('ﾝ');
+    expect(toKatakana('ー', 'half')).toBe('ｰ');
+    expect(toKatakana('ヰ', 'half')).toBe('ｲ');
+    expect(toKatakana('ヱ', 'half')).toBe('ｴ');
+    expect(toKatakana('ヺ', 'half')).toBe('ｦﾞ');
+    expect(toKatakana('。', 'half')).toBe('｡');
+    expect(toKatakana('、', 'half')).toBe('､');
   });
 
-  test('toKatakana converts hiragana to full-width katakana', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'full')).toBe('アイウエオ');
+  test('converts hiragana to full-width katakana', () => {
+    expect(toKatakana('あいうえお', 'full')).toBe('アイウエオ');
   });
 
-  test('toKatakana keeps hiragana as-is', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'hiragana')).toBe('あいうえお');
+  test('keeps hiragana as-is', () => {
+    expect(toKatakana('あいうえお', 'hiragana')).toBe('あいうえお');
   });
 
-  test('toKatakana handles vu hiragana', () => {
-    expect(KanaConverter.toKatakana('ゔぁ', 'full')).toBe('ヴァ');
-    expect(KanaConverter.toKatakana('ゔぁ', 'half')).toBe('ｳﾞｧ');
+  test('handles vu hiragana', () => {
+    expect(toKatakana('ゔぁ', 'full')).toBe('ヴァ');
+    expect(toKatakana('ゔぁ', 'half')).toBe('ｳﾞｧ');
   });
 });
 
 describe('fullToHalfKatakanaMap', () => {
   test('map entries are bijectively correct', () => {
     for (const [full, half] of Object.entries(fullToHalfKatakanaMap)) {
-      const converted = KanaConverter.toKatakana(full, 'half');
+      const converted = toKatakana(full, 'half');
       expect(converted).toBe(half);
     }
   });
