@@ -229,6 +229,21 @@ AutoKana.bind('#name', '#furigana', { katakana: true });
 AutoKana.bind('#name', '#furigana', { katakana: 'full' });
 ```
 
+## 移行ガイド（v2 → v3）
+
+v3.0.0 で公開 export が縮小されました。`KanaConverter` と `KanaExtractor` はパッケージエントリから export されなくなります（ADR-0003）。`bind` / `AutoKana` / 型の export は変更ありません。
+
+```js
+// v2: ユーティリティを直接 import していた場合
+import { bind, KanaConverter } from '@j1nn0/vanilla-autokana';
+KanaConverter.toKatakana('やまだ', 'full'); // → 'ヤマダ'
+
+// v3: 公開 API は bind / AutoKana のみ
+import { bind } from '@j1nn0/vanilla-autokana';
+```
+
+ふりがなのカタカナ変換は `katakana` オプションで行えます。単体のカタカナ変換が必要な場合は専用ライブラリをご利用ください。
+
 ## ライセンス
 
 MIT

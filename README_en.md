@@ -231,6 +231,21 @@ AutoKana.bind('#name', '#furigana', { katakana: true });
 AutoKana.bind('#name', '#furigana', { katakana: 'full' });
 ```
 
+## Migration Guide (v2 → v3)
+
+The public exports were shrunk in v3.0.0. `KanaConverter` and `KanaExtractor` are no longer exported from the package entry (ADR-0003). The `bind` / `AutoKana` / type exports are unchanged.
+
+```js
+// v2: importing utilities directly
+import { bind, KanaConverter } from '@j1nn0/vanilla-autokana';
+KanaConverter.toKatakana('やまだ', 'full'); // → 'ヤマダ'
+
+// v3: the public API is only bind / AutoKana
+import { bind } from '@j1nn0/vanilla-autokana';
+```
+
+Katakana conversion of furigana is available via the `katakana` option. Use a dedicated library if you need standalone kana conversion.
+
 ## License
 
 MIT
