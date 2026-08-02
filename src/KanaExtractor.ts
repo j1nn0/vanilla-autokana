@@ -12,8 +12,8 @@ export class KanaExtractor {
   // by detectAndCommitConversion (小さなかな除去 / kana compacting).
   private static readonly COMPACTING_PATTERN = /[ぁぃぅぇぉっゃゅょ]/g;
 
-  static extract(input: string): string[] {
-    return input.replace(this.EXTRACTION_PATTERN, '').split('');
+  static extract(input: string): string {
+    return input.replace(this.EXTRACTION_PATTERN, '');
   }
 
   static compact(input: string): string {

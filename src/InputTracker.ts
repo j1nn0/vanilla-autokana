@@ -1,6 +1,12 @@
 import { KanaExtractor } from './KanaExtractor';
 import { KanaConverter } from './KanaConverter';
-import type { KatakanaOption } from './AutoKana';
+import type { KatakanaOption } from './KanaConverter';
+
+/** Result of a single state transition: the current ふりがな plus whether all tracking state was cleared. */
+export interface FuriganaResult {
+  furigana: string;
+  reset: boolean;
+}
 
 /**
  * IME conversion state machine: separates 確定かな (committed) from 未確定かな (pending)
@@ -11,7 +17,7 @@ import type { KatakanaOption } from './AutoKana';
  */
 export class InputTracker {
   private committedKana = '';
-  private pendingKana: string[] = [];
+  private pendingKana = '';
   private lastConvertedInput = '';
   private lastNewInput = '';
   private previousRawInput = '';
@@ -20,13 +26,13 @@ export class InputTracker {
   constructor(private readonly katakana: KatakanaOption) {}
 
   /** Start an IME composition and return the current furigana. */
-  startComposition(): string {
+  startComposition(): FuriganaResult {
     this.isComposing = true;
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: false };
   }
 
   /** Track the current raw field value and return the resulting furigana. */
-  trackInput(raw: string): string {
+  trackInput(raw: string): FuriganaResult {
     if (raw === '') {
       return this.reset();
     }
@@ -39,13 +45,13 @@ export class InputTracker {
       this.handleNormalInput(newInput, raw);
     }
 
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: false };
   }
 
   /**
    * End an IME composition and process the current raw value in one transition.
    */
-  endComposition(raw: string): string {
+  endComposition(raw: string): FuriganaResult {
     this.isComposing = false;
     this.lastNewInput = '';
     this.previousRawInput = '';
@@ -53,20 +59,20 @@ export class InputTracker {
   }
 
   /** End composition mode without changing the current kana. */
-  blur(): string {
+  blur(): FuriganaResult {
     this.isComposing = false;
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: false };
   }
 
   /**
    * Re-seed the tracker from the live DOM on focus: adopt the existing furigana as already
-   * committed kana, treat the current raw value as already converted, and clear pending state.
+   * committed kana, discard pending kana, and make the current raw input the conversion
+   * baseline. Empty raw input clears all state (再同期 / resync).
    *
-   * @param raw The current value of the name field.
    * @param committedSeed The current furigana value to adopt as committed kana, or `undefined`
    *   when there is no furigana element (leaves committed kana untouched).
    */
-  resync(raw: string, committedSeed: string | undefined): string {
+  resync(raw: string, committedSeed: string | undefined): FuriganaResult {
     if (raw === '') {
       return this.reset();
     }
@@ -75,26 +81,26 @@ export class InputTracker {
     if (committedSeed !== undefined) {
       this.committedKana = committedSeed;
     }
-    this.pendingKana = [];
+    this.pendingKana = '';
     this.lastNewInput = '';
     this.previousRawInput = '';
     this.lastConvertedInput = raw;
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: false };
   }
 
   /** Clear all tracking state (committed kana, pending kana, and the diff anchors). */
-  reset(): string {
+  reset(): FuriganaResult {
     this.isComposing = false;
     this.committedKana = '';
-    this.pendingKana = [];
+    this.pendingKana = '';
     this.lastConvertedInput = '';
     this.lastNewInput = '';
     this.previousRawInput = '';
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: true };
   }
 
   private formatFurigana(): string {
-    return KanaConverter.toKatakana(this.committedKana + this.pendingKana.join(''), this.katakana);
+    return KanaConverter.toKatakana(this.committedKana + this.pendingKana, this.katakana);
   }
 
   /**
@@ -145,19 +151,17 @@ export class InputTracker {
    *    unchanged but the raw last input now contains non-kana characters (e.g. kanji). That
    *    means the reading was converted in place, so commit it.
    */
-  private detectAndCommitConversion(newPendingKana: string[]): void {
+  private detectAndCommitConversion(newPendingKana: string): void {
     if (Math.abs(this.pendingKana.length - newPendingKana.length) > 1) {
-      const oldKana = this.pendingKana.join('');
-      const newKana = newPendingKana.join('');
-      if (!newKana.startsWith(oldKana)) {
-        const compacted = KanaExtractor.compact(newKana).split('');
+      if (!newPendingKana.startsWith(this.pendingKana)) {
+        const compacted = KanaExtractor.compact(newPendingKana);
         if (Math.abs(this.pendingKana.length - compacted.length) > 1) {
           this.commitPendingKana();
         }
       }
     } else if (
       this.pendingKana.length === this.lastNewInput.length &&
-      this.pendingKana.join('') !== this.lastNewInput
+      this.pendingKana !== this.lastNewInput
     ) {
       if (KanaExtractor.containsNonKana(this.lastNewInput)) {
         this.commitPendingKana();
@@ -194,7 +198,7 @@ export class InputTracker {
   }
 
   private commitPendingKana(): void {
-    this.committedKana = this.committedKana + this.pendingKana.join('');
-    this.pendingKana = [];
+    this.committedKana = this.committedKana + this.pendingKana;
+    this.pendingKana = '';
   }
 }

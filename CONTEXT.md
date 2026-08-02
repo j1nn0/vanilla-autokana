@@ -13,8 +13,12 @@ Kana characters extracted from the current raw input that have not yet been conf
 _同義語を避ける_: values, temporaryKana
 
 **ふりがな（Furigana）**:
-The final output string displayed to the user, composed of committed kana plus pending kana, optionally converted to katakana.
+The final output string displayed to the user, composed of committed kana plus pending kana, converted according to the 出力形式（Output Format）.
 _同義語を避ける_: output, result
+
+**出力形式（Output Format）**:
+The character form of the generated furigana: hiragana (default), full-width katakana, or half-width katakana. Controlled by the `katakana` option; represented as `KatakanaOption` in the code and owned by the kana conversion module.
+_同義語を避ける_: katakana option, output mode
 
 **変換（Conversion）**:
 The IME action that turns pending kana into committed kanji/kana. In this library, it triggers moving pending kana into committed kana.

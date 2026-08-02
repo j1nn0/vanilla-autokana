@@ -1,11 +1,10 @@
 import { InputTracker } from './InputTracker';
 import type { KanaElement, Bindable } from './ElementResolver';
-import { ensureElement, getElementLabel, isKanaElement, requireElement } from './ElementResolver';
+import { requireElement, resolveOptionalKanaElement } from './ElementResolver';
+import type { KatakanaOption } from './KanaConverter';
 
 export type { Bindable };
 export type { KatakanaOption };
-
-type KatakanaOption = 'hiragana' | 'full' | 'half';
 
 /** Minimal shape of a checkbox change event accepted by {@link AutoKana.toggle}. */
 type ToggleEventLike = { target: { checked: boolean } };
@@ -17,22 +16,6 @@ export interface AutoKanaOption {
   debug?: boolean;
   /** Callback invoked with the current furigana string whenever it changes. */
   onChange?: (furigana: string) => void;
-}
-
-function resolveOptionalFurigana(furigana: Bindable | undefined): KanaElement | undefined {
-  if (furigana === undefined || furigana === '') {
-    return undefined;
-  }
-  const el = ensureElement(furigana);
-  if (!el) {
-    return undefined;
-  }
-  if (!isKanaElement(el)) {
-    throw new Error(
-      `AutoKana: Element must be an input or textarea for ${getElementLabel(furigana)}.`,
-    );
-  }
-  return el;
 }
 
 export default class AutoKana {
@@ -51,8 +34,8 @@ export default class AutoKana {
   private focusHandler = (): void => {
     this.debug('focus');
     const rawInput = this.elName.value;
-    const furigana = this.tracker.resync(rawInput, this.elFurigana?.value);
-    this.setFurigana(rawInput === '', furigana);
+    const result = this.tracker.resync(rawInput, this.elFurigana?.value);
+    this.setFurigana(result.reset, result.furigana);
   };
 
   private compositionStartHandler = (): void => {
@@ -63,8 +46,8 @@ export default class AutoKana {
   private compositionEndHandler = (): void => {
     this.debug('compositionend');
     const rawInput = this.elName.value;
-    const furigana = this.tracker.endComposition(rawInput);
-    this.setFurigana(rawInput === '', furigana);
+    const result = this.tracker.endComposition(rawInput);
+    this.setFurigana(result.reset, result.furigana);
   };
 
   private inputHandler = (event: InputEvent): void => {
@@ -85,7 +68,7 @@ export default class AutoKana {
     this.tracker = new InputTracker(this.option.katakana);
 
     const elName = requireElement(name);
-    const elFurigana = resolveOptionalFurigana(furigana);
+    const elFurigana = resolveOptionalKanaElement(furigana);
 
     this.elName = elName;
     if (elFurigana) {
@@ -174,8 +157,8 @@ export default class AutoKana {
   /** @internal Internal mechanics; not part of the supported public API. */
   processValue(): void {
     const rawInput = this.elName.value;
-    const furigana = this.tracker.trackInput(rawInput);
-    this.setFurigana(rawInput === '', furigana);
+    const result = this.tracker.trackInput(rawInput);
+    this.setFurigana(result.reset, result.furigana);
   }
 
   /**

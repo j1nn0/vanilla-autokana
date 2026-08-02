@@ -1,5 +1,7 @@
 import { fullToHalfKatakanaMap } from './katakanaMap';
-import type { KatakanaOption } from './AutoKana';
+
+/** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
+export type KatakanaOption = 'hiragana' | 'full' | 'half';
 
 // Hiragana block boundaries used to decide which characters get shifted to katakana.
 const HIRAGANA_START = 12353; // ぁ U+3041

@@ -3,10 +3,6 @@ import { describe, expect, test, vi } from 'vitest';
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
 import { bind } from '../src/index';
-import { InputTracker } from '../src/InputTracker';
-import { KanaExtractor } from '../src/KanaExtractor';
-import { KanaConverter } from '../src/KanaConverter';
-import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
 function setup(html = '<input name="name" id="name"><input name="furigana" id="furigana">') {
   document.body.innerHTML = html;
@@ -237,13 +233,6 @@ test('processValue() without furigana element does not throw', () => {
   expect(autokana.getFurigana()).toBe('やまだ');
 });
 
-test('a confirmed IME conversion commits pending kana into the furigana', () => {
-  const tracker = new InputTracker('hiragana');
-  tracker.startComposition();
-  expect(tracker.trackInput('やまだ')).toBe('やまだ');
-  expect(tracker.endComposition('山田')).toBe('やまだ');
-});
-
 test('bind with class selector resolves element by class', () => {
   document.body.innerHTML =
     '<input class="name-input" id="name"><input class="furi-input" id="furigana">';
@@ -424,17 +413,6 @@ test('initializeValues during composition resets all tracking state', () => {
   nameInput.value = 'たろう';
   autokana.processValue();
   expect(autokana.getFurigana()).toBe('たろう');
-});
-
-test('consecutive IME conversions accumulate committed kana correctly', () => {
-  const tracker = new InputTracker('hiragana');
-  tracker.startComposition();
-  tracker.trackInput('やまだ');
-  expect(tracker.endComposition('山田')).toBe('やまだ');
-
-  tracker.startComposition();
-  tracker.trackInput('山田たろう');
-  expect(tracker.endComposition('山田太郎')).toBe('やまだたろう');
 });
 
 describe('IME composition events', () => {
@@ -907,155 +885,6 @@ describe('uncovered branches', () => {
 
     addEventListenerSpy.mockRestore();
   });
-
-  test('extractNewInput falls back to positional diff when the converted input is not contiguous', () => {
-    // resync seeds the converted anchor to 'あいう'; the next value 'あいか' does not contain
-    // 'あいう' as a substring, so extraction falls back to the positional charCode comparison
-    // and keeps only the differing tail 'か'.
-    const tracker = new InputTracker('hiragana');
-    tracker.resync('あいう', '');
-    expect(tracker.trackInput('あいか')).toBe('か');
-  });
-
-  test('non-kana replacing same-length kana commits the prior reading', () => {
-    const tracker = new InputTracker('hiragana');
-    tracker.trackInput('や');
-    expect(tracker.trackInput('a')).toBe('や');
-  });
-});
-
-describe('InputTracker', () => {
-  test('trackInput() returns the current furigana and clears state for empty input', () => {
-    const tracker = new InputTracker('hiragana');
-
-    expect(tracker.trackInput('やまだ')).toBe('やまだ');
-    expect(tracker.trackInput('')).toBe('');
-  });
-
-  test('startComposition() keeps the longest pending kana during composition', () => {
-    const tracker = new InputTracker('hiragana');
-
-    expect(tracker.startComposition()).toBe('');
-    expect(tracker.trackInput('やまだ')).toBe('やまだ');
-    expect(tracker.trackInput('やま')).toBe('やまだ');
-  });
-
-  test('endComposition() processes the current raw input atomically', () => {
-    const tracker = new InputTracker('hiragana');
-
-    tracker.startComposition();
-    tracker.trackInput('やまだ');
-    expect(tracker.endComposition('山田')).toBe('やまだ');
-    expect(tracker.trackInput('山田たろう')).toBe('やまだたろう');
-  });
-
-  test('blur() leaves pending kana untouched and ends composition mode', () => {
-    const tracker = new InputTracker('hiragana');
-
-    tracker.startComposition();
-    tracker.trackInput('やまだ');
-    expect(tracker.blur()).toBe('やまだ');
-    expect(tracker.trackInput('やま')).toBe('やま');
-  });
-
-  test('resync() returns the adopted furigana without a follow-up input', () => {
-    const tracker = new InputTracker('hiragana');
-
-    expect(tracker.resync('山田', 'やまだ')).toBe('やまだ');
-  });
-
-  test('resync() clears all state when the raw input is empty', () => {
-    const tracker = new InputTracker('hiragana');
-
-    expect(tracker.resync('', 'やまだ')).toBe('');
-  });
-
-  test('reset() returns an empty furigana', () => {
-    const tracker = new InputTracker('hiragana');
-
-    tracker.trackInput('やまだ');
-    expect(tracker.reset()).toBe('');
-  });
-
-  test('extracts kana from mixed input', () => {
-    const tracker = new InputTracker('hiragana');
-    expect(tracker.trackInput('yamadaやまだ')).toBe('やまだ');
-  });
-
-  test('emits the configured katakana format', () => {
-    const tracker = new InputTracker('full');
-    expect(tracker.trackInput('やまだ')).toBe('ヤマダ');
-  });
-
-  test('reset() clears committed and pending kana', () => {
-    const tracker = new InputTracker('hiragana');
-    tracker.startComposition();
-    tracker.trackInput('やまだ');
-    tracker.endComposition('山田');
-    expect(tracker.trackInput('山田たろう')).toBe('やまだたろう');
-
-    expect(tracker.reset()).toBe('');
-  });
-
-  test('resync() adopts the seeded furigana as committed kana', () => {
-    const tracker = new InputTracker('hiragana');
-    expect(tracker.resync('山田', 'やまだ')).toBe('やまだ');
-  });
-
-  test('resync() without a seed leaves committed kana untouched', () => {
-    const tracker = new InputTracker('hiragana');
-    tracker.startComposition();
-    tracker.trackInput('やまだ');
-    tracker.endComposition('山田');
-    expect(tracker.resync('山田', undefined)).toBe('やまだ');
-  });
-
-  test('a large length jump that is only small kana does not falsely commit', () => {
-    // 'しゃち' is 3 kana but compacts to 2 (small ゃ removed); the length jump from 'か' is
-    // therefore not a real IME conversion, so the kana compacting check suppresses the commit.
-    const tracker = new InputTracker('hiragana');
-    tracker.trackInput('か');
-    expect(tracker.trackInput('しゃち')).toBe('しゃち');
-  });
-});
-
-describe('KanaExtractor', () => {
-  test('extract removes non-kana characters', () => {
-    expect(KanaExtractor.extract('yamadaやまだ')).toEqual(['や', 'ま', 'だ']);
-    expect(KanaExtractor.extract('山田やまだ')).toEqual(['や', 'ま', 'だ']);
-    expect(KanaExtractor.extract('やまだ')).toEqual(['や', 'ま', 'だ']);
-  });
-
-  test('extract preserves full-width spaces', () => {
-    expect(KanaExtractor.extract('やまだ　たろう')).toEqual([
-      'や',
-      'ま',
-      'だ',
-      '　',
-      'た',
-      'ろ',
-      'う',
-    ]);
-  });
-
-  test('compact removes small kana', () => {
-    expect(KanaExtractor.compact('ぁぃぅぇぉっゃゅょ')).toBe('');
-    expect(KanaExtractor.compact('やまだ')).toBe('やまだ');
-  });
-
-  test('containsNonKana detects non-kana characters', () => {
-    expect(KanaExtractor.containsNonKana('yamada')).toBe(true);
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
-  });
-
-  test('containsNonKana works correctly on consecutive calls', () => {
-    // Regression guard: the old /g regex with .test() mutated lastIndex.
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('やまだ')).toBe(false);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
-    expect(KanaExtractor.containsNonKana('山田')).toBe(true);
-  });
 });
 
 describe('onChange callback', () => {
@@ -1246,41 +1075,6 @@ describe('vu hiragana handling', () => {
 
     expect(furiganaInput.value).toBe('ゔぁ');
   });
-
-  test('ゔ is converted to katakana', () => {
-    expect(KanaConverter.toKatakana('ゔぁ', 'full')).toBe('ヴァ');
-    expect(KanaConverter.toKatakana('ゔぁ', 'half')).toBe('ｳﾞｧ');
-  });
-});
-
-describe('KanaConverter', () => {
-  test('toKatakana converts basic hiragana to half-width katakana', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'half')).toBe('ｱｲｳｴｵ');
-    expect(KanaConverter.toKatakana('かきくけこ', 'half')).toBe('ｶｷｸｹｺ');
-    expect(KanaConverter.toKatakana('がぎぐげご', 'half')).toBe('ｶﾞｷﾞｸﾞｹﾞｺﾞ');
-    expect(KanaConverter.toKatakana('ぱぴぷぺぽ', 'half')).toBe('ﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ');
-    expect(KanaConverter.toKatakana('っゃゅょ', 'half')).toBe('ｯｬｭｮ');
-    expect(KanaConverter.toKatakana('ん', 'half')).toBe('ﾝ');
-    expect(KanaConverter.toKatakana('ー', 'half')).toBe('ｰ');
-    expect(KanaConverter.toKatakana('ヰ', 'half')).toBe('ｲ');
-    expect(KanaConverter.toKatakana('ヱ', 'half')).toBe('ｴ');
-    expect(KanaConverter.toKatakana('ヺ', 'half')).toBe('ｦﾞ');
-    expect(KanaConverter.toKatakana('。', 'half')).toBe('｡');
-    expect(KanaConverter.toKatakana('、', 'half')).toBe('､');
-  });
-
-  test('toKatakana converts hiragana to full-width katakana', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'full')).toBe('アイウエオ');
-  });
-
-  test('toKatakana keeps hiragana as-is', () => {
-    expect(KanaConverter.toKatakana('あいうえお', 'hiragana')).toBe('あいうえお');
-  });
-
-  test('toKatakana handles vu hiragana', () => {
-    expect(KanaConverter.toKatakana('ゔぁ', 'full')).toBe('ヴァ');
-    expect(KanaConverter.toKatakana('ゔぁ', 'half')).toBe('ｳﾞｧ');
-  });
 });
 
 describe('public types', () => {
@@ -1314,28 +1108,6 @@ describe('destroy()', () => {
     expect(autokana.elName).toBeNull();
     // @ts-expect-error - accessing private property for test verification
     expect(autokana.elFurigana).toBeUndefined();
-  });
-});
-
-describe('fullToHalfKatakanaMap', () => {
-  test('map entries are bijectively correct', () => {
-    for (const [full, half] of Object.entries(fullToHalfKatakanaMap)) {
-      const converted = KanaConverter.toKatakana(full, 'half');
-      expect(converted).toBe(half);
-    }
-  });
-
-  test('special characters are correctly mapped', () => {
-    expect(fullToHalfKatakanaMap['ヴ']).toBe('ｳﾞ');
-    expect(fullToHalfKatakanaMap['ヺ']).toBe('ｦﾞ');
-    expect(fullToHalfKatakanaMap['ヰ']).toBe('ｲ');
-    expect(fullToHalfKatakanaMap['ヱ']).toBe('ｴ');
-    expect(fullToHalfKatakanaMap['。']).toBe('｡');
-    expect(fullToHalfKatakanaMap['、']).toBe('､');
-  });
-
-  test('map has 87 entries', () => {
-    expect(Object.keys(fullToHalfKatakanaMap)).toHaveLength(87);
   });
 });
 

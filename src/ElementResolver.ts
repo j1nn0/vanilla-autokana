@@ -39,6 +39,27 @@ export function requireElement(selectorOrElement: Bindable): KanaElement {
         `For Vue/React, call bind() inside onMounted()/useEffect() or after the component is mounted.`,
     );
   }
+  return assertKanaElement(el, selectorOrElement);
+}
+
+/**
+ * Like {@link requireElement}, but returns `undefined` when the target does not exist
+ * (used for the optional furigana output element).
+ */
+export function resolveOptionalKanaElement(
+  selectorOrElement: Bindable | undefined,
+): KanaElement | undefined {
+  if (selectorOrElement === undefined || selectorOrElement === '') {
+    return undefined;
+  }
+  const el = ensureElement(selectorOrElement);
+  if (!el) {
+    return undefined;
+  }
+  return assertKanaElement(el, selectorOrElement);
+}
+
+function assertKanaElement(el: HTMLElement, selectorOrElement: Bindable): KanaElement {
   if (!isKanaElement(el)) {
     const label = getElementLabel(selectorOrElement);
     throw new Error(`AutoKana: Element must be an input or textarea for ${label}.`);
