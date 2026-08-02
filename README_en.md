@@ -112,7 +112,7 @@ The third `option` argument accepts the following:
 - `reset()`: Reset all internal state and clear the furigana output (DOM element and onChange)
 - `destroy()`: Remove all event listeners
 
-> **Note**: The `option` property is read-only. Use `setKatakana()` to change the output format at runtime.
+> **Note**: The `option` and `isActive` properties are read-only. Use `setKatakana()` for the output format, and `start()` / `stop()` / `toggle()` for tracking on/off.
 
 > **Note**: `initializeValues()` is deprecated. Use `reset()` instead.
 
@@ -252,6 +252,7 @@ Katakana conversion of furigana is available via the `katakana` option. Use a de
 Other changes in v3.0.0:
 
 - The `option` property is now read-only. Use `setKatakana()` to change the output format at runtime
+- The `isActive` property is now read-only. Use `start()` / `stop()` / `toggle()` for tracking on/off
 - `reset()` now also clears the furigana output (DOM element and onChange); onChange fires on reset
 
 ## License

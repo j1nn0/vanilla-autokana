@@ -98,7 +98,7 @@ describe('InputTracker', () => {
   test('setKatakana() changes the output format and returns the re-formatted furigana', () => {
     const tracker = new InputTracker('hiragana');
     tracker.trackInput('やまだ');
-    expect(tracker.setKatakana('full')).toBe('ヤマダ');
+    expect(tracker.setKatakana('full')).toEqual({ furigana: 'ヤマダ', reset: false });
     expect(tracker.trackInput('やまだたろう')).toEqual({ furigana: 'ヤマダタロウ', reset: false });
   });
 

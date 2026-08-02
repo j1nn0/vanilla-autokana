@@ -110,7 +110,7 @@ bind('#name', '#furigana');
 - `reset()`: 内部状態をリセットし、ふりがな出力（DOM 要素・onChange）もクリアする
 - `destroy()`: イベントリスナーをすべて削除する
 
-> **注意**: `option` プロパティは読み取り専用です。実行時に出力形式を変更する場合は `setKatakana()` を使用してください。
+> **注意**: `option` と `isActive` プロパティは読み取り専用です。出力形式は `setKatakana()`、追跡の on/off は `start()` / `stop()` / `toggle()` を使用してください。
 
 > **注意**: `initializeValues()` は非推奨です。代わりに `reset()` を使用してください。
 
@@ -250,6 +250,7 @@ import { bind } from '@j1nn0/vanilla-autokana';
 その他、v3.0.0 での変更:
 
 - `option` プロパティは読み取り専用になりました。実行時に出力形式を変えるには `setKatakana()` を使用してください
+- `isActive` プロパティは読み取り専用になりました。追跡の on/off は `start()` / `stop()` / `toggle()` を使用してください
 - `reset()` はふりがな出力（DOM 要素と onChange）もクリアするようになりました（reset 時に onChange が発火します）
 
 ## ライセンス

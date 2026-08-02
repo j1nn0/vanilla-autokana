@@ -26,9 +26,9 @@ export class InputTracker {
   constructor(private katakana: KatakanaOption) {}
 
   /** Change the output format at runtime and return the current furigana in the new format. */
-  setKatakana(katakana: KatakanaOption): string {
+  setKatakana(katakana: KatakanaOption): FuriganaResult {
     this.katakana = katakana;
-    return this.formatFurigana();
+    return { furigana: this.formatFurigana(), reset: false };
   }
 
   /** Start an IME composition and return the current furigana. */

@@ -2,7 +2,13 @@ import type { Meta, StoryObj } from '@storybook/html-vite';
 import { createElement, useState, useEffect, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { bind, type AutoKanaOption } from '../src/index';
-import { getModeLabel } from './helpers';
+import {
+  CONTAINER_STYLE_OBJECT,
+  FIELD_STYLE_OBJECT,
+  FIELD_WRAP_STYLE_OBJECT,
+  getModeLabel,
+  LABEL_STYLE_OBJECT,
+} from './helpers';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
 
@@ -26,25 +32,25 @@ function ReactDemo({ katakana }: Args): React.ReactElement {
   const modeLabel = getModeLabel(katakana);
 
   return createElement('div', {
-    style: { maxWidth: '360px', padding: '24px', fontFamily: 'system-ui, sans-serif', background: '#fafafa', border: '1px solid #eee', borderRadius: '8px' },
+    style: CONTAINER_STYLE_OBJECT,
     children: [
-      createElement('div', { key: 'name', style: { marginBottom: '12px' } },
-        createElement('label', { style: { display: 'block', marginBottom: '4px', fontSize: '13px', color: '#555' } }, '名前'),
+      createElement('div', { key: 'name', style: FIELD_WRAP_STYLE_OBJECT },
+        createElement('label', { style: LABEL_STYLE_OBJECT }, '名前'),
         createElement('input', {
           ref: nameRef,
           type: 'text',
           placeholder: '名前を入力してください',
-          style: { boxSizing: 'border-box', width: '100%', padding: '8px 12px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' },
+          style: FIELD_STYLE_OBJECT,
         }),
       ),
-      createElement('div', { key: 'furi', style: { marginBottom: '12px' } },
-        createElement('label', { style: { display: 'block', marginBottom: '4px', fontSize: '13px', color: '#555' } }, `${modeLabel}（onChange コールバック）`),
+      createElement('div', { key: 'furi', style: FIELD_WRAP_STYLE_OBJECT },
+        createElement('label', { style: LABEL_STYLE_OBJECT }, `${modeLabel}（onChange コールバック）`),
         createElement('input', {
           type: 'text',
           value: furigana,
           readOnly: true,
           placeholder: 'onChange で更新されます',
-          style: { boxSizing: 'border-box', width: '100%', padding: '8px 12px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none', background: '#f5f5f5' },
+          style: { ...FIELD_STYLE_OBJECT, background: '#f5f5f5' },
         }),
       ),
     ],
