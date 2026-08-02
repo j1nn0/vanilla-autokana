@@ -31,7 +31,7 @@ npm パッケージに含まれる `dist/autokana.umd.js` を scriptタグで読
 CDN を使う場合は、バージョンを固定した URL の利用を推奨します。
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.2.2/dist/autokana.umd.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.3.3/dist/autokana.umd.js" defer></script>
 ```
 
 ## 使用方法
@@ -125,7 +125,7 @@ bind('#name', '#furigana');
     </div>
     <div>
       <label for="furigana">ふりがな</label>
-      <input name="furigana" id="furigana" v-model="furigana" />
+      <input name="furigana" id="furigana" v-model="furigana" readonly />
     </div>
     <h2>入力内容の確認</h2>
     <p>名前: {{ name }}</p>
@@ -159,7 +159,7 @@ onUnmounted(() => {
 `onChange` コールバックを使わずに `getFurigana` メソッドでふりがなを取り出すこともできますが、`onChange` の使用を推奨します。
 
 ```html
-<!-- 非推奨: getFurigana() のポーリング -->
+<!-- 非推奨: getFurigana() をポーリングして同期する -->
 <input name="name" id="name" v-model="name" @input="handleNameInput" />
 ```
 

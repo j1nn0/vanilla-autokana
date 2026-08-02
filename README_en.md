@@ -33,7 +33,7 @@ Load `dist/autokana.umd.js` from the npm package with a script tag.
 When using a CDN, pin the package version in the URL.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.2.2/dist/autokana.umd.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@j1nn0/vanilla-autokana@2.3.3/dist/autokana.umd.js" defer></script>
 ```
 
 ## Usage
@@ -127,7 +127,7 @@ When a furigana output input is provided, an `input` event with `bubbles: true` 
     </div>
     <div>
       <label for="furigana">Furigana</label>
-      <input name="furigana" id="furigana" v-model="furigana" />
+      <input name="furigana" id="furigana" v-model="furigana" readonly />
     </div>
     <h2>Confirm your input</h2>
     <p>Name: {{ name }}</p>
@@ -161,7 +161,7 @@ Even when using `v-model`, an `input` event is dispatched on the furigana output
 You can also use the `getFurigana` method to retrieve the furigana, but `onChange` is recommended.
 
 ```html
-<!-- Not recommended: polling getFurigana() -->
+<!-- Not recommended: polling getFurigana() for synchronization -->
 <input name="name" id="name" v-model="name" @input="handleNameInput" />
 ```
 
