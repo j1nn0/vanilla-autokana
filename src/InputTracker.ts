@@ -187,8 +187,6 @@ export class InputTracker {
   }
 
   private handleNormalInput(newInput: string, rawInput: string): void {
-    if (this.lastNewInput === newInput) return;
-
     const isDeletion = rawInput.length < this.previousRawInput.length;
     this.lastNewInput = newInput;
     this.previousRawInput = rawInput;

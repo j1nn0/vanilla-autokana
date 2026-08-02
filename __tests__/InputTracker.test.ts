@@ -150,4 +150,20 @@ describe('InputTracker', () => {
     tracker.trackInput('山田たろう');
     expect(tracker.endComposition('山田太郎')).toEqual({ furigana: 'やまだたろう', reset: false });
   });
+  test('repeating the same raw input preserves the current furigana', () => {
+    const tracker = new InputTracker('hiragana');
+    tracker.trackInput('やまだ');
+
+    expect(tracker.trackInput('やまだ')).toEqual({ furigana: 'やまだ', reset: false });
+  });
+
+  test('deleting pending kana after conversion does not commit it', () => {
+    const tracker = new InputTracker('hiragana');
+    tracker.startComposition();
+    tracker.trackInput('やまだ');
+    tracker.endComposition('山田');
+    tracker.trackInput('山田たろう');
+
+    expect(tracker.trackInput('山田')).toEqual({ furigana: 'やまだ', reset: false });
+  });
 });
