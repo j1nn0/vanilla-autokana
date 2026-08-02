@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/html-vite';
 import { createElement, useState, useEffect, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { bind, type AutoKanaOption } from '../src/index';
+import { getModeLabel } from './helpers';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
 
@@ -22,12 +23,7 @@ function ReactDemo({ katakana }: Args): React.ReactElement {
     };
   }, [katakana]);
 
-  const modeLabel =
-    katakana === 'full'
-      ? 'カタカナ（全角）'
-      : katakana === 'half'
-        ? 'カタカナ（半角）'
-        : 'ふりがな';
+  const modeLabel = getModeLabel(katakana);
 
   return createElement('div', {
     style: { maxWidth: '360px', padding: '24px', fontFamily: 'system-ui, sans-serif', background: '#fafafa', border: '1px solid #eee', borderRadius: '8px' },

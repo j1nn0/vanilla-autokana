@@ -105,11 +105,14 @@ The third `option` argument accepts the following:
 ### Methods
 
 - `getFurigana()`: Returns the current furigana string
+- `setKatakana(katakana)`: Changes the output format (`'hiragana' | 'full' | 'half'`) at runtime. The current furigana is re-rendered immediately
 - `start()`: Resume auto-kana tracking
 - `stop()`: Pause auto-kana tracking
 - `toggle(event?)`: Toggle auto-kana tracking on or off. When a checkbox change event is provided, uses its `checked` state
-- `reset()`: Reset all internal state (furigana, conversion flags, etc.)
+- `reset()`: Reset all internal state and clear the furigana output (DOM element and onChange)
 - `destroy()`: Remove all event listeners
+
+> **Note**: The `option` property is read-only. Use `setKatakana()` to change the output format at runtime.
 
 > **Note**: `initializeValues()` is deprecated. Use `reset()` instead.
 
@@ -245,6 +248,11 @@ import { bind } from '@j1nn0/vanilla-autokana';
 ```
 
 Katakana conversion of furigana is available via the `katakana` option. Use a dedicated library if you need standalone kana conversion.
+
+Other changes in v3.0.0:
+
+- The `option` property is now read-only. Use `setKatakana()` to change the output format at runtime
+- `reset()` now also clears the furigana output (DOM element and onChange); onChange fires on reset
 
 ## License
 

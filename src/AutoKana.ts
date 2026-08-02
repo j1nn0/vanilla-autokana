@@ -18,13 +18,20 @@ export interface AutoKanaOption {
   onChange?: (furigana: string) => void;
 }
 
+type ResolvedOption = Readonly<AutoKanaOption & { katakana: KatakanaOption; debug: boolean }>;
+
 export default class AutoKana {
   isActive: boolean;
-  option: AutoKanaOption & { katakana: KatakanaOption; debug: boolean };
+  private resolvedOption: ResolvedOption;
   private elName!: KanaElement;
   private elFurigana?: KanaElement;
   private furigana: string;
   private readonly tracker: InputTracker;
+
+  /** Current option values. Read-only; change the output format at runtime with {@link setKatakana}. */
+  get option(): ResolvedOption {
+    return this.resolvedOption;
+  }
 
   private blurHandler = (): void => {
     this.debug('blur');
@@ -55,11 +62,19 @@ export default class AutoKana {
     this.processValue();
   };
 
+  private readonly eventPairs: Array<[string, EventListener]> = [
+    ['blur', this.blurHandler],
+    ['focus', this.focusHandler],
+    ['compositionstart', this.compositionStartHandler],
+    ['compositionend', this.compositionEndHandler],
+    ['input', this.inputHandler as EventListener],
+  ];
+
   constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
     this.isActive = true;
     this.furigana = '';
 
-    this.option = {
+    this.resolvedOption = {
       ...option,
       katakana: option.katakana ?? 'hiragana',
       debug: option.debug ?? false,
@@ -114,11 +129,22 @@ export default class AutoKana {
   }
 
   /**
-   * Reset all internal state (committed kana, furigana, composing flag, etc.).
+   * Change the furigana output format at runtime. Re-renders the current furigana immediately.
+   *
+   * @param katakana The new output format: `'hiragana'` | `'full'` | `'half'`.
+   */
+  setKatakana(katakana: KatakanaOption): void {
+    this.resolvedOption = { ...this.resolvedOption, katakana };
+    const furigana = this.tracker.setKatakana(katakana);
+    this.setFurigana(false, furigana);
+  }
+
+  /**
+   * Reset all tracking state and clear the furigana output (DOM element and onChange).
    */
   reset(): void {
-    this.furigana = '';
-    this.tracker.reset();
+    const result = this.tracker.reset();
+    this.setFurigana(result.reset, result.furigana);
   }
 
   /**
@@ -129,11 +155,9 @@ export default class AutoKana {
   }
 
   private registerEvents(elName: KanaElement): void {
-    elName.addEventListener('blur', this.blurHandler);
-    elName.addEventListener('focus', this.focusHandler);
-    elName.addEventListener('compositionstart', this.compositionStartHandler);
-    elName.addEventListener('compositionend', this.compositionEndHandler);
-    elName.addEventListener('input', this.inputHandler as EventListener);
+    for (const [event, handler] of this.eventPairs) {
+      elName.addEventListener(event, handler);
+    }
   }
 
   /** @internal Internal mechanics; not part of the supported public API. */
@@ -162,14 +186,12 @@ export default class AutoKana {
   }
 
   /**
-   * Remove all event listeners (blur, focus, compositionstart, compositionend, input) from the name element.
+   * Remove all event listeners from the name element.
    */
   destroy(): void {
-    this.elName.removeEventListener('blur', this.blurHandler);
-    this.elName.removeEventListener('focus', this.focusHandler);
-    this.elName.removeEventListener('compositionstart', this.compositionStartHandler);
-    this.elName.removeEventListener('compositionend', this.compositionEndHandler);
-    this.elName.removeEventListener('input', this.inputHandler as EventListener);
+    for (const [event, handler] of this.eventPairs) {
+      this.elName.removeEventListener(event, handler);
+    }
     // Intentionally drop the element references after teardown so the instance no longer
     // pins the DOM nodes. `elName` is declared non-nullable for the active lifetime, so the
     // cast is a deliberate teardown-only escape hatch; methods must not run after destroy().

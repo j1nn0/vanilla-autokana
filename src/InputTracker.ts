@@ -23,7 +23,13 @@ export class InputTracker {
   private previousRawInput = '';
   private isComposing = false;
 
-  constructor(private readonly katakana: KatakanaOption) {}
+  constructor(private katakana: KatakanaOption) {}
+
+  /** Change the output format at runtime and return the current furigana in the new format. */
+  setKatakana(katakana: KatakanaOption): string {
+    this.katakana = katakana;
+    return this.formatFurigana();
+  }
 
   /** Start an IME composition and return the current furigana. */
   startComposition(): FuriganaResult {

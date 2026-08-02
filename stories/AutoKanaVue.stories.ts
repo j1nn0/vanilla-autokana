@@ -1,19 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/html-vite';
 import { createApp, h, ref, onMounted, onUnmounted, defineComponent } from 'vue';
 import { bind, type AutoKanaOption } from '../src/index';
+import { CONTAINER_STYLE, FIELD_STYLE, FIELD_WRAP_STYLE, getModeLabel, LABEL_STYLE } from './helpers';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
-
-const FIELD_STYLE =
-  'box-sizing:border-box;width:100%;padding:8px 12px;font-size:16px;border:1px solid #ccc;border-radius:4px;outline:none;';
-const LABEL_STYLE = 'display:block;margin-bottom:4px;font-size:13px;color:#555;';
-const FIELD_WRAP_STYLE = 'margin-bottom:12px;';
-
-function getModeLabel(katakana: AutoKanaOption['katakana']): string {
-  if (katakana === 'full') return 'カタカナ（全角）';
-  if (katakana === 'half') return 'カタカナ（半角）';
-  return 'ふりがな';
-}
 
 const DemoWrapper = defineComponent({
   props: {
@@ -43,7 +33,7 @@ const DemoWrapper = defineComponent({
   },
   render() {
     return h('div', {
-      style: 'max-width:360px;padding:24px;font-family:system-ui,sans-serif;background:#fafafa;border:1px solid #eee;border-radius:8px;',
+      style: CONTAINER_STYLE,
     }, [
       h('div', { style: FIELD_WRAP_STYLE }, [
         h('label', { style: LABEL_STYLE }, '名前'),

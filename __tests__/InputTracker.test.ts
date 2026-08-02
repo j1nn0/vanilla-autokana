@@ -95,6 +95,13 @@ describe('InputTracker', () => {
     expect(tracker.trackInput('しゃち')).toEqual({ furigana: 'しゃち', reset: false });
   });
 
+  test('setKatakana() changes the output format and returns the re-formatted furigana', () => {
+    const tracker = new InputTracker('hiragana');
+    tracker.trackInput('やまだ');
+    expect(tracker.setKatakana('full')).toBe('ヤマダ');
+    expect(tracker.trackInput('やまだたろう')).toEqual({ furigana: 'ヤマダタロウ', reset: false });
+  });
+
   test('extractNewInput falls back to positional diff when the converted input is not contiguous', () => {
     // resync seeds the converted anchor to 'あいう'; the next value 'あいか' does not contain
     // 'あいう' as a substring, so extraction falls back to the positional charCode comparison

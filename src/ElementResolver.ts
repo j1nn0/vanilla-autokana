@@ -2,11 +2,11 @@
 export type KanaElement = HTMLInputElement | HTMLTextAreaElement;
 export type Bindable = string | KanaElement;
 
-export function getElementLabel(selectorOrElement: Bindable): string {
+function getElementLabel(selectorOrElement: Bindable): string {
   return typeof selectorOrElement === 'string' ? `"${selectorOrElement}"` : 'the provided element';
 }
 
-export function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
+function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
   if (typeof selectorOrElement === 'string') {
     // CSS selectors (starting with #, ., [, or :) are passed directly to querySelector.
     // Bare strings are treated as IDs for backward compatibility.
@@ -25,7 +25,7 @@ export function ensureElement(selectorOrElement: Bindable): HTMLElement | null {
   return null;
 }
 
-export function isKanaElement(el: HTMLElement): el is KanaElement {
+function isKanaElement(el: HTMLElement): el is KanaElement {
   return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
 }
 

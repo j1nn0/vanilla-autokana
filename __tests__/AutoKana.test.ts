@@ -1090,6 +1090,76 @@ describe('public types', () => {
 
     expect(typeof typeCheckOnly).toBe('function');
   });
+
+  test('option is read-only at compile time', () => {
+    const typeCheckOnly = () => {
+      const autokana = new AutoKana('name');
+      // @ts-expect-error - option is read-only; use setKatakana() to change the format
+      autokana.option.katakana = 'half';
+      // @ts-expect-error - option is read-only
+      autokana.option = { katakana: 'half' };
+    };
+
+    expect(typeof typeCheckOnly).toBe('function');
+  });
+});
+
+describe('setKatakana()', () => {
+  test('re-renders the current furigana in the new format', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    nameInput.value = 'やまだ';
+    autokana.processValue();
+    expect(autokana.getFurigana()).toBe('やまだ');
+
+    autokana.setKatakana('full');
+    expect(autokana.getFurigana()).toBe('ヤマダ');
+    expect(furiganaInput.value).toBe('ヤマダ');
+
+    nameInput.value = 'やまだたろう';
+    autokana.processValue();
+    expect(autokana.getFurigana()).toBe('ヤマダタロウ');
+  });
+
+  test('updates the public option value', () => {
+    setup();
+    const autokana = new AutoKana('name', 'furigana');
+    autokana.setKatakana('half');
+    expect(autokana.option.katakana).toBe('half');
+  });
+
+  test('fires onChange when the format change alters the output', () => {
+    setup();
+    const onChange = vi.fn();
+    const autokana = new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    nameInput.value = 'やまだ';
+    autokana.processValue();
+    onChange.mockClear();
+
+    autokana.setKatakana('full');
+    expect(onChange).toHaveBeenLastCalledWith('ヤマダ');
+  });
+
+  test('reset() clears the furigana output element and fires onChange', () => {
+    setup();
+    const onChange = vi.fn();
+    const autokana = new AutoKana('name', 'furigana', { onChange });
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
+
+    nameInput.value = 'やまだ';
+    autokana.processValue();
+    expect(furiganaInput.value).toBe('やまだ');
+
+    autokana.reset();
+    expect(autokana.getFurigana()).toBe('');
+    expect(furiganaInput.value).toBe('');
+    expect(onChange).toHaveBeenLastCalledWith('');
+  });
 });
 
 describe('destroy()', () => {
