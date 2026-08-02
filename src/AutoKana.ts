@@ -61,7 +61,7 @@ export default class AutoKana {
 
   private inputHandler = (event: InputEvent): void => {
     this.debug('input', event.isComposing);
-    this.processValue();
+    this.setFurigana(this.tracker.trackInput(this.elName.value));
   };
 
   private readonly eventPairs: Array<[string, EventListener]> = [
@@ -146,21 +146,13 @@ export default class AutoKana {
     this.setFurigana(this.tracker.reset());
   }
 
-  /**
-   * @deprecated Use reset() instead.
-   */
-  initializeValues(): void {
-    this.reset();
-  }
-
   private registerEvents(elName: KanaElement): void {
     for (const [event, handler] of this.eventPairs) {
       elName.addEventListener(event, handler);
     }
   }
 
-  /** @internal Internal mechanics; not part of the supported public API. */
-  setFurigana(result: FuriganaResult): void {
+  private setFurigana(result: FuriganaResult): void {
     if (!this.isActive) {
       return;
     }
@@ -175,11 +167,6 @@ export default class AutoKana {
     if (this.option.onChange) {
       this.option.onChange(this.furigana);
     }
-  }
-
-  /** @internal Internal mechanics; not part of the supported public API. */
-  processValue(): void {
-    this.setFurigana(this.tracker.trackInput(this.elName.value));
   }
 
   /**

@@ -114,8 +114,6 @@ The third `option` argument accepts the following:
 
 > **Note**: The `option` and `isActive` properties are read-only. Use `setKatakana()` for the output format, and `start()` / `stop()` / `toggle()` for tracking on/off.
 
-> **Note**: `initializeValues()` is deprecated. Use `reset()` instead.
-
 ### Using with Vue.js
 
 Use the `onChange` callback to detect furigana changes without polling `getFurigana()`.
@@ -253,6 +251,7 @@ Other changes in v3.0.0:
 
 - The `option` property is now read-only. Use `setKatakana()` to change the output format at runtime
 - The `isActive` property is now read-only. Use `start()` / `stop()` / `toggle()` for tracking on/off
+- `initializeValues()` has been removed. Use `reset()` instead
 - `reset()` now also clears the furigana output (DOM element and onChange); onChange fires on reset
 
 ## License
