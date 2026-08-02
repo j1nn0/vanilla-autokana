@@ -2,10 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
-
-function setup(html = '<input name="name" id="name"><input name="furigana" id="furigana">') {
-  document.body.innerHTML = html;
-}
+import { setup } from './setup';
 
 describe('IME composition events', () => {
   test('compositionstart routes subsequent input through composition tracking', () => {

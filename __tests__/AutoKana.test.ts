@@ -3,10 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 /* global test expect document */
 import AutoKana from '../src/AutoKana';
 import { bind } from '../src/index';
-
-function setup(html = '<input name="name" id="name"><input name="furigana" id="furigana">') {
-  document.body.innerHTML = html;
-}
+import { setup } from './setup';
 
 describe('binding', () => {
   test('init', () => {
@@ -157,6 +154,9 @@ describe('options', () => {
     // @ts-expect-error - accessing private method for test verification
     autokana.debug('test', 123);
     expect(logSpy).toHaveBeenCalledWith('test', 123);
+    // @ts-expect-error - accessing private method for test verification
+    autokana.debug('test');
+    expect(logSpy).toHaveBeenCalledWith('test');
     logSpy.mockRestore();
   });
 

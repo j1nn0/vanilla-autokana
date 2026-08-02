@@ -117,6 +117,15 @@ describe('InputTracker', () => {
     expect(tracker.trackInput('a')).toEqual({ furigana: 'や', reset: false });
   });
 
+  test('same-length kana-only replacement does not commit', () => {
+    // The same-length heuristic only treats non-kana content as a conversion: replacing
+    // kana with kana (e.g. やまだ -> やまし) is plain editing, so nothing is committed
+    // and the pending kana just updates.
+    const tracker = new InputTracker('hiragana');
+    tracker.trackInput('やまだ');
+    expect(tracker.trackInput('やまし')).toEqual({ furigana: 'やまし', reset: false });
+  });
+
   test('a confirmed IME conversion commits pending kana into the furigana', () => {
     const tracker = new InputTracker('hiragana');
     tracker.startComposition();
