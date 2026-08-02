@@ -241,7 +241,7 @@ v3.0.0 で公開 export が縮小されました。`KanaConverter` と `KanaExtr
 import { bind, KanaConverter } from '@j1nn0/vanilla-autokana';
 KanaConverter.toKatakana('やまだ', 'full'); // → 'ヤマダ'
 
-// v3: 公開 API は bind / AutoKana のみ
+// v3: 公開 API は bind / AutoKana / 型
 import { bind } from '@j1nn0/vanilla-autokana';
 ```
 
@@ -252,6 +252,7 @@ import { bind } from '@j1nn0/vanilla-autokana';
 - `option` プロパティは読み取り専用になりました。実行時に出力形式を変えるには `setKatakana()` を使用してください
 - `isActive` プロパティは読み取り専用になりました。追跡の on/off は `start()` / `stop()` / `toggle()` を使用してください
 - `initializeValues()` は削除されました。`reset()` を使用してください
+- `processValue()` と `setFurigana()` は非公開になりました。入力・IME イベント、`reset()`、`setKatakana()` など公開 interface を使用してください。
 - `stop()` は DOM の入力・IME イベントによる自動追跡だけを停止します。`reset()` と `setKatakana()` は停止中も出力を更新します
 - `destroy()` は冪等です。破棄後の状態変更メソッドは no-op になり、`getFurigana()` と `option` は最後の値を返します
 - `reset()` はふりがな出力（DOM 要素と onChange）もクリアするようになりました（reset 時に onChange が発火します）

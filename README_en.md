@@ -242,7 +242,7 @@ The public exports were shrunk in v3.0.0. `KanaConverter` and `KanaExtractor` ar
 import { bind, KanaConverter } from '@j1nn0/vanilla-autokana';
 KanaConverter.toKatakana('やまだ', 'full'); // → 'ヤマダ'
 
-// v3: the public API is only bind / AutoKana
+// v3: the public API is bind / AutoKana / types
 import { bind } from '@j1nn0/vanilla-autokana';
 ```
 
@@ -253,6 +253,7 @@ Other changes in v3.0.0:
 - The `option` property is now read-only. Use `setKatakana()` to change the output format at runtime
 - The `isActive` property is now read-only. Use `start()` / `stop()` / `toggle()` for tracking on/off
 - `initializeValues()` has been removed. Use `reset()` instead
+- `processValue()` and `setFurigana()` are no longer public. Use the supported interface through input/IME events, `reset()`, and `setKatakana()`.
 - `stop()` pauses only DOM input and IME event tracking. `reset()` and `setKatakana()` still update the output while stopped
 - `destroy()` is idempotent. State-changing methods become no-ops after destruction, while `getFurigana()` and `option` retain their last values
 - `reset()` now also clears the furigana output (DOM element and onChange); onChange fires on reset
