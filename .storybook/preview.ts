@@ -1,5 +1,11 @@
 import type { Preview } from '@storybook/html';
 
-const preview: Preview = {};
+import { cleanupStoryTeardowns } from '../stories/helpers';
+
+const preview: Preview = {
+  beforeEach() {
+    return cleanupStoryTeardowns;
+  },
+};
 
 export default preview;

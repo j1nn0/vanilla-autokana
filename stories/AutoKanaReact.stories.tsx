@@ -7,7 +7,9 @@ import {
   FIELD_STYLE_OBJECT,
   FIELD_WRAP_STYLE_OBJECT,
   getModeLabel,
+  KATAKANA_ARG_TYPES,
   LABEL_STYLE_OBJECT,
+  registerStoryTeardown,
 } from './helpers';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
@@ -61,21 +63,22 @@ let root: Root | null = null;
 
 function renderReactDemo(args: Args): HTMLElement {
   const container = document.createElement('div');
-  root = createRoot(container);
-  root.render(createElement(ReactDemo, args));
+  const mountedRoot = createRoot(container);
+  root = mountedRoot;
+  mountedRoot.render(createElement(ReactDemo, args));
+  registerStoryTeardown(() => {
+    mountedRoot.unmount();
+    if (root === mountedRoot) {
+      root = null;
+    }
+  });
   return container;
 }
 
 const meta: Meta<Args> = {
   title: 'AutoKana/React',
   render: renderReactDemo,
-  argTypes: {
-    katakana: {
-      control: 'select',
-      options: ['hiragana', 'full', 'half'],
-      description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
-    },
-  },
+  argTypes: KATAKANA_ARG_TYPES,
 };
 
 export default meta;

@@ -1,7 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/html-vite';
 import { createApp, h, ref, onMounted, onUnmounted, defineComponent } from 'vue';
 import { bind, type AutoKanaOption } from '../src/index';
-import { CONTAINER_STYLE, FIELD_STYLE, FIELD_WRAP_STYLE, getModeLabel, LABEL_STYLE } from './helpers';
+import {
+  CONTAINER_STYLE,
+  FIELD_STYLE,
+  FIELD_WRAP_STYLE,
+  getModeLabel,
+  KATAKANA_ARG_TYPES,
+  LABEL_STYLE,
+  registerStoryTeardown,
+} from './helpers';
 
 type Args = Pick<AutoKanaOption, 'katakana'>;
 
@@ -62,21 +70,22 @@ let app: ReturnType<typeof createApp> | null = null;
 
 function renderVueDemo(args: Args): HTMLElement {
   const container = document.createElement('div');
-  app = createApp(DemoWrapper, { katakana: args.katakana });
-  app.mount(container);
+  const mountedApp = createApp(DemoWrapper, { katakana: args.katakana });
+  app = mountedApp;
+  mountedApp.mount(container);
+  registerStoryTeardown(() => {
+    mountedApp.unmount();
+    if (app === mountedApp) {
+      app = null;
+    }
+  });
   return container;
 }
 
 const meta: Meta<Args> = {
   title: 'AutoKana/Vue',
   render: renderVueDemo,
-  argTypes: {
-    katakana: {
-      control: 'select',
-      options: ['hiragana', 'full', 'half'],
-      description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
-    },
-  },
+  argTypes: KATAKANA_ARG_TYPES,
 };
 
 export default meta;

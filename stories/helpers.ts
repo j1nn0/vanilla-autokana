@@ -1,5 +1,28 @@
 import type { CSSProperties } from 'react';
-import type { KatakanaOption } from '../src/index';
+import type { AutoKanaOption, KatakanaOption } from '../src/index';
+
+type StoryTeardown = () => void;
+const storyTeardowns = new Set<StoryTeardown>();
+
+export function registerStoryTeardown(teardown: StoryTeardown): void {
+  storyTeardowns.add(teardown);
+}
+
+export function cleanupStoryTeardowns(): void {
+  const teardowns = [...storyTeardowns];
+  storyTeardowns.clear();
+  for (const teardown of teardowns) {
+    teardown();
+  }
+}
+
+export const KATAKANA_ARG_TYPES = {
+  katakana: {
+    control: 'select' as const,
+    options: ['hiragana', 'full', 'half'],
+    description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
+  },
+} satisfies Record<keyof Pick<AutoKanaOption, 'katakana'>, object>;
 
 /** Label for the furigana output field per output format (出力形式). Undefined means the hiragana default. */
 export function getModeLabel(katakana: KatakanaOption | undefined): string {
