@@ -23,7 +23,8 @@
 ## 主要ファイル
 
 - `src/index.ts`: 公開 API。`bind`、`AutoKana`、型、補助クラスを export する。
-- `src/AutoKana.ts`: イベント登録、IME composition、入力追跡、ふりがな更新の中心。
+- `src/AutoKana.ts`: DOM イベントを `InputTracker` の状態遷移へ写し、返されたふりがなを既存の出力 policy で配信する adapter。
+- `src/InputTracker.ts`: IME 状態機械。composition 状態、確定かな / 未確定かな、入力追跡、変換検出を所有する。
 - `src/ElementResolver.ts`: 文字列セレクタまたは DOM 要素から `input` / `textarea` を解決する。
 - `src/KanaExtractor.ts`: 生入力からかなとスペースを抽出し、変換検出用に小さいかなを圧縮する。
 - `src/KanaConverter.ts`: ひらがな、全角カタカナ、半角カタカナへの変換を担当する。
@@ -46,10 +47,10 @@
 
 ## 実装上の注意
 
-- IME の変換検出は `compositionstart`、`compositionend`、`input`、`focus`、`blur` のイベント駆動で成り立っている。
+- IME の変換検出は `compositionstart`、`compositionend`、`input`、`focus`、`blur` のイベント駆動で成り立っている。composition 状態と遷移は `InputTracker` が所有し、各遷移は処理後のふりがなを返す。`AutoKana` は各イベントを1回の遷移へ写して返値を配信するだけにする。
 - `committedKana` は確定かな、`pendingKana` は未確定かな、`furigana` は最終出力。`CONTEXT.md` の用語に合わせる。
 - 変換確定時は未確定かなを確定かなへ移す。候補選択中の一時的な入力減少で未確定かなを失わないようにする。
-- `processValue()`、`detectAndCommitConversion()`、`handleCompositionInput()`、`handleNormalInput()` の変更は既存の IME 挙動を壊しやすい。必ずイベントベースのテストを追加または更新する。
+- `processValue()`、`startComposition()`、`trackInput()`、`endComposition()`、`resync()`、`blur()`、`detectAndCommitConversion()`、`handleCompositionInput()`、`handleNormalInput()` の変更は既存の IME 挙動を壊しやすい。必ずイベントベースのテストを追加または更新する。
 - 半角カタカナモードでは全角スペースを半角スペースへ変換する。
 - DOM 要素解決のエラーは `AutoKana:` prefix を維持する。SPA 向けのマウント後実行ガイダンスも保持する。
 - `destroy()` は登録したイベントリスナーをすべて解除する必要がある。
