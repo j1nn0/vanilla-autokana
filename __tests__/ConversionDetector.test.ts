@@ -10,6 +10,19 @@ describe('ConversionDetector', () => {
     expect(detector.track('yamadaやまだ', '')).toEqual({ pendingKana: 'やまだ', commit: false });
   });
 
+  test('track() with an empty raw input drops pending kana without committing it', () => {
+    // track()'s contract (see its JSDoc) assumes raw is never empty; the state machine is
+    // responsible for handling empty input itself. InputTracker.trackInput() upholds this by
+    // routing raw === '' through clearState() instead of calling track(). Calling track('')
+    // directly treats the empty raw as a deletion to nothing, silently discarding pending
+    // kana without committing it -- documented here so a future caller (e.g. a scenario
+    // driver operating directly on ConversionDetector) does not rediscover this the hard way.
+    const detector = new ConversionDetector();
+    detector.track('やまだ', '');
+
+    expect(detector.track('', 'やまだ')).toEqual({ pendingKana: '', commit: false });
+  });
+
   test('keeps the longest pending kana during composition', () => {
     const detector = new ConversionDetector();
     detector.startComposition();
