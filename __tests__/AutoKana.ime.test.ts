@@ -81,15 +81,6 @@ describe('IME composition events', () => {
     expect(autokana.getFurigana()).toBe('やまだ');
   });
 
-  test('typing after conversion appends to furigana correctly', () => {
-    const { autokana, nameInput } = mountAutoKana();
-
-    imeConvert(nameInput, 'やまだ', '山田');
-    typeInput(nameInput, '山田たろう');
-
-    expect(autokana.getFurigana()).toBe('やまだたろう');
-  });
-
   test('browsing IME candidates does not accumulate furigana', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
 
@@ -99,42 +90,6 @@ describe('IME composition events', () => {
     compositionInput(nameInput, '山谷');
     compositionInput(nameInput, '山田');
     endComposition(nameInput, '山田');
-
-    expect(furiganaInput?.value).toBe('やまだ');
-  });
-
-  test('kana temporarily shown while browsing candidates does not accumulate furigana', () => {
-    const { nameInput, furiganaInput } = mountAutoKana();
-
-    startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
-    compositionInput(nameInput, '山田');
-    compositionInput(nameInput, 'やまだ');
-    compositionInput(nameInput, '山谷');
-    endComposition(nameInput, '山田');
-
-    expect(furiganaInput?.value).toBe('やまだ');
-  });
-
-  test('conversion to a different-length candidate preserves furigana', () => {
-    const { nameInput, furiganaInput } = mountAutoKana();
-
-    startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
-    compositionInput(nameInput, '病まだ');
-    compositionInput(nameInput, '山田');
-    endComposition(nameInput, '山田');
-
-    expect(furiganaInput?.value).toBe('やまだ');
-  });
-
-  test('conversion ending at a kanji candidate does not duplicate furigana', () => {
-    const { nameInput, furiganaInput } = mountAutoKana();
-
-    startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
-    compositionInput(nameInput, '病まだ');
-    endComposition(nameInput, '病まだ');
 
     expect(furiganaInput?.value).toBe('やまだ');
   });

@@ -24,7 +24,7 @@ type StoredOption = Readonly<Omit<AutoKanaOption, 'katakana'> & { debug: boolean
 
 type InputTransition =
   | { type: 'blur' }
-  | { type: 'focus'; raw: string; committedSeed: string | undefined }
+  | { type: 'focus'; raw: string }
   | { type: 'compositionstart' }
   | { type: 'compositionend'; raw: string }
   | { type: 'input'; raw: string };
@@ -74,7 +74,7 @@ class AutoKanaInputAdapter {
 
   private focusHandler = (): void => {
     this.debug('focus');
-    this.dispatch({ type: 'focus', raw: this.elName.value, committedSeed: undefined });
+    this.dispatch({ type: 'focus', raw: this.elName.value });
   };
 
   private compositionStartHandler = (): void => {

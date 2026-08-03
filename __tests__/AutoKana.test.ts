@@ -296,15 +296,6 @@ describe('input handling', () => {
     expect(furiganaInput?.value).toBe('やまだ');
   });
 
-  test('consecutive IME conversions accumulate furigana correctly', () => {
-    const { autokana, nameInput } = mountAutoKana();
-
-    imeConvert(nameInput, 'やまだ', '山田');
-    imeConvert(nameInput, '山田たろう', '山田太郎');
-
-    expect(autokana.getFurigana()).toBe('やまだたろう');
-  });
-
   test('empty input after composition resets state', () => {
     const { autokana, nameInput } = mountAutoKana();
 

@@ -40,6 +40,13 @@ describe('IME scenarios across seams', () => {
     expect(steps.run(trackerDriver())).toEqual({ furigana: 'やまだ' });
   });
 
+  test('converting twice in a row accumulates committed kana', () => {
+    const steps = scenario().convert('やまだ', '山田').convert('山田たろう', '山田太郎');
+
+    expect(steps.run(domDriver())).toEqual({ furigana: 'やまだたろう' });
+    expect(steps.run(trackerDriver())).toEqual({ furigana: 'やまだたろう' });
+  });
+
   test('katakana option produces the same output format across DOM and tracker', () => {
     const steps = scenario().type('やまだ　たろう');
 
