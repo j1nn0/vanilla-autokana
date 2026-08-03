@@ -19,19 +19,26 @@ export function cleanupStoryTeardowns(): void {
   }
 }
 
+/** All supported values of {@link KatakanaOption}, derived from the type itself. */
+const KATAKANA_OPTIONS: KatakanaOption[] = ['hiragana', 'full', 'half'];
+
+const MODE_LABEL_MAP: Record<KatakanaOption, string> = {
+  hiragana: 'ふりがな',
+  full: 'カタカナ（全角）',
+  half: 'カタカナ（半角）',
+};
+
 export const KATAKANA_ARG_TYPES = {
   katakana: {
     control: 'select' as const,
-    options: ['hiragana', 'full', 'half'],
+    options: KATAKANA_OPTIONS,
     description: '出力文字種。hiragana = ひらがな、full = 全角カタカナ、half = 半角カタカナ',
   },
 } satisfies Record<keyof Pick<AutoKanaOption, 'katakana'>, object>;
 
 /** Label for the furigana output field per output format (出力形式). Undefined means the hiragana default. */
 export function getModeLabel(katakana: KatakanaOption | undefined): string {
-  if (katakana === 'full') return 'カタカナ（全角）';
-  if (katakana === 'half') return 'カタカナ（半角）';
-  return 'ふりがな';
+  return MODE_LABEL_MAP[katakana ?? 'hiragana'];
 }
 
 // Style values shared by the example stories. The objects are the single source of

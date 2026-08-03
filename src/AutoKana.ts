@@ -22,14 +22,85 @@ export interface AutoKanaOption {
 type ResolvedOption = Readonly<AutoKanaOption & { katakana: KatakanaOption; debug: boolean }>;
 type StoredOption = Readonly<Omit<AutoKanaOption, 'katakana'> & { debug: boolean }>;
 
+type InputTransition =
+  | { type: 'blur' }
+  | { type: 'focus'; raw: string; committedSeed: string | undefined }
+  | { type: 'compositionstart' }
+  | { type: 'compositionend'; raw: string }
+  | { type: 'input'; raw: string };
+
+/**
+ * DOM event adapter for AutoKana. Owns the binding and unbinding of event listeners and the
+ * mapping from DOM events to semantic transitions. The caller supplies a `dispatch` callback
+ * that executes the transition and applies the resulting furigana.
+ *
+ * @internal Not part of the supported public API.
+ */
+class AutoKanaInputAdapter {
+  private readonly handlers: Array<[string, EventListener]>;
+
+  constructor(
+    private readonly elName: KanaElement,
+    private readonly dispatch: (transition: InputTransition) => void,
+    private readonly debug: (message: unknown, detail?: unknown) => void,
+  ) {
+    this.handlers = [
+      ['blur', this.blurHandler as EventListener],
+      ['focus', this.focusHandler as EventListener],
+      ['compositionstart', this.compositionStartHandler as EventListener],
+      ['compositionend', this.compositionEndHandler as EventListener],
+      ['input', this.inputHandler as EventListener],
+    ];
+  }
+
+  /** Attach all DOM event listeners. */
+  attach(): void {
+    for (const [event, handler] of this.handlers) {
+      this.elName.addEventListener(event, handler);
+    }
+  }
+
+  /** Detach all DOM event listeners. Safe to call more than once. */
+  detach(): void {
+    for (const [event, handler] of this.handlers) {
+      this.elName.removeEventListener(event, handler);
+    }
+  }
+
+  private blurHandler = (): void => {
+    this.debug('blur');
+    this.dispatch({ type: 'blur' });
+  };
+
+  private focusHandler = (): void => {
+    this.debug('focus');
+    this.dispatch({ type: 'focus', raw: this.elName.value, committedSeed: undefined });
+  };
+
+  private compositionStartHandler = (): void => {
+    this.debug('compositionstart');
+    this.dispatch({ type: 'compositionstart' });
+  };
+
+  private compositionEndHandler = (): void => {
+    this.debug('compositionend');
+    this.dispatch({ type: 'compositionend', raw: this.elName.value });
+  };
+
+  private inputHandler = (event: InputEvent): void => {
+    this.debug('input', event.isComposing);
+    this.dispatch({ type: 'input', raw: this.elName.value });
+  };
+}
+
 export default class AutoKana {
   private active = true;
   private destroyed = false;
   private readonly resolvedOption: StoredOption;
-  private elName?: KanaElement;
   private elFurigana?: KanaElement;
   private furigana: string;
   private readonly tracker: InputTracker;
+  private adapter?: AutoKanaInputAdapter;
 
   /** Whether auto-kana tracking is active. Read-only; use {@link start} / {@link stop} / {@link toggle} to change it. */
   get isActive(): boolean {
@@ -40,51 +111,6 @@ export default class AutoKana {
   get option(): ResolvedOption {
     return { ...this.resolvedOption, katakana: this.tracker.getKatakana() };
   }
-
-  private blurHandler = (): void => {
-    this.debug('blur');
-    this.runActiveTransition(() => this.tracker.blur());
-  };
-
-  private focusHandler = (): void => {
-    this.debug('focus');
-    const elName = this.elName;
-    if (!elName) {
-      return;
-    }
-    this.runActiveTransition(() => this.tracker.resync(elName.value, this.elFurigana?.value));
-  };
-
-  private compositionStartHandler = (): void => {
-    this.debug('compositionstart');
-    this.runActiveTransition(() => this.tracker.startComposition());
-  };
-
-  private compositionEndHandler = (): void => {
-    this.debug('compositionend');
-    const elName = this.elName;
-    if (!elName) {
-      return;
-    }
-    this.runActiveTransition(() => this.tracker.endComposition(elName.value));
-  };
-
-  private inputHandler = (event: InputEvent): void => {
-    this.debug('input', event.isComposing);
-    const elName = this.elName;
-    if (!elName) {
-      return;
-    }
-    this.runActiveTransition(() => this.tracker.trackInput(elName.value));
-  };
-
-  private readonly eventPairs: Array<[string, EventListener]> = [
-    ['blur', this.blurHandler],
-    ['focus', this.focusHandler],
-    ['compositionstart', this.compositionStartHandler],
-    ['compositionend', this.compositionEndHandler],
-    ['input', this.inputHandler as EventListener],
-  ];
 
   constructor(name: Bindable, furigana: Bindable = '', option: AutoKanaOption = {}) {
     this.furigana = '';
@@ -100,11 +126,16 @@ export default class AutoKana {
     const elName = requireElement(name);
     const elFurigana = resolveOptionalKanaElement(furigana);
 
-    this.elName = elName;
     if (elFurigana) {
       this.elFurigana = elFurigana;
     }
-    this.registerEvents(elName);
+
+    this.adapter = new AutoKanaInputAdapter(
+      elName,
+      (transition) => this.handleTransition(transition),
+      (message, detail) => this.debug(message, detail),
+    );
+    this.adapter.attach();
   }
 
   /**
@@ -170,15 +201,29 @@ export default class AutoKana {
     this.setFurigana(this.tracker.reset());
   }
 
-  private runActiveTransition(transition: () => FuriganaResult): void {
-    if (this.isActive) {
-      this.setFurigana(transition());
+  private handleTransition(transition: InputTransition): void {
+    if (!this.isActive) {
+      return;
     }
-  }
 
-  private registerEvents(elName: KanaElement): void {
-    for (const [event, handler] of this.eventPairs) {
-      elName.addEventListener(event, handler);
+    switch (transition.type) {
+      case 'blur':
+        this.setFurigana(this.tracker.blur());
+        return;
+      case 'focus':
+        this.setFurigana(this.tracker.resync(transition.raw, this.elFurigana?.value));
+        return;
+      case 'compositionstart':
+        this.setFurigana(this.tracker.startComposition());
+        return;
+      case 'compositionend':
+        this.setFurigana(this.tracker.endComposition(transition.raw));
+        return;
+      case 'input':
+        this.setFurigana(this.tracker.trackInput(transition.raw));
+        return;
+      default:
+        return;
     }
   }
 
@@ -208,12 +253,8 @@ export default class AutoKana {
     }
     this.destroyed = true;
     this.active = false;
-    if (this.elName) {
-      for (const [event, handler] of this.eventPairs) {
-        this.elName.removeEventListener(event, handler);
-      }
-    }
-    this.elName = undefined;
+    this.adapter?.detach();
+    this.adapter = undefined;
     this.elFurigana = undefined;
   }
 

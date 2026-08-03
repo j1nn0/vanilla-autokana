@@ -1,5 +1,6 @@
 import { ConversionDetector } from './ConversionDetector';
-import { canonicalizeKana, toKatakana } from './KanaConverter';
+import { extractKana } from './KanaExtractor';
+import { toKatakana } from './KanaConverter';
 import type { KatakanaOption } from './KanaConverter';
 
 /** Result of a single state transition: the current ふりがな and whether output notification is forced. */
@@ -85,7 +86,7 @@ export class InputTracker {
 
     this.detector.resync(raw);
     if (committedSeed !== undefined) {
-      this.committedKana = canonicalizeKana(committedSeed);
+      this.committedKana = extractKana(committedSeed);
     }
     this.pendingKana = '';
     return { furigana: this.formatFurigana(), notify: false };
