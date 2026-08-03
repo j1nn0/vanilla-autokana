@@ -86,7 +86,7 @@ export default class AutoKana {
     ['input', this.inputHandler as EventListener],
   ];
 
-  constructor(name: Bindable, furigana: Bindable = '', option: Partial<AutoKanaOption> = {}) {
+  constructor(name: Bindable, furigana: Bindable = '', option: AutoKanaOption = {}) {
     this.furigana = '';
 
     const { katakana = 'hiragana', ...rest } = option;
@@ -145,11 +145,7 @@ export default class AutoKana {
     if (this.destroyed) {
       return;
     }
-    if (event) {
-      this.active = event.target.checked;
-    } else {
-      this.active = !this.active;
-    }
+    this.active = event?.target.checked ?? !this.active;
   }
 
   /**
@@ -175,10 +171,9 @@ export default class AutoKana {
   }
 
   private runActiveTransition(transition: () => FuriganaResult): void {
-    if (!this.isActive) {
-      return;
+    if (this.isActive) {
+      this.setFurigana(transition());
     }
-    this.setFurigana(transition());
   }
 
   private registerEvents(elName: KanaElement): void {
@@ -223,15 +218,9 @@ export default class AutoKana {
   }
 
   private debug(message: unknown, detail?: unknown): void {
-    if (!this.resolvedOption.debug) {
-      return;
-    }
-    if (detail === undefined) {
+    if (this.resolvedOption.debug) {
       // eslint-disable-next-line no-console
-      console.log(message);
-      return;
+      console.log(message, ...(detail === undefined ? [] : [detail]));
     }
-    // eslint-disable-next-line no-console
-    console.log(message, detail);
   }
 }

@@ -2,10 +2,6 @@ import type { CSSProperties } from 'react';
 import type { AutoKanaOption, KatakanaOption } from '../src/index';
 
 type StoryTeardown = () => void;
-type AggregateTeardownError = Error & { errors: unknown[] };
-const AggregateErrorConstructor = globalThis as typeof globalThis & {
-  AggregateError: new (errors: Iterable<unknown>, message?: string) => AggregateTeardownError;
-};
 const storyTeardowns = new Set<StoryTeardown>();
 
 export function registerStoryTeardown(teardown: StoryTeardown): void {
@@ -15,21 +11,11 @@ export function registerStoryTeardown(teardown: StoryTeardown): void {
 export function cleanupStoryTeardowns(): void {
   const teardowns = [...storyTeardowns];
   storyTeardowns.clear();
-  const errors: unknown[] = [];
 
+  // Fail fast: the first failing teardown propagates; the registry is already cleared so
+  // a Storybook re-run does not replay stale teardowns.
   for (const teardown of teardowns) {
-    try {
-      teardown();
-    } catch (error) {
-      errors.push(error);
-    }
-  }
-
-  if (errors.length > 0) {
-    throw new AggregateErrorConstructor.AggregateError(
-      errors,
-      'One or more Storybook teardowns failed.',
-    );
+    teardown();
   }
 }
 

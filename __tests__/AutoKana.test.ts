@@ -5,6 +5,7 @@ import AutoKana from '../src/AutoKana';
 import { bind } from '../src/index';
 import {
   compositionInput,
+  endComposition,
   imeConvert,
   mountAutoKana,
   setup,
@@ -85,10 +86,7 @@ describe('binding', () => {
     const autokana = new AutoKana('name', 'missing-furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(autokana.getFurigana()).toBe('やまだ');
     expect(onChange).toHaveBeenCalledWith('やまだ');
@@ -132,10 +130,7 @@ describe('options', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ　たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ　たろう');
     expect(autokana.getFurigana()).toBe('やまだ　たろう');
   });
 
@@ -143,10 +138,7 @@ describe('options', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana', { katakana: 'half' });
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ　たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ　たろう');
     expect(autokana.getFurigana()).toBe('ﾔﾏﾀﾞ ﾀﾛｳ');
   });
 
@@ -202,32 +194,21 @@ describe('methods', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
     autokana.stop();
-    nameInput.value = 'たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'たろう');
     expect(autokana.getFurigana()).toBe(''); // inactive: furigana unchanged
 
     autokana.start();
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'たろう');
     expect(autokana.getFurigana()).toBe('たろう');
   });
   test('stop() ignores DOM input events without changing tracker state', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     autokana.stop();
-    nameInput.value = '';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
-    );
+    typeInput(nameInput, '', { inputType: 'deleteContentBackward' });
     autokana.start();
     autokana.setKatakana('full');
 
@@ -240,10 +221,7 @@ describe('methods', () => {
     const autokana = new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     onChange.mockClear();
 
     autokana.stop();
@@ -258,20 +236,14 @@ describe('methods', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
 
     autokana.reset();
     expect(autokana.getFurigana()).toBe('');
 
     // After reset the tracker starts fresh: re-typing does not accumulate the old kana.
-    nameInput.value = 'たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'たろう');
     expect(autokana.getFurigana()).toBe('たろう');
   });
 
@@ -280,7 +252,7 @@ describe('methods', () => {
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     autokana.destroy();
-    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
+    startComposition(nameInput);
     nameInput.dispatchEvent(new Event('focus'));
     expect(autokana.getFurigana()).toBe('');
   });
@@ -429,10 +401,7 @@ describe('onChange callback', () => {
     new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(onChange).toHaveBeenCalledWith('やまだ');
   });
@@ -444,23 +413,14 @@ describe('onChange callback', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
     // First input
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(onChange).toHaveBeenCalledWith('やまだ');
 
     // Clear and re-input
-    nameInput.value = '';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
-    );
+    typeInput(nameInput, '', { inputType: 'deleteContentBackward' });
     expect(onChange).toHaveBeenCalledWith('');
 
-    nameInput.value = 'たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'たろう');
     expect(onChange).toHaveBeenCalledWith('たろう');
   });
   test('deduplicates ordinary repeated empty input but forces explicit reset notification', () => {
@@ -472,17 +432,9 @@ describe('onChange callback', () => {
     const autokana = new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
-    nameInput.value = '';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
-    );
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'deleteContentBackward' }),
-    );
+    typeInput(nameInput, 'やまだ');
+    typeInput(nameInput, '', { inputType: 'deleteContentBackward' });
+    typeInput(nameInput, '', { inputType: 'deleteContentBackward' });
 
     expect(onChange).toHaveBeenCalledTimes(2);
     expect(inputListener).toHaveBeenCalledTimes(2);
@@ -500,10 +452,7 @@ describe('onChange callback', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
     autokana.stop();
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -514,10 +463,7 @@ describe('onChange callback', () => {
     new AutoKana('name', 'furigana', { onChange, katakana: 'full' });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(onChange).toHaveBeenCalledWith('ヤマダ');
   });
@@ -528,10 +474,7 @@ describe('onChange callback', () => {
     const autokana = new AutoKana('name', '', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(onChange).toHaveBeenCalledWith('やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
@@ -543,21 +486,11 @@ describe('onChange callback', () => {
     new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
-    );
-    nameInput.value = '山田';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
-    );
-    nameInput.value = '山谷';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
-    );
-    nameInput.value = '山田';
-    nameInput.dispatchEvent(new CompositionEvent('compositionend', { data: '山田' }));
+    startComposition(nameInput);
+    compositionInput(nameInput, 'やまだ', 'insertText');
+    compositionInput(nameInput, '山田');
+    compositionInput(nameInput, '山谷');
+    endComposition(nameInput, '山田');
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith('やまだ');
@@ -574,10 +507,7 @@ describe('input event dispatch on furigana element', () => {
     new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(inputListener).toHaveBeenCalled();
   });
@@ -594,10 +524,7 @@ describe('input event dispatch on furigana element', () => {
     new AutoKana('#name', '#furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     expect(bubbledListener).toHaveBeenCalled();
   });
@@ -611,15 +538,9 @@ describe('input event dispatch on furigana element', () => {
     new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: true, inputType: 'insertText' }),
-    );
-    nameInput.value = '山田';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
-    );
+    startComposition(nameInput);
+    compositionInput(nameInput, 'やまだ', 'insertText');
+    compositionInput(nameInput, '山田');
 
     expect(inputListener).toHaveBeenCalledTimes(1);
   });
@@ -632,10 +553,7 @@ describe('vu hiragana handling', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
-    nameInput.value = 'ゔぁ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'ゔぁ');
 
     expect(furiganaInput.value).toBe('ゔぁ');
   });
@@ -648,10 +566,7 @@ describe('kana canonicalization', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
-    nameInput.value = 'ヤマダ ﾀﾛｳ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'ヤマダ ﾀﾛｳ');
 
     expect(furiganaInput.value).toBe('やまだ たろう');
   });
@@ -664,20 +579,14 @@ describe('setKatakana()', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
 
     autokana.setKatakana('full');
     expect(autokana.getFurigana()).toBe('ヤマダ');
     expect(furiganaInput.value).toBe('ヤマダ');
 
-    nameInput.value = 'やまだたろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだたろう');
     expect(autokana.getFurigana()).toBe('ヤマダタロウ');
   });
   test('setKatakana() updates the output while tracking is stopped', () => {
@@ -686,10 +595,7 @@ describe('setKatakana()', () => {
     const autokana = new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     onChange.mockClear();
 
     autokana.stop();
@@ -713,10 +619,7 @@ describe('setKatakana()', () => {
     const onChange = vi.fn();
     const autokana = new AutoKana('name', 'furigana', { onChange });
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     onChange.mockClear();
 
     autokana.setKatakana('full');
@@ -730,10 +633,7 @@ describe('setKatakana()', () => {
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
 
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(furiganaInput.value).toBe('やまだ');
 
     autokana.reset();
@@ -748,10 +648,7 @@ describe('destroy()', () => {
     setup();
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
 
     autokana.destroy();
 
@@ -781,10 +678,7 @@ describe('bind() exported function', () => {
     const autokana = bind('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
     expect(furiganaInput.value).toBe('やまだ');
   });
@@ -794,10 +688,7 @@ describe('bind() exported function', () => {
     const autokana = bind('name', 'furigana', { katakana: 'full' });
     expect(autokana.option.katakana).toBe('full');
     const nameInput = document.getElementById('name') as HTMLInputElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(autokana.getFurigana()).toBe('ヤマダ');
   });
 });
@@ -810,10 +701,7 @@ describe('textarea elements', () => {
     const autokana = new AutoKana('name', 'furigana');
     const nameInput = document.getElementById('name') as HTMLTextAreaElement;
     const furiganaInput = document.getElementById('furigana') as HTMLTextAreaElement;
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ');
     expect(autokana.getFurigana()).toBe('やまだ');
     expect(furiganaInput.value).toBe('やまだ');
   });
@@ -836,10 +724,7 @@ describe('katakana option main input flow', () => {
     const autokana = new AutoKana('name', 'furigana', { katakana });
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
-    nameInput.value = 'やまだ　たろう';
-    nameInput.dispatchEvent(
-      new InputEvent('input', { isComposing: false, inputType: 'insertText' }),
-    );
+    typeInput(nameInput, 'やまだ　たろう');
     expect(autokana.getFurigana()).toBe(expected);
     expect(furiganaInput.value).toBe(expected);
   });

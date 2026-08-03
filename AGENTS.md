@@ -24,7 +24,8 @@
 
 - `src/index.ts`: 公開 API。`bind`、`AutoKana`、公開型のみを export する。`KanaConverter` / `KanaExtractor` は内部 module。
 - `src/AutoKana.ts`: DOM イベントを `InputTracker` の状態遷移へ写し、返されたふりがなを既存の出力 policy で配信する adapter。
-- `src/InputTracker.ts`: IME 状態機械。composition 状態、確定かな / 未確定かな、入力追跡、変換検出を所有する。
+- `src/InputTracker.ts`: IME かな状態機械。確定かな / 未確定かな、出力形式、遷移とふりがなの対応を所有する。
+- `src/ConversionDetector.ts`: IME 入力追跡と変換検出。composition 状態、入力比較の基準状態、変換ヒューリスティックを所有する。
 - `src/ElementResolver.ts`: 文字列セレクタまたは DOM 要素から `input` / `textarea` を解決する。
 - `src/KanaExtractor.ts`: 生入力からかなとスペースを抽出して正規かなへ揃え、変換検出用に小さなかなを圧縮する。
 - `src/KanaConverter.ts`: 入力かなを正規かなへ揃え、ひらがな・全角カタカナ・半角カタカナの出力形式へ変換する。
@@ -32,6 +33,7 @@
 - `__tests__/AutoKana.test.ts`: DOM adapter の公開契約を jsdom イベントで検証する。
 - `__tests__/AutoKana.ime.test.ts`: IME composition の adapter 契約を検証する。
 - `__tests__/InputTracker.test.ts`: InputTracker の状態機械 interface を直接検証する。
+- `__tests__/ConversionDetector.test.ts`: 入力追跡・変換検出のヒューリスティックを文字列入力で直接検証する。
 - `__tests__/kana.test.ts`: かな抽出・変換の純粋ロジックを検証する。
 - `__tests__/setup.ts`: DOM / IME テストの共通 helper。
 - `stories/`: HTML / Vue / React の Storybook サンプル。
@@ -51,10 +53,10 @@
 
 ## 実装上の注意
 
-- IME の変換検出は `compositionstart`、`compositionend`、`input`、`focus`、`blur` のイベント駆動で成り立っている。composition 状態と遷移は `InputTracker` が所有し、各遷移は処理後のふりがなを返す。`AutoKana` は各イベントを1回の遷移へ写して返値を配信するだけにする。
+- IME の変換検出は `compositionstart`、`compositionend`、`input`、`focus`、`blur` のイベント駆動で成り立っている。composition 状態と入力比較・変換判定は `ConversionDetector` が所有し、`InputTracker` はかな状態と遷移を所有して各遷移は処理後のふりがなを返す。`AutoKana` は各イベントを1回の遷移へ写して返値を配信するだけにする。
 - `committedKana` は確定かな、`pendingKana` は未確定かな、`furigana` は最終出力。`CONTEXT.md` の用語に合わせる。
 - 変換確定時は未確定かなを確定かなへ移す。候補選択中の一時的な入力減少で未確定かなを失わないようにする。
-- IME の変換検出を変更するときは `__tests__/AutoKana.ime.test.ts` と `__tests__/InputTracker.test.ts` の event / interface 契約を更新する。純粋な抽出・変換は `__tests__/kana.test.ts` で検証する。
+- IME の変換検出を変更するときは `__tests__/AutoKana.ime.test.ts`、`__tests__/InputTracker.test.ts`、`__tests__/ConversionDetector.test.ts` の event / interface 契約を更新する。純粋な抽出・変換は `__tests__/kana.test.ts` で検証する。
 - 半角カタカナモードでは全角スペースを半角スペースへ変換する。
 - DOM 要素解決のエラーは `AutoKana:` prefix を維持する。SPA 向けのマウント後実行ガイダンスも保持する。
 - `destroy()` は登録したイベントリスナーをすべて解除し、複数回呼び出しと破棄後の状態変更を安全な no-op にする必要がある。
@@ -68,7 +70,7 @@
 - typecheck: `rtk pnpm run typecheck`
 - テスト watch: `rtk pnpm run test`
 - テスト単発 / coverage: `rtk pnpm run test:coverage`
-- 単一テスト: `rtk pnpm exec vitest run __tests__/AutoKana.test.ts __tests__/AutoKana.ime.test.ts __tests__/InputTracker.test.ts __tests__/kana.test.ts`
+- 単一テスト: `rtk pnpm exec vitest run __tests__/AutoKana.test.ts __tests__/AutoKana.ime.test.ts __tests__/InputTracker.test.ts __tests__/ConversionDetector.test.ts __tests__/kana.test.ts`
 - build: `rtk pnpm run build`
 - CI 相当: `rtk pnpm run ci`
 - Storybook: `rtk pnpm run storybook`

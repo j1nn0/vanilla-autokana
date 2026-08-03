@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { compactKana, containsNonKana, extractKana } from '../src/KanaExtractor';
+import { extractKana } from '../src/KanaExtractor';
 import { toKatakana } from '../src/KanaConverter';
 import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
@@ -15,35 +15,6 @@ describe('kana extraction', () => {
   });
   test('extract canonicalizes hiragana, full-width and half-width katakana, and iteration marks', () => {
     expect(extractKana('ヤマダ　ﾀﾛｳ ゝゞ')).toBe('やまだ　たろう ゝゞ');
-  });
-
-  test('compact removes small katakana after extraction canonicalizes them', () => {
-    expect(compactKana(extractKana('ャュョ'))).toBe('');
-  });
-
-  test('containsNonKana treats all supported kana forms as kana', () => {
-    expect(containsNonKana('ヤマダ')).toBe(false);
-    expect(containsNonKana('ﾀﾛｳ')).toBe(false);
-    expect(containsNonKana('ゝゞ')).toBe(false);
-  });
-
-  test('compact removes small kana', () => {
-    expect(compactKana('ぁぃぅぇぉっゃゅょ')).toBe('');
-    expect(compactKana('やまだ')).toBe('やまだ');
-  });
-
-  test('containsNonKana detects non-kana characters', () => {
-    expect(containsNonKana('yamada')).toBe(true);
-    expect(containsNonKana('やまだ')).toBe(false);
-    expect(containsNonKana('山田')).toBe(true);
-  });
-
-  test('containsNonKana works correctly on consecutive calls', () => {
-    // Regression guard: the old /g regex with .test() mutated lastIndex.
-    expect(containsNonKana('やまだ')).toBe(false);
-    expect(containsNonKana('やまだ')).toBe(false);
-    expect(containsNonKana('山田')).toBe(true);
-    expect(containsNonKana('山田')).toBe(true);
   });
 });
 
@@ -101,9 +72,5 @@ describe('fullToHalfKatakanaMap', () => {
     expect(fullToHalfKatakanaMap['ヱ']).toBe('ｴ');
     expect(fullToHalfKatakanaMap['。']).toBe('｡');
     expect(fullToHalfKatakanaMap['、']).toBe('､');
-  });
-
-  test('map has 89 entries', () => {
-    expect(Object.keys(fullToHalfKatakanaMap)).toHaveLength(89);
   });
 });

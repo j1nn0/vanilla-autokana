@@ -35,6 +35,7 @@ _同義語を避ける_: commit, finalize
 **入力追跡（Input Tracking）**:
 The mechanism that compares the current raw input against previously seen input to detect what the user actually typed versus what the IME composed.
 _同義語を避ける_: input processing, value processing
+_実装メモ_: 入力比較の状態（lastConvertedInput / lastNewInput / previousRawInput）と変換判定のヒューリスティックは、内部 module `ConversionDetector` が所有する。`InputTracker` は 確定かな / 未確定かな / 出力形式 の状態とライフサイクル遷移を所有する。
 
 **追跡停止（Tracking Pause）**:
 The temporary state in which DOM input and IME events are ignored while explicit commands such as reset and output-format changes remain available.

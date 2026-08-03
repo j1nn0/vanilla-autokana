@@ -30,7 +30,7 @@ describe('Storybook teardown', () => {
 
     expect(registeredTeardown).toHaveBeenCalledOnce();
   });
-  test('attempts every teardown and rethrows an AggregateError after failures', () => {
+  test('stops at the first failing teardown and clears the registry', () => {
     const firstError = new Error('first teardown failed');
     const failingTeardown = vi.fn(() => {
       throw firstError;
@@ -39,20 +39,12 @@ describe('Storybook teardown', () => {
     registerStoryTeardown(failingTeardown);
     registerStoryTeardown(succeedingTeardown);
 
-    let caught: unknown;
-    try {
-      cleanupStoryTeardowns();
-    } catch (error) {
-      caught = error;
-    }
-
-    expect(caught).toBeInstanceOf(Error);
-    expect(caught).toMatchObject({ name: 'AggregateError' });
-    expect((caught as Error & { errors: unknown[] }).errors).toEqual([firstError]);
+    expect(() => cleanupStoryTeardowns()).toThrow(firstError);
     expect(failingTeardown).toHaveBeenCalledOnce();
-    expect(succeedingTeardown).toHaveBeenCalledOnce();
+    expect(succeedingTeardown).not.toHaveBeenCalled();
 
+    // The registry is cleared even after a failure, so a re-run does not replay stale teardowns.
     cleanupStoryTeardowns();
-    expect(succeedingTeardown).toHaveBeenCalledOnce();
+    expect(succeedingTeardown).not.toHaveBeenCalled();
   });
 });

@@ -2,11 +2,14 @@ import AutoKana, { type AutoKanaOption } from '../src/AutoKana';
 
 const STANDARD_HTML = '<input name="name" id="name"><input name="furigana" id="furigana">';
 
-export type MountedAutoKana = {
+type MountedAutoKana = {
   autokana: AutoKana;
   nameInput: HTMLInputElement;
   furiganaInput?: HTMLInputElement;
 };
+
+/** Name or furigana element accepted by the event helpers (AutoKana supports both). */
+type TestInput = HTMLInputElement | HTMLTextAreaElement;
 
 /** Replace the jsdom body with the standard name + furigana input pair (or a custom layout). */
 export function setup(html = STANDARD_HTML): void {
@@ -15,7 +18,7 @@ export function setup(html = STANDARD_HTML): void {
 
 /** Mount AutoKana against the standard name/furigana inputs and return the live elements. */
 export function mountAutoKana(
-  option: Partial<AutoKanaOption> = {},
+  option: AutoKanaOption = {},
   html = STANDARD_HTML,
 ): MountedAutoKana {
   setup(html);
@@ -28,7 +31,7 @@ export function mountAutoKana(
 
 /** Dispatch a normal input event after updating the name field. */
 export function typeInput(
-  nameInput: HTMLInputElement,
+  nameInput: TestInput,
   value: string,
   init: InputEventInit = {},
 ): void {
@@ -44,13 +47,13 @@ export function typeInput(
 }
 
 /** Dispatch an IME composition-start event. */
-export function startComposition(nameInput: HTMLInputElement): void {
+export function startComposition(nameInput: TestInput): void {
   nameInput.dispatchEvent(new CompositionEvent('compositionstart'));
 }
 
 /** Update a composing value and dispatch its composition input event. */
 export function compositionInput(
-  nameInput: HTMLInputElement,
+  nameInput: TestInput,
   value: string,
   inputType = 'insertCompositionText',
 ): void {
@@ -58,13 +61,13 @@ export function compositionInput(
 }
 
 /** Dispatch an IME composition-end event for the current value. */
-export function endComposition(nameInput: HTMLInputElement, value: string, data = value): void {
+export function endComposition(nameInput: TestInput, value: string, data = value): void {
   nameInput.value = value;
   nameInput.dispatchEvent(new CompositionEvent('compositionend', { data }));
 }
 
 /** Run one reading-to-converted IME transition. */
-export function imeConvert(nameInput: HTMLInputElement, reading: string, converted: string): void {
+export function imeConvert(nameInput: TestInput, reading: string, converted: string): void {
   startComposition(nameInput);
   compositionInput(nameInput, reading, 'insertText');
   endComposition(nameInput, converted);
