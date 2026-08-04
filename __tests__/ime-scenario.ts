@@ -1,39 +1,23 @@
 import AutoKana from '../src/AutoKana';
 import { InputTracker } from '../src/InputTracker';
-import { ConversionDetector } from '../src/ConversionDetector';
-import {
-  startComposition,
-  compositionInput,
-  endComposition,
-  typeInput,
-} from './setup';
+import { compositionInput, endComposition, focusName, startComposition, typeInput } from './setup';
 
 /**
  * Domain-level IME test DSL. A scenario describes what the user does in Japanese input terms
- * (type kana, convert to kanji, focus, blur) and can be replayed against multiple seams:
- *
- * - DOM driver: exercises AutoKana + the real event pipeline.
- * - InputTracker driver: exercises the kana state machine directly.
- * - ConversionDetector driver: exercises the input-tracking/conversion-detection seam directly.
+ * (type kana, convert to kanji, focus) and can be replayed against the DOM and
+ * state-machine seams.
  */
 
 export type Step =
   | { kind: 'type'; raw: string }
   | { kind: 'convert'; reading: string; raw: string }
-  | { kind: 'focus'; raw: string; seed?: string }
-  | { kind: 'blur' }
-  | { kind: 'startComposition' };
+  | { kind: 'focus'; raw: string; seed?: string };
 
 export interface ScenarioResult {
-  /** Final furigana for DOM/InputTracker drivers. */
-  furigana?: string;
-  /** Final detector result for ConversionDetector driver. */
-  track?: { pendingKana: string; commit: boolean };
+  furigana: string;
 }
 
 export interface ScenarioDriver {
-  /** Human-readable name for test descriptions. */
-  readonly name: string;
   run(steps: Step[]): ScenarioResult;
 }
 
@@ -46,21 +30,12 @@ class ScenarioBuilder {
   }
 
   convert(reading: string, raw: string): this {
-    this.steps.push(
-      { kind: 'startComposition' },
-      { kind: 'type', raw: reading },
-      { kind: 'convert', reading, raw },
-    );
+    this.steps.push({ kind: 'type', raw: reading }, { kind: 'convert', reading, raw });
     return this;
   }
 
   focus(raw: string, seed?: string): this {
     this.steps.push({ kind: 'focus', raw, seed });
-    return this;
-  }
-
-  blur(): this {
-    this.steps.push({ kind: 'blur' });
     return this;
   }
 
@@ -76,36 +51,27 @@ export function scenario(): ScenarioBuilder {
 /**
  * DOM driver: mounts AutoKana on the standard name/furigana inputs and replays events.
  */
-export function domDriver(option?: ConstructorParameters<typeof AutoKana>[2]): ScenarioDriver {
+export function domDriver(): ScenarioDriver {
   return {
-    name: 'AutoKana DOM adapter',
     run(steps) {
-      document.body.innerHTML = '<input name="name" id="name"><input name="furigana" id="furigana">';
+      document.body.innerHTML =
+        '<input name="name" id="name"><input name="furigana" id="furigana">';
       const nameInput = document.getElementById('name') as HTMLInputElement;
       const furiganaInput = document.getElementById('furigana') as HTMLInputElement;
-      const autokana = new AutoKana(nameInput, furiganaInput, option ?? {});
+      const autokana = new AutoKana(nameInput, furiganaInput);
 
       for (const step of steps) {
         switch (step.kind) {
           case 'type':
-            typeInput(nameInput, step.raw, { inputType: 'insertText' });
-            break;
-          case 'startComposition':
-            startComposition(nameInput);
+            typeInput(nameInput, step.raw);
             break;
           case 'convert':
-            compositionInput(nameInput, step.reading, 'insertText');
+            startComposition(nameInput);
+            compositionInput(nameInput, step.reading);
             endComposition(nameInput, step.raw);
             break;
           case 'focus':
-            if (step.seed !== undefined) {
-              furiganaInput.value = step.seed;
-            }
-            nameInput.value = step.raw;
-            nameInput.dispatchEvent(new Event('focus'));
-            break;
-          case 'blur':
-            nameInput.dispatchEvent(new Event('blur'));
+            focusName(nameInput, step.raw, furiganaInput, step.seed);
             break;
         }
       }
@@ -118,86 +84,32 @@ export function domDriver(option?: ConstructorParameters<typeof AutoKana>[2]): S
 /**
  * InputTracker driver: exercises the state-machine transitions directly with string inputs.
  */
-export function trackerDriver(format: 'hiragana' | 'full' | 'half' = 'hiragana'): ScenarioDriver {
+export function trackerDriver(): ScenarioDriver {
   return {
-    name: 'InputTracker state machine',
     run(steps) {
-      const tracker = new InputTracker(format);
+      const tracker = new InputTracker('hiragana');
       let furigana = '';
+
       for (const step of steps) {
         switch (step.kind) {
           case 'type':
-            furigana = tracker.trackInput(step.raw).furigana;
-            break;
-          case 'startComposition':
-            tracker.startComposition();
+            furigana = tracker.apply({ type: 'input', raw: step.raw }).furigana;
             break;
           case 'convert':
-            furigana = tracker.endComposition(step.raw).furigana;
+            tracker.apply({ type: 'compositionstart' });
+            furigana = tracker.apply({ type: 'compositionend', raw: step.raw }).furigana;
             break;
           case 'focus':
-            furigana = tracker.resync(step.raw, step.seed).furigana;
-            break;
-          case 'blur':
-            furigana = tracker.blur().furigana;
+            furigana = tracker.apply({
+              type: 'focus',
+              raw: step.raw,
+              committedSeed: step.seed,
+            }).furigana;
             break;
         }
       }
 
       return { furigana };
-    },
-  };
-}
-
-/**
- * ConversionDetector driver: exercises the input-tracking/conversion-detection seam.
- */
-export function detectorDriver(): ScenarioDriver {
-  return {
-    name: 'ConversionDetector',
-    run(steps) {
-      const detector = new ConversionDetector();
-      let pendingKana = '';
-      let lastTrack: { pendingKana: string; commit: boolean } = { pendingKana: '', commit: false };
-      let composing = false;
-
-      for (const step of steps) {
-        switch (step.kind) {
-          case 'type':
-            lastTrack = detector.track(step.raw, pendingKana);
-            if (lastTrack.commit) {
-              pendingKana = '';
-            } else {
-              pendingKana = lastTrack.pendingKana;
-            }
-            break;
-          case 'startComposition':
-            detector.startComposition();
-            composing = true;
-            break;
-          case 'convert':
-            if (composing) {
-              detector.endComposition();
-              composing = false;
-            }
-            lastTrack = detector.track(step.raw, pendingKana);
-            if (lastTrack.commit) {
-              pendingKana = '';
-            } else {
-              pendingKana = lastTrack.pendingKana;
-            }
-            break;
-          case 'focus':
-            detector.resync(step.raw);
-            pendingKana = '';
-            break;
-          case 'blur':
-            detector.blur();
-            break;
-        }
-      }
-
-      return { track: lastTrack };
     },
   };
 }

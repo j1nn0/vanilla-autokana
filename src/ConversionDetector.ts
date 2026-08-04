@@ -1,4 +1,4 @@
-import { extractKana } from './KanaExtractor';
+import { containsUnsupportedKana, extractKana } from './KanaExtractor';
 
 // Small kana removed from 正規かな to compare lengths during conversion detection. The input
 // has already passed through かな抽出 (Kana Extraction), so canonicalization is not repeated.
@@ -6,22 +6,12 @@ import { extractKana } from './KanaExtractor';
 // length diff used by detectAndCommitConversion (小さなかな除去 / Kana Compacting).
 const COMPACTING_PATTERN = /[ぁぃぅぇぉっゃゅょ]/g;
 
-// Same character class as KanaExtractor's extraction pattern, non-global, used to test whether
-// a string contains any non-kana character (a signal that an IME conversion produced kanji).
-// eslint-disable-next-line no-irregular-whitespace
-const CONTAINS_NON_KANA_PATTERN = /[^ 　ぁ-ゖゝゞァ-ヺヽヾー゙゚ｦ-ﾟ]/;
-
 /**
  * 小さなかな除去 (Kana Compacting): remove small kana characters (ぁぃぅぇぉっゃゅょ) from a
  * string to canonicalize it for length comparison during conversion detection.
  */
 export function compactKana(input: string): string {
   return input.replace(COMPACTING_PATTERN, '');
-}
-
-/** Whether the string contains any character that is not supported kana (e.g. kanji). */
-export function containsNonKana(input: string): boolean {
-  return input.search(CONTAINS_NON_KANA_PATTERN) !== -1;
 }
 
 /** Result of tracking one raw input: the pending kana to adopt and whether a conversion committed. */
@@ -185,7 +175,7 @@ export class ConversionDetector {
       pendingKana.length === this.lastNewInput.length &&
       pendingKana !== this.lastNewInput
     ) {
-      if (containsNonKana(this.lastNewInput)) {
+      if (containsUnsupportedKana(this.lastNewInput)) {
         return true;
       }
     }

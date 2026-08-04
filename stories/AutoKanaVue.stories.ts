@@ -70,19 +70,11 @@ const DemoWrapper = defineComponent({
   },
 });
 
-let app: ReturnType<typeof createApp> | null = null;
-
 function renderVueDemo(args: Args): HTMLElement {
   const container = document.createElement('div');
   const mountedApp = createApp(DemoWrapper, { katakana: args.katakana });
-  app = mountedApp;
   mountedApp.mount(container);
-  registerStoryTeardown(() => {
-    mountedApp.unmount();
-    if (app === mountedApp) {
-      app = null;
-    }
-  });
+  registerStoryTeardown(() => mountedApp.unmount());
   return container;
 }
 

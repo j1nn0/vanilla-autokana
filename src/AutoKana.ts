@@ -1,14 +1,11 @@
 import { InputTracker } from './InputTracker';
-import type { FuriganaResult } from './InputTracker';
+import type { FuriganaResult, InputTransition } from './InputTracker';
 import type { KanaElement, Bindable } from './ElementResolver';
 import { requireElement, resolveOptionalKanaElement } from './ElementResolver';
 import type { KatakanaOption } from './KanaConverter';
 
 export type { Bindable };
 export type { KatakanaOption };
-
-/** Minimal shape of a checkbox change event accepted by {@link AutoKana.toggle}. */
-type ToggleEventLike = { target: { checked: boolean } };
 
 export interface AutoKanaOption {
   /** Output format for furigana. `'hiragana'` = hiragana, `'full'` = full-width katakana, `'half'` = half-width katakana. */
@@ -21,13 +18,6 @@ export interface AutoKanaOption {
 
 type ResolvedOption = Readonly<AutoKanaOption & { katakana: KatakanaOption; debug: boolean }>;
 type StoredOption = Readonly<Omit<AutoKanaOption, 'katakana'> & { debug: boolean }>;
-
-type InputTransition =
-  | { type: 'blur' }
-  | { type: 'focus'; raw: string }
-  | { type: 'compositionstart' }
-  | { type: 'compositionend'; raw: string }
-  | { type: 'input'; raw: string };
 
 /**
  * DOM event adapter for AutoKana. Owns the binding and unbinding of event listeners and the
@@ -168,15 +158,13 @@ export default class AutoKana {
   }
 
   /**
-   * Toggle auto-kana tracking on or off.
-   *
-   * @param event Optional checkbox change event. When provided, uses the checked state of the target.
+   * Toggle auto-kana tracking.
    */
-  toggle(event?: ToggleEventLike): void {
+  toggle(): void {
     if (this.destroyed) {
       return;
     }
-    this.active = event?.target.checked ?? !this.active;
+    this.active = !this.active;
   }
 
   /**
@@ -205,32 +193,16 @@ export default class AutoKana {
     if (!this.isActive) {
       return;
     }
-
-    switch (transition.type) {
-      case 'blur':
-        this.setFurigana(this.tracker.blur());
-        return;
-      case 'focus':
-        this.setFurigana(this.tracker.resync(transition.raw, this.elFurigana?.value));
-        return;
-      case 'compositionstart':
-        this.setFurigana(this.tracker.startComposition());
-        return;
-      case 'compositionend':
-        this.setFurigana(this.tracker.endComposition(transition.raw));
-        return;
-      case 'input':
-        this.setFurigana(this.tracker.trackInput(transition.raw));
-        return;
-      default:
-        return;
-    }
+    this.setFurigana(
+      this.tracker.apply(
+        transition.type === 'focus'
+          ? { ...transition, committedSeed: this.elFurigana?.value }
+          : transition,
+      ),
+    );
   }
 
   private setFurigana(result: FuriganaResult): void {
-    if (this.destroyed) {
-      return;
-    }
     if (!result.notify && result.furigana === this.furigana) {
       return;
     }

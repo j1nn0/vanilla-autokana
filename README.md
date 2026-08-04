@@ -106,7 +106,7 @@ bind('#name', '#furigana');
 - `setKatakana(katakana)`: 出力形式（`'hiragana' | 'full' | 'half'`）を実行時に変更する。現在のふりがなも即座に再変換される（追跡停止中も実行される）
 - `start()`: ふりがなの自動追跡を再開する
 - `stop()`: DOM の入力・IME イベントによる自動追跡を一時停止する。`reset()` と `setKatakana()` は停止中も実行される
-- `toggle(event?)`: ふりがなの自動追跡を切り替える。チェックボックスの変更イベントを渡すと、その `checked` 状態を使う
+- `toggle()`: ふりがなの自動追跡を切り替える
 - `reset()`: 内部状態をリセットし、ふりがな出力（DOM 要素・onChange）もクリアする（追跡停止中も実行される）
 - `destroy()`: イベントリスナーをすべて削除する。複数回呼び出しても安全で、破棄後の状態変更メソッドは no-op になる
  
@@ -251,6 +251,7 @@ import { bind } from '@j1nn0/vanilla-autokana';
 
 - `option` プロパティは読み取り専用になりました。実行時に出力形式を変えるには `setKatakana()` を使用してください
 - `isActive` プロパティは読み取り専用になりました。追跡の on/off は `start()` / `stop()` / `toggle()` を使用してください
+- `toggle(event?)` は削除されました。チェックボックスの変更イベントでは `event.target.checked ? autokana.start() : autokana.stop()` を使用してください
 - `initializeValues()` は削除されました。`reset()` を使用してください
 - `processValue()` と `setFurigana()` は非公開になりました。入力・IME イベント、`reset()`、`setKatakana()` など公開 interface を使用してください。
 - `stop()` は DOM の入力・IME イベントによる自動追跡だけを停止します。`reset()` と `setKatakana()` は停止中も出力を更新します

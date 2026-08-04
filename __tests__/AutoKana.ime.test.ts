@@ -2,8 +2,10 @@ import { describe, expect, test } from 'vitest';
 
 /* global test expect document */
 import {
+  blurName,
   compositionInput,
   endComposition,
+  focusName,
   imeConvert,
   mountAutoKana,
   startComposition,
@@ -15,10 +17,10 @@ describe('IME composition events', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
 
     startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
+    compositionInput(nameInput, 'やまだ');
     compositionInput(nameInput, 'やま');
 
-    expect(furiganaInput?.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
   test('compositionend processes the final value even without a follow-up input (Chrome quirk)', () => {
@@ -28,7 +30,7 @@ describe('IME composition events', () => {
     endComposition(nameInput, 'やまだ');
 
     // In Chrome, compositionend may fire without a following input(isComposing=false).
-    expect(furiganaInput?.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
   test('normal input extracts kana and updates furigana', () => {
@@ -36,45 +38,22 @@ describe('IME composition events', () => {
 
     typeInput(nameInput, 'やまだ');
 
-    expect(furiganaInput?.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
   test('composing input updates furigana during composition', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
-    furiganaInput!.value = 'やまだ';
+    furiganaInput.value = 'やまだ';
 
     startComposition(nameInput);
-    compositionInput(nameInput, 'やまだたろう', 'insertText');
+    compositionInput(nameInput, 'やまだたろう');
 
-    expect(furiganaInput?.value).toBe('やまだたろう');
-  });
-
-  test('focus handler captures the current output state when refocusing', () => {
-    const { autokana, nameInput, furiganaInput } = mountAutoKana();
-    furiganaInput!.value = 'やまだ';
-    nameInput.value = '山田';
-
-    nameInput.dispatchEvent(new Event('focus'));
-
-    expect(autokana.getFurigana()).toBe('やまだ');
-  });
-
-  test('blur ends composition tracking', () => {
-    const { nameInput, furiganaInput } = mountAutoKana();
-
-    startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
-    nameInput.dispatchEvent(new Event('blur'));
-    compositionInput(nameInput, 'やま', 'insertText');
-
-    expect(furiganaInput?.value).toBe('やま');
+    expect(furiganaInput.value).toBe('やまだたろう');
   });
 
   test('getFurigana returns the correct value after a complete conversion sequence', () => {
     const { autokana, nameInput, furiganaInput } = mountAutoKana();
-    furiganaInput!.value = 'やまだ';
-    nameInput.value = 'やまだ';
-    nameInput.dispatchEvent(new Event('focus'));
+    focusName(nameInput, 'やまだ', furiganaInput, 'やまだ');
 
     imeConvert(nameInput, '山田', '山田');
 
@@ -85,23 +64,23 @@ describe('IME composition events', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
 
     startComposition(nameInput);
-    compositionInput(nameInput, 'やまだ', 'insertText');
+    compositionInput(nameInput, 'やまだ');
     compositionInput(nameInput, '山田');
     compositionInput(nameInput, '山谷');
     compositionInput(nameInput, '山田');
     endComposition(nameInput, '山田');
 
-    expect(furiganaInput?.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
   test('refocusing after kana input does not duplicate furigana', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
 
     imeConvert(nameInput, 'やまだ', 'やまだ');
-    nameInput.dispatchEvent(new Event('blur'));
-    nameInput.dispatchEvent(new Event('focus'));
+    blurName(nameInput);
+    focusName(nameInput, nameInput.value);
 
-    expect(furiganaInput?.value).toBe('やまだ');
+    expect(furiganaInput.value).toBe('やまだ');
   });
 
   test('backspace after partial kana input does not duplicate furigana', () => {
@@ -110,13 +89,13 @@ describe('IME composition events', () => {
     typeInput(nameInput, 'や');
     typeInput(nameInput, 'やｍ');
     typeInput(nameInput, 'やｍだ');
-    expect(furiganaInput?.value).toBe('やだ');
+    expect(furiganaInput.value).toBe('やだ');
 
-    typeInput(nameInput, 'やｍ', { inputType: 'deleteContentBackward' });
-    expect(furiganaInput?.value).toBe('や');
+    typeInput(nameInput, 'やｍ');
+    expect(furiganaInput.value).toBe('や');
 
-    typeInput(nameInput, 'や', { inputType: 'deleteContentBackward' });
-    expect(furiganaInput?.value).toBe('や');
+    typeInput(nameInput, 'や');
+    expect(furiganaInput.value).toBe('や');
   });
 
   test('full-width space after conversion is preserved in furigana', () => {
@@ -124,7 +103,7 @@ describe('IME composition events', () => {
 
     imeConvert(nameInput, 'やまだ', '山田');
     typeInput(nameInput, '山田　');
-    expect(furiganaInput?.value).toBe('やまだ　');
+    expect(furiganaInput.value).toBe('やまだ　');
 
     typeInput(nameInput, '山田　たろう');
 

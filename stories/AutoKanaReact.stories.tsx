@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html-vite';
 import { createElement, useState, useEffect, useRef } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { bind, type AutoKanaOption } from '../src/index';
 import {
   CONTAINER_STYLE_OBJECT,
@@ -67,19 +67,11 @@ function ReactDemo({ katakana }: Args): React.ReactElement {
   });
 }
 
-let root: Root | null = null;
-
 function renderReactDemo(args: Args): HTMLElement {
   const container = document.createElement('div');
   const mountedRoot = createRoot(container);
-  root = mountedRoot;
   mountedRoot.render(createElement(ReactDemo, args));
-  registerStoryTeardown(() => {
-    mountedRoot.unmount();
-    if (root === mountedRoot) {
-      root = null;
-    }
-  });
+  registerStoryTeardown(() => mountedRoot.unmount());
   return container;
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { extractKana } from '../src/KanaExtractor';
+import { containsUnsupportedKana, extractKana } from '../src/KanaExtractor';
 import { toKatakana } from '../src/KanaConverter';
 import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
@@ -13,8 +13,31 @@ describe('kana extraction', () => {
   test('extract preserves full-width spaces', () => {
     expect(extractKana('やまだ　たろう')).toBe('やまだ　たろう');
   });
+
   test('extract canonicalizes hiragana, full-width and half-width katakana, and iteration marks', () => {
     expect(extractKana('ヤマダ　ﾀﾛｳ ゝゞ')).toBe('やまだ　たろう ゝゞ');
+  });
+});
+
+describe('unsupported kana detection', () => {
+  test('treats all supported kana forms as kana', () => {
+    expect(containsUnsupportedKana('ヤマダ')).toBe(false);
+    expect(containsUnsupportedKana('ﾀﾛｳ')).toBe(false);
+    expect(containsUnsupportedKana('ゝゞ')).toBe(false);
+  });
+
+  test('detects non-kana characters', () => {
+    expect(containsUnsupportedKana('yamada')).toBe(true);
+    expect(containsUnsupportedKana('やまだ')).toBe(false);
+    expect(containsUnsupportedKana('山田')).toBe(true);
+  });
+
+  test('works correctly on consecutive calls', () => {
+    // Regression guard: the old /g regex with .test() mutated lastIndex.
+    expect(containsUnsupportedKana('やまだ')).toBe(false);
+    expect(containsUnsupportedKana('やまだ')).toBe(false);
+    expect(containsUnsupportedKana('山田')).toBe(true);
+    expect(containsUnsupportedKana('山田')).toBe(true);
   });
 });
 

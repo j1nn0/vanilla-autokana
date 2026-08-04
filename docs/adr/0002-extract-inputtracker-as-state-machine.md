@@ -13,3 +13,11 @@ The state machine was deepened to own the composition lifecycle as well. `isComp
 ## 2026-08-03 update: conversion detection extraction
 
 `isComposing` and the input-comparison state (`lastConvertedInput` / `lastNewInput` / `previousRawInput`) moved out of `InputTracker` into the new internal `ConversionDetector` seam (ADR-0006). `InputTracker` remains the kana state machine: it owns 確定かな / 未確定かな / 出力形式 and maps each transition to a furigana result, while the detector owns composition mode, the tracking baseline, and the conversion heuristics.
+
+## 2026-08-03 update: one transition interface
+
+`InputTracker` now accepts its DOM-driven lifecycle through one `apply(transition)`
+interface. The discriminated transition is shared with `AutoKanaInputAdapter`; the focus
+variant alone carries its optional `committedSeed`, preserving the existing 再同期 contract
+without a positional parameter that other transitions cannot use. This moves transition
+dispatch inside the state-machine module, so its test surface is the same seam production exercises.
