@@ -1,5 +1,42 @@
 # Changelog
 
+## [3.0.0](https://github.com/j1nn0/vanilla-autokana/compare/v2.3.3...v3.0.0) (2026-08-04)
+
+### ⚠ BREAKING CHANGES
+
+* **core:** `option` is now read-only at compile time; use
+  setKatakana() instead. reset() now fires onChange and clears the
+  furigana output element. Both ship in v3.0.0 (README migration guide
+  updated).
+* **core:** initializeValues() is removed (use reset());
+  processValue() and setFurigana() are no longer callable. Ships in
+  v3.0.0 (README migration guide updated).
+* **core:** isActive is now read-only at compile time; use
+  start()/stop()/toggle(). Ships in v3.0.0 (README migration guide
+  updated).
+* **core:** KanaConverter and KanaExtractor are no longer exported
+  from the package entry. Only bind(), AutoKana, and the option types
+  remain public (ADR-0003). Ship in a major release.
+* **core:** toggle() no longer accepts an event parameter. Use
+  event.target.checked ? autokana.start() : autokana.stop() for checkbox
+  change events. extractRawKana was an internal export and is removed.
+
+  Closes the architecture-review findings: Middle Man handlers, dead DSL
+  surface, stale JSDoc, misplaced pure-kana tests, and unfalsifiable story
+  assertions.
+
+### Bug Fixes
+
+* **core:** separate tracking pause from output policy ([61b92a6](https://github.com/j1nn0/vanilla-autokana/commit/61b92a6ad93416b51698531dd38b7824f048c851))
+
+### Code Refactoring
+
+* **core:** close option mutation trap, route reset through output policy ([ac4fb45](https://github.com/j1nn0/vanilla-autokana/commit/ac4fb4521ff316665223697b352c58caf4f9e863))
+* **core:** collapse input transitions into one interface ([fd479ab](https://github.com/j1nn0/vanilla-autokana/commit/fd479ab222f9b65ab5bc2ba3807db3eecf397d40))
+* **core:** deepen module seams and shrink public exports ([98544ba](https://github.com/j1nn0/vanilla-autokana/commit/98544babfd8c5f66afd41dbf128cb9d00189ed7a))
+* **core:** remove test-only seams from the public interface ([0e59f05](https://github.com/j1nn0/vanilla-autokana/commit/0e59f053aa42cfd61bfdbeddc39871f851788aec))
+* **core:** unify output policy seam on FuriganaResult, split IME tests ([a3710c2](https://github.com/j1nn0/vanilla-autokana/commit/a3710c2906ceea49324973f1702beac1b825a96a))
+
 ## [2.3.3](https://github.com/j1nn0/vanilla-autokana/compare/v2.3.2...v2.3.3) (2026-08-02)
 
 ## [2.3.2](https://github.com/j1nn0/vanilla-autokana/compare/v2.3.1...v2.3.2) (2026-08-01)
