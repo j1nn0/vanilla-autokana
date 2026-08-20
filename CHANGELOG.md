@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.0.1](https://github.com/j1nn0/vanilla-autokana/compare/v3.0.0...v3.0.1) (2026-08-20)
+
 ## [3.0.0](https://github.com/j1nn0/vanilla-autokana/compare/v2.3.3...v3.0.0) (2026-08-04)
 
 ### ⚠ BREAKING CHANGES
