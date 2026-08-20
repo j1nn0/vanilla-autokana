@@ -69,8 +69,7 @@ export function toKatakana(src: string, option: KatakanaOption): string {
     str += option === 'half' ? (fullToHalfKatakanaMap[char] ?? char) : char;
   }
 
-  // Half-width katakana output converts the full-width space (　) to a half-width space,
+  // Half-width katakana output converts the full-width space (U+3000) to a half-width space,
   // matching the ASCII spacing convention of half-width katakana fields.
-  // eslint-disable-next-line no-irregular-whitespace
-  return option === 'half' && str.indexOf('　') !== -1 ? str.replace(/　/g, ' ') : str;
+  return option === 'half' && str.indexOf('\u3000') !== -1 ? str.replace(/\u3000/g, ' ') : str;
 }
