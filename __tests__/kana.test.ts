@@ -4,10 +4,34 @@ import { toKatakana } from '../src/KanaConverter';
 import { fullToHalfKatakanaMap } from '../src/katakanaMap';
 
 describe('kana extraction', () => {
+  test('extracts an empty string as an empty string', () => {
+    expect(extractKana('')).toBe('');
+  });
+
   test('extract removes non-kana characters', () => {
     expect(extractKana('yamadaやまだ')).toBe('やまだ');
     expect(extractKana('山田やまだ')).toBe('やまだ');
     expect(extractKana('やまだ')).toBe('やまだ');
+  });
+
+  test('preserves an ASCII space by itself', () => {
+    expect(extractKana(' ')).toBe(' ');
+  });
+
+  test('preserves a full-width space by itself', () => {
+    expect(extractKana('　')).toBe('　');
+  });
+
+  test('returns an empty string for input containing only unsupported characters', () => {
+    expect(extractKana('123abc!?')).toBe('');
+  });
+
+  test('keeps canonical hiragana unchanged', () => {
+    expect(extractKana('ひらがな')).toBe('ひらがな');
+  });
+
+  test('removes an ideograph and its variation selector', () => {
+    expect(extractKana('葛󠄀')).toBe('');
   });
 
   test('extract preserves full-width spaces', () => {
@@ -20,6 +44,10 @@ describe('kana extraction', () => {
 });
 
 describe('unsupported kana detection', () => {
+  test('treats an empty string as supported', () => {
+    expect(containsUnsupportedKana('')).toBe(false);
+  });
+
   test('treats all supported kana forms as kana', () => {
     expect(containsUnsupportedKana('ヤマダ')).toBe(false);
     expect(containsUnsupportedKana('ﾀﾛｳ')).toBe(false);
@@ -32,6 +60,10 @@ describe('unsupported kana detection', () => {
     expect(containsUnsupportedKana('山田')).toBe(true);
   });
 
+  test('detects input containing only numbers, Latin letters, and symbols', () => {
+    expect(containsUnsupportedKana('123abc!?')).toBe(true);
+  });
+
   test('works correctly on consecutive calls', () => {
     // Regression guard: the old /g regex with .test() mutated lastIndex.
     expect(containsUnsupportedKana('やまだ')).toBe(false);
@@ -42,6 +74,16 @@ describe('unsupported kana detection', () => {
 });
 
 describe('kana conversion', () => {
+  test('converts an empty string to an empty string in every format', () => {
+    expect(toKatakana('', 'hiragana')).toBe('');
+    expect(toKatakana('', 'full')).toBe('');
+    expect(toKatakana('', 'half')).toBe('');
+  });
+
+  test('converts a full-width space to an ASCII space in half-width mode', () => {
+    expect(toKatakana('　', 'half')).toBe(' ');
+  });
+
   test('converts basic hiragana to half-width katakana', () => {
     expect(toKatakana('あいうえお', 'half')).toBe('ｱｲｳｴｵ');
     expect(toKatakana('かきくけこ', 'half')).toBe('ｶｷｸｹｺ');
@@ -70,6 +112,14 @@ describe('kana conversion', () => {
 
   test('keeps hiragana as-is', () => {
     expect(toKatakana('あいうえお', 'hiragana')).toBe('あいうえお');
+  });
+
+  test('converts only kana in mixed input and preserves other characters', () => {
+    const mixedInput = 'やまだ123abc!?';
+
+    expect(toKatakana(mixedInput, 'hiragana')).toBe(mixedInput);
+    expect(toKatakana(mixedInput, 'full')).toBe('ヤマダ123abc!?');
+    expect(toKatakana(mixedInput, 'half')).toBe('ﾔﾏﾀﾞ123abc!?');
   });
 
   test('handles vu hiragana', () => {

@@ -73,6 +73,67 @@ describe('IME composition events', () => {
     expect(furiganaInput.value).toBe('やまだ');
   });
 
+  test('restarting composition without compositionend preserves pending kana while browsing candidates', () => {
+    const { nameInput, furiganaInput } = mountAutoKana();
+
+    startComposition(nameInput);
+    compositionInput(nameInput, 'やまだ');
+    compositionInput(nameInput, '山田');
+    startComposition(nameInput);
+    compositionInput(nameInput, '山谷');
+    compositionInput(nameInput, 'やま');
+    compositionInput(nameInput, '山田');
+    endComposition(nameInput, '山田');
+
+    expect(furiganaInput.value).toBe('やまだ');
+  });
+
+  test('keeps the longest pending kana when candidate values repeatedly shrink and grow', () => {
+    const { nameInput, furiganaInput } = mountAutoKana();
+
+    startComposition(nameInput);
+    compositionInput(nameInput, 'やまだ');
+    compositionInput(nameInput, 'やま');
+    compositionInput(nameInput, 'やまだたろう');
+    compositionInput(nameInput, 'やまだ');
+    compositionInput(nameInput, 'やま');
+    endComposition(nameInput, '山田太郎');
+
+    expect(furiganaInput.value).toBe('やまだたろう');
+  });
+
+  test('moves pending kana to committed kana at compositionend before starting new pending kana', () => {
+    const { nameInput, furiganaInput } = mountAutoKana();
+
+    startComposition(nameInput);
+    compositionInput(nameInput, 'やまだ');
+    compositionInput(nameInput, '山田');
+    endComposition(nameInput, '山田');
+    expect(furiganaInput.value).toBe('やまだ');
+
+    startComposition(nameInput);
+    compositionInput(nameInput, '山田たろう');
+    expect(furiganaInput.value).toBe('やまだたろう');
+    compositionInput(nameInput, '山田太郎');
+    endComposition(nameInput, '山田太郎');
+
+    expect(furiganaInput.value).toBe('やまだたろう');
+  });
+
+  test('preserves committed kana and replaces pending kana after a confirmed conversion', () => {
+    const { nameInput, furiganaInput } = mountAutoKana();
+
+    imeConvert(nameInput, 'やまだ', '山田');
+    expect(furiganaInput.value).toBe('やまだ');
+
+    startComposition(nameInput);
+    compositionInput(nameInput, '山田たろう');
+    compositionInput(nameInput, '山田じろう');
+    endComposition(nameInput, '山田次郎');
+
+    expect(furiganaInput.value).toBe('やまだじろう');
+  });
+
   test('refocusing after kana input does not duplicate furigana', () => {
     const { nameInput, furiganaInput } = mountAutoKana();
 

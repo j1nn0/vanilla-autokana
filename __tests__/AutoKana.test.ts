@@ -214,6 +214,17 @@ describe('methods', () => {
     focusName(nameInput, nameInput.value);
     expect(autokana.getFurigana()).toBe('');
   });
+
+  test('stop() is a no-op after destroy()', () => {
+    const { autokana, nameInput } = mountAutoKana();
+    typeInput(nameInput, 'やまだ');
+
+    autokana.destroy();
+    autokana.stop();
+
+    expect(autokana.isActive).toBe(false);
+    expect(autokana.getFurigana()).toBe('やまだ');
+  });
 });
 
 describe('input handling', () => {

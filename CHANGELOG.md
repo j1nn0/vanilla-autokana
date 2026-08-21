@@ -2,6 +2,20 @@
 
 ## [3.0.1](https://github.com/j1nn0/vanilla-autokana/compare/v3.0.0...v3.0.1) (2026-08-20)
 
+### Dependencies
+
+* **deps:** update devDependencies to latest
+  * Storybook 10.5.5 -> 10.5.9 (and `@storybook/html`, `@storybook/html-vite`)
+  * Vite 8.2.0 -> 8.2.1
+  * Vitest 4.1.10 -> 4.1.11 (and `@vitest/coverage-v8`)
+  * Vue 3.5.40 -> 3.5.41
+  * release-it 21.0.1 -> 21.0.2
+  * `@types/node` 26.1.2 -> 26.2.0
+  * oxlint 1.76.0 -> 1.79.0
+  * oxfmt 0.61.0 -> 0.64.0
+  * **refactor(kana):** use `\u3000` escapes in KanaConverter to satisfy oxlint no-irregular-whitespace
+  * All updates are patch/minor; no major bumps. Verified with lint, typecheck, test:coverage, build, verify:exports, and build-storybook.
+
 ## [3.0.0](https://github.com/j1nn0/vanilla-autokana/compare/v2.3.3...v3.0.0) (2026-08-04)
 
 ### ⚠ BREAKING CHANGES

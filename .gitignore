@@ -7,3 +7,4 @@ storybook-static/
 logs
 .sisyphus/
 .tmp/
+.omo/
