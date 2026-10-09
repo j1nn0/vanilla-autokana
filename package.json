@@ -35,8 +35,11 @@
   "packageManager": "pnpm@10.34.1",
   "pnpm": {
     "overrides": {
-      "undici": "^7.29.0",
-      "postcss": "^8.5.23"
+      "basic-ftp": "^6.2.1",
+      "ip-address": "^10.7.3",
+      "postcss": "^8.5.23",
+      "source-map-js": "^1.2.2",
+      "undici": "^7.29.1"
     },
     "onlyBuiltDependencies": []
   },
@@ -78,16 +81,16 @@
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "4.1.11",
     "jsdom": "^30.0.1",
-    "oxfmt": "^0.64.0",
+    "oxfmt": "^0.72.0",
     "oxlint": "^1.79.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "release-it": "^21.0.2",
+    "release-it": "^21.1.1",
     "storybook": "^10.5.9",
     "typescript": "^7.0.2",
     "unplugin-dts": "^1.0.3",
     "vite": "^8.2.1",
     "vitest": "^4.1.11",
-    "vue": "^3.5.41"
+    "vue": "^3.5.43"
   }
 }
