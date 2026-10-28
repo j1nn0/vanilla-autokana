@@ -20,7 +20,7 @@ importers:
         version: 12.0.0(conventional-commits-filter@6.0.1)(conventional-commits-parser@7.1.2)(release-it@21.1.1(@types/node@26.2.0)(magicast@0.5.4))
       '@storybook/html':
         specifier: ^10.5.9
-        version: 10.5.9(storybook@10.6.2(@types/react@19.2.18)(react@19.2.8))
+        version: 10.6.2(storybook@10.6.2(@types/react@19.2.18)(react@19.2.8))
       '@storybook/html-vite':
         specifier: ^10.5.9
         version: 10.5.9(esbuild@0.28.2)(storybook@10.6.2(@types/react@19.2.18)(react@19.2.8))(vite@8.3.3(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0))
@@ -1230,6 +1230,11 @@ packages:
     peerDependencies:
       storybook: ^10.5.9
 
+  '@storybook/html@10.6.2':
+    resolution: {integrity: sha512-iGDnL8nhnFXS6ns4hMq5u1kYzrVZgRSaN5FIL06uOnxwJ6zeABKHVeUTfvgtoxaAfB+Zag7FClr5f1tSub8oig==}
+    peerDependencies:
+      storybook: ^10.6.2
+
   '@storybook/icons@2.2.0':
     resolution: {integrity: sha512-FpUB/xizIrV1ILhCIYFo+TtQNN9YEoLjfcnAW0JtOXL+BcM2aisSysI0B54JMWDnljriXySBHgN6ps4s9lb75A==}
     peerDependencies:
@@ -2385,7 +2390,7 @@ packages:
     engines: {node: '>=0.10.0'}
 
   stackback@0.0.2:
-    resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==, tarball: https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz}
+    resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
 
   std-env@4.2.0:
     resolution: {integrity: sha512-oCUKSupKTHX53EyjDtuZQ64pjLJ6yYCtpmEw0goYxtjG9KpbRe8KAsl2tBUGU9DyMcJ0RwJ8GqJAFzMXcXW1Rw==}
@@ -3502,6 +3507,12 @@ snapshots:
       - webpack
 
   '@storybook/html@10.5.9(storybook@10.6.2(@types/react@19.2.18)(react@19.2.8))':
+    dependencies:
+      '@storybook/global': 5.0.0
+      storybook: 10.6.2(@types/react@19.2.18)(react@19.2.8)
+      ts-dedent: 2.3.0
+
+  '@storybook/html@10.6.2(storybook@10.6.2(@types/react@19.2.18)(react@19.2.8))':
     dependencies:
       '@storybook/global': 5.0.0
       storybook: 10.6.2(@types/react@19.2.18)(react@19.2.8)
